@@ -12,15 +12,28 @@ import {colors, fonts, fontSize} from '../theme';
 type Props = {
   label: string;
   onPress?: () => void;
+  disabled?: boolean;
   style?: StyleProp<ViewStyle>;
 };
 
-export default function PrimaryButton({label, onPress, style}: Props) {
+export default function PrimaryButton({
+  label,
+  onPress,
+  disabled,
+  style,
+}: Props) {
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityState={{disabled: !!disabled}}
+      disabled={disabled}
       onPress={onPress}
-      style={({pressed}) => [styles.button, pressed && styles.pressed, style]}>
+      style={({pressed}) => [
+        styles.button,
+        disabled && styles.disabled,
+        pressed && !disabled && styles.pressed,
+        style,
+      ]}>
       <Text style={styles.label}>{label}</Text>
     </Pressable>
   );
@@ -36,6 +49,9 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.85,
+  },
+  disabled: {
+    opacity: 0.3,
   },
   label: {
     color: colors.white,

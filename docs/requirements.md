@@ -254,12 +254,14 @@ Provider를 CaptureFlow 네비게이터 안에 두면 플로우를 벗어날 때
 | --- | --- | --- | --- |
 | 스택 네비게이션 | `@react-navigation/native-stack` | 불필요 | CR-01 |
 | 카메라 | `react-native-vision-camera` + `react-native-nitro-modules` + `react-native-nitro-image` | **필요** | SR-05 |
-| 스트립 합성 | `react-native-view-shot` | **필요** | SR-07 |
+| 스트립 합성 | `@shopify/react-native-skia` | **필요** | SR-07 |
 | 앨범 저장 | `@react-native-camera-roll/camera-roll` | **필요** | SR-07 |
 | 인쇄 | `react-native-print` | **필요** | EXT-01 |
 | 방향 제어 | `react-native-orientation-locker` | **필요** | CR-04 |
 
-합성은 `view-shot`으로 화면을 캡처하는 방식과 `@shopify/react-native-skia`로 오프스크린 렌더링하는 방식이 있다. NFR-02의 1200×1800px을 화면 캡처로 얻기는 어려우므로, 인쇄 품질을 중시한다면 Skia 쪽을 검토할 만하다.
+합성은 **Skia 오프스크린 렌더링**으로 정했다. 화면 캡처(`view-shot`) 방식은 결과물이 화면 해상도에 묶여 NFR-02를 만족할 수 없다.
+
+미리보기(`StripPreview`)와 합성(`composeStrip`)이 **같은 `stripGeometry()`** 를 쓴다. 배치 계산이 한 곳에만 있어야 화면과 출력물이 어긋나지 않는다. 시트 비율은 시안의 흰 시트 118×214에서 가져왔고, 인쇄 폭 1200px 기준으로 **1200×2176px**이 나온다.
 
 ### Windows 빌드 주의사항
 
@@ -320,11 +322,12 @@ M1~M3은 네이티브 재빌드 없이 Fast Refresh로 진행할 수 있다. M4�
 
 ### M5 · 사진 선택과 합성
 
-- [ ] SR-06 — 촬영본 가로 스크롤, 선택 순번 배지, `n/N` 카운터
-- [ ] 빈 슬롯 회색 처리와 실시간 미리보기 반영
-- [ ] N장 충족 전 `다음` 비활성화
-- [ ] 스트립 합성 — 세로형 2×2 / 가로형 3단, **출력은 항상 세로 시트**
-- [ ] NFR-02 — 1200×1800px 이상 확보. 합성 방식 결정 필요
+- [x] SR-06 — 촬영본 가로 스크롤, 선택 순번 배지, `n/N` 카운터
+- [x] 빈 슬롯 회색 처리와 실시간 미리보기 반영
+- [x] N장 충족 전 `다음` 비활성화
+- [x] 스트립 합성 — 세로형 2×2 / 가로형 3단, **출력은 항상 세로 시트**
+- [x] NFR-02 — Skia 오프스크린 합성으로 **1200×2176px** 확보
+- [ ] 합성 결과를 파일로 내보내기 — 지금은 data URI. 저장·인쇄가 붙는 M6 에서 전환
 
 ### M6 · 로고·저장·인쇄
 

@@ -26,11 +26,15 @@ type CaptureSession = {
   cutCount: number;
   /** 촬영본 경로. file:// 스킴을 포함한다. */
   shots: string[];
+  /** 고른 촬영본의 인덱스. 배열 순서가 곧 스트립에 놓이는 순서다. */
+  selection: number[];
   selectLayout: (layout: CaptureLayout) => void;
   addShot: (path: string) => void;
+  /** 이미 고른 사진이면 빼고, 아니면 컷 수까지만 더한다. */
+  toggleSelection: (shotIndex: number) => void;
 };
 
-// 선택 순서(selection)와 로고(logo)는 M5·M6 에서 추가한다.
+// 로고(logo)는 M6 에서 추가한다.
 const CaptureSessionContext = createContext<CaptureSession | null>(null);
 
 type Props = {children: React.ReactNode};
@@ -42,6 +46,9 @@ type Props = {children: React.ReactNode};
 export function CaptureSessionProvider({children}: Props) {
   const [layout, setLayout] = useState<CaptureLayout | null>(null);
   const [shots, setShots] = useState<string[]>([]);
+  const [selection, setSelection] = useState<number[]>([]);
+
+  const cutCount = layout ? CUT_COUNT[layout] : 0;
 
   const selectLayout = useCallback((next: CaptureLayout) => {
     setLayout(next);
@@ -51,15 +58,32 @@ export function CaptureSessionProvider({children}: Props) {
     setShots(prev => [...prev, path]);
   }, []);
 
+  const toggleSelection = useCallback(
+    (shotIndex: number) => {
+      setSelection(prev => {
+        if (prev.includes(shotIndex)) {
+          return prev.filter(index => index !== shotIndex);
+        }
+        if (prev.length >= cutCount) {
+          return prev;
+        }
+        return [...prev, shotIndex];
+      });
+    },
+    [cutCount],
+  );
+
   const value = useMemo<CaptureSession>(
     () => ({
       layout,
-      cutCount: layout ? CUT_COUNT[layout] : 0,
+      cutCount,
       shots,
+      selection,
       selectLayout,
       addShot,
+      toggleSelection,
     }),
-    [layout, shots, selectLayout, addShot],
+    [layout, cutCount, shots, selection, selectLayout, addShot, toggleSelection],
   );
 
   return (

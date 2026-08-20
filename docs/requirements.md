@@ -253,13 +253,29 @@ Provider를 CaptureFlow 네비게이터 안에 두면 플로우를 벗어날 때
 | 용도 | 후보 | 재빌드 | 관련 |
 | --- | --- | --- | --- |
 | 스택 네비게이션 | `@react-navigation/native-stack` | 불필요 | CR-01 |
-| 카메라 | `react-native-vision-camera` | **필요** | SR-05 |
+| 카메라 | `react-native-vision-camera` + `react-native-nitro-modules` + `react-native-nitro-image` | **필요** | SR-05 |
 | 스트립 합성 | `react-native-view-shot` | **필요** | SR-07 |
 | 앨범 저장 | `@react-native-camera-roll/camera-roll` | **필요** | SR-07 |
 | 인쇄 | `react-native-print` | **필요** | EXT-01 |
 | 방향 제어 | `react-native-orientation-locker` | **필요** | CR-04 |
 
 합성은 `view-shot`으로 화면을 캡처하는 방식과 `@shopify/react-native-skia`로 오프스크린 렌더링하는 방식이 있다. NFR-02의 1200×1800px을 화면 캡처로 얻기는 어려우므로, 인쇄 품질을 중시한다면 Skia 쪽을 검토할 만하다.
+
+### Windows 빌드 주의사항
+
+vision-camera 5.x를 붙이면서 겪은 것들이다.
+
+**peer dependency 2개를 직접 설치해야 한다.** `react-native-nitro-modules`와 `react-native-nitro-image`가 없으면 `Project with path ':react-native-nitro-modules' could not be found`로 Gradle 평가 단계에서 실패한다.
+
+**`ninja: manifest 'build.ninja' still dirty after 100 tries`.** Windows에서 NDK/CMake가 긴 경로를 만나면 CMake 재생성이 무한 반복된다. `node_modules/*/android/.cxx`를 지우고 ABI를 줄여 빌드하면 넘어간다.
+
+```sh
+./gradlew assembleDebug -PreactNativeArchitectures=x86_64   # 에뮬레이터 전용
+```
+
+에뮬레이터 개발에는 `x86_64` 하나면 충분하고 빌드도 4분 30초 → 1분 20초로 줄어든다. **다만 이건 우회일 뿐이라 4개 ABI를 모두 담는 릴리스 빌드에서는 다시 터질 수 있다.** 릴리스 전에 Windows 긴 경로 지원을 켜거나 CI를 Linux/macOS로 돌리는 편이 안전하다.
+
+**jest에서 네이티브 모듈을 못 찾는다.** nitro가 import 시점에 TurboModule을 조회해서 실패하므로 `__mocks__/react-native-vision-camera.js`로 대체했다.
 
 ---
 
@@ -294,13 +310,13 @@ M1~M3은 네이티브 재빌드 없이 Fast Refresh로 진행할 수 있다. M4�
 
 ### M4 · 촬영
 
-- [ ] `react-native-vision-camera` 설치 및 Gradle 재빌드
-- [ ] 카메라 권한 요청 흐름
-- [ ] SR-05 — 프리뷰, 카운트다운 6초, `n/8` 카운터
-- [ ] `바로촬영` — 카운트다운 취소 후 즉시 촬영
-- [ ] 전면·후면 전환
-- [ ] 8장 완료 시 SR-06 자동 이동
-- [ ] NFR-01 확인 — 실기기에서 8장 연속 촬영 시 지연 측정
+- [x] `react-native-vision-camera` 설치 및 Gradle 재빌드
+- [x] 카메라 권한 요청 흐름
+- [x] SR-05 — 프리뷰, 카운트다운 6초, `n/8` 카운터
+- [x] `바로촬영` — 카운트다운 취소 후 즉시 촬영
+- [x] 전면·후면 전환 (카메라가 하나뿐이면 버튼 비활성)
+- [x] 8장 완료 시 SR-06 자동 이동
+- [ ] NFR-01 확인 — **실기기** 측정 필요. 에뮬레이터에서는 8장 연속 촬영에 문제 없었다
 
 ### M5 · 사진 선택과 합성
 

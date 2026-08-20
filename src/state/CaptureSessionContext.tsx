@@ -24,10 +24,13 @@ type CaptureSession = {
   layout: CaptureLayout | null;
   /** layout 에서 파생. 레이아웃 선택 전에는 0. */
   cutCount: number;
+  /** 촬영본 경로. file:// 스킴을 포함한다. */
+  shots: string[];
   selectLayout: (layout: CaptureLayout) => void;
+  addShot: (path: string) => void;
 };
 
-// 촬영본(shots)·선택 순서(selection)·로고(logo)는 각각 M4·M5·M6 에서 추가한다.
+// 선택 순서(selection)와 로고(logo)는 M5·M6 에서 추가한다.
 const CaptureSessionContext = createContext<CaptureSession | null>(null);
 
 type Props = {children: React.ReactNode};
@@ -38,18 +41,25 @@ type Props = {children: React.ReactNode};
  */
 export function CaptureSessionProvider({children}: Props) {
   const [layout, setLayout] = useState<CaptureLayout | null>(null);
+  const [shots, setShots] = useState<string[]>([]);
 
   const selectLayout = useCallback((next: CaptureLayout) => {
     setLayout(next);
+  }, []);
+
+  const addShot = useCallback((path: string) => {
+    setShots(prev => [...prev, path]);
   }, []);
 
   const value = useMemo<CaptureSession>(
     () => ({
       layout,
       cutCount: layout ? CUT_COUNT[layout] : 0,
+      shots,
       selectLayout,
+      addShot,
     }),
-    [layout, selectLayout],
+    [layout, shots, selectLayout, addShot],
   );
 
   return (

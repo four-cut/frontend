@@ -22,4 +22,8 @@ export const fontSize = {
   listItem: 21,
   /** 레이아웃 카드 라벨 — "세로형", "가로형" */
   cardLabel: 18,
+  /** 촬영 화면 카운트다운 숫자 */
+  countdown: 72,
+  /** 촬영 진행 카운터 — "5/8" */
+  progress: 30,
 } as const;

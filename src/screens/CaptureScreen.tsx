@@ -7,6 +7,8 @@ import {
   useCameraDevice,
   useCameraPermission,
   usePhotoOutput,
+  useVideoOutput,
+  type Recorder,
 } from 'react-native-vision-camera';
 
 import {images} from '../assets';
@@ -28,10 +30,14 @@ export default function CaptureScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<CaptureNavigation>();
   const isFocused = useIsFocused();
-  const {addShot} = useCaptureSession();
+  const {addShot, setVideo} = useCaptureSession();
 
   const {hasPermission, requestPermission} = useCameraPermission();
   const photoOutput = usePhotoOutput();
+  // 8장을 찍는 과정을 통째로 녹화한다. (OQ-01)
+  // 소리는 담지 않아서 녹음 권한이 필요 없다.
+  const videoOutput = useVideoOutput({enableAudio: false});
+  const recorder = useRef<Recorder | null>(null);
 
   // Camera 에 'front' 같은 문자열을 그대로 넘기면 해당 카메라가 없을 때 예외를 던진다.
   // 기기를 직접 조회해서 없으면 반대쪽으로 넘긴다. (에뮬레이터는 전면이 없는 경우가 있다)
@@ -86,12 +92,50 @@ export default function CaptureScreen() {
     return () => clearTimeout(timer);
   }, [capture, device, hasPermission, isFocused, remaining, shotCount]);
 
+  /** 카메라 세션이 뜬 뒤에야 레코더를 만들 수 있다. */
+  const startRecording = useCallback(async () => {
+    if (recorder.current) {
+      return;
+    }
+    try {
+      const created = await videoOutput.createRecorder({});
+      recorder.current = created;
+      await created.startRecording(
+        filePath => setVideo(`file://${filePath}`),
+        () => {
+          // 영상 실패가 사진 촬영을 막지는 않는다.
+        },
+      );
+    } catch {
+      // 위와 같다.
+    }
+  }, [setVideo, videoOutput]);
+
   useEffect(() => {
-    if (shotCount >= SHOT_COUNT) {
+    if (shotCount < SHOT_COUNT) {
+      return;
+    }
+    // 녹화를 먼저 닫아야 파일이 온전히 마무리된다.
+    const finish = async () => {
+      try {
+        if (recorder.current?.isRecording) {
+          await recorder.current.stopRecording();
+        }
+      } catch {
+        // 무시 — 사진은 이미 다 찍혔다.
+      }
       // replace 라서 뒤로가기로 촬영을 다시 시작할 수 없다.
       navigation.replace('PhotoSelect');
-    }
+    };
+    finish();
   }, [navigation, shotCount]);
+
+  // 8장을 채우기 전에 화면을 벗어나면 녹화만 정리한다.
+  useEffect(() => {
+    return () => {
+      recorder.current?.stopRecording().catch(() => {});
+    };
+  }, []);
 
   // 권한 거부 시 화면 시안이 없다. (OQ-07)
   if (!hasPermission || !device) {
@@ -110,7 +154,8 @@ export default function CaptureScreen() {
         style={StyleSheet.absoluteFill}
         isActive={isFocused}
         device={device}
-        outputs={[photoOutput]}
+        outputs={[photoOutput, videoOutput]}
+        onStarted={startRecording}
       />
 
       <View

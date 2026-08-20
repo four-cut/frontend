@@ -28,8 +28,11 @@ type CaptureSession = {
   shots: string[];
   /** 고른 촬영본의 인덱스. 배열 순서가 곧 스트립에 놓이는 순서다. */
   selection: number[];
+  /** 8장을 찍는 과정을 담은 영상. 녹화가 끝나야 채워진다. (OQ-01) */
+  video: string | null;
   selectLayout: (layout: CaptureLayout) => void;
   addShot: (path: string) => void;
+  setVideo: (path: string) => void;
   /** 이미 고른 사진이면 빼고, 아니면 컷 수까지만 더한다. */
   toggleSelection: (shotIndex: number) => void;
 };
@@ -47,6 +50,7 @@ export function CaptureSessionProvider({children}: Props) {
   const [layout, setLayout] = useState<CaptureLayout | null>(null);
   const [shots, setShots] = useState<string[]>([]);
   const [selection, setSelection] = useState<number[]>([]);
+  const [video, setVideo] = useState<string | null>(null);
 
   const cutCount = layout ? CUT_COUNT[layout] : 0;
 
@@ -79,11 +83,22 @@ export function CaptureSessionProvider({children}: Props) {
       cutCount,
       shots,
       selection,
+      video,
+      selectLayout,
+      addShot,
+      setVideo,
+      toggleSelection,
+    }),
+    [
+      layout,
+      cutCount,
+      shots,
+      selection,
+      video,
       selectLayout,
       addShot,
       toggleSelection,
-    }),
-    [layout, cutCount, shots, selection, selectLayout, addShot, toggleSelection],
+    ],
   );
 
   return (

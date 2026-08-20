@@ -15,4 +15,11 @@ module.exports = {
   usePhotoOutput: () => ({
     capturePhotoToFile: jest.fn(),
   }),
+  useVideoOutput: () => ({
+    createRecorder: jest.fn(async () => ({
+      isRecording: false,
+      startRecording: jest.fn(),
+      stopRecording: jest.fn(),
+    })),
+  }),
 };

@@ -1,12 +1,15 @@
 import React from 'react';
 import {Image, StyleSheet, Text, View} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {images} from '../assets';
 import PrimaryButton from '../components/PrimaryButton';
+import type {ShootNavigation} from '../navigation/types';
 import {colors, fonts, fontSize} from '../theme';
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation<ShootNavigation>();
 
   return (
     <View style={[styles.container, {paddingTop: insets.top}]}>
@@ -16,7 +19,11 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.actions}>
-        <PrimaryButton label="촬영하기" onPress={() => {}} />
+        <PrimaryButton
+          label="촬영하기"
+          onPress={() => navigation.navigate('Guide')}
+        />
+        {/* 프레임 만들기는 시안이 없어 아직 목적지가 정해지지 않았다. (SR-09 / OQ-03) */}
         <PrimaryButton
           label="프레임 만들기"
           onPress={() => {}}

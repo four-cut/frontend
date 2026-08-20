@@ -6,8 +6,3 @@ export const TABS = [
   {name: 'Shoot' as const, label: '찰칵', icon: images.tabCamera},
   {name: 'Gallery' as const, label: '갤러리', icon: images.tabGallery},
 ];
-
-export type RootTabParamList = {
-  Shoot: undefined;
-  Gallery: undefined;
-};

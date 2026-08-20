@@ -332,7 +332,7 @@ M1~M3은 네이티브 재빌드 없이 Fast Refresh로 진행할 수 있다. M4�
 ### M6 · 로고·저장·인쇄
 
 - [x] 촬영 세션 녹화 — 8장을 찍는 과정을 `useVideoOutput` 으로 담는다 (`OQ-01`)
-- [ ] 영상 배속 — 타임랩스로 만들 방식 결정 필요 (`OQ-10`)
+- [x] 영상 2배속 — 앱 내 `VideoSpeed` TurboModule (Android 만, `OQ-11`)
 - [ ] SR-07 — 로고 칩 목록, 선택 시 미리보기 즉시 반영
 - [ ] 합성 결과를 파일로 내보내기 (지금은 data URI)
 - [ ] 앨범 저장 및 미디어 권한 처리
@@ -367,4 +367,5 @@ M1~M3은 네이티브 재빌드 없이 Fast Refresh로 진행할 수 있다. M4�
 | `OQ-07` | **카메라 권한 거부 시 처리.** 촬영이 핵심이라 거부 시 대체 경로가 없다. 설정 이동 안내 화면이 필요하다 | M4 |
 | `OQ-08` | **커스텀 로고 목록.** `kakao`·`KWDC`가 예시인지 고정 목록인지, 서드파티 브랜드 로고 사용에 문제가 없는지 확인 필요 | M6 |
 | `OQ-09` | **인쇄 화면이 OS 제공인지 확정.** 앱 화면으로 만들어야 한다면 M6 범위가 크게 늘어난다 | M6 |
-| `OQ-10` | **영상 배속 방식.** 세션 녹화는 등속으로 저장된다(6초×8 ≈ 48초). 타임랩스로 만들려면 재인코딩이 필요한데 `ffmpeg-kit`이 2025년에 폐기됐고 드롭인 대체재가 없다. ① 유지보수 포크 사용(APK +30~50MB, Windows NDK 빌드 리스크) ② Android `MediaCodec`/iOS `AVAssetWriter` 네이티브 모듈 직접 작성 ③ 등속으로 저장하고 배속은 보류 — 셋 중 결정 필요 | M6 |
+| ~~`OQ-10`~~ | **해결.** **2배속**으로 정했다. `ffmpeg` 대신 앱 안에 TurboModule(`VideoSpeed`)을 만들어 `MediaExtractor`/`MediaMuxer`로 표시 시각만 다시 쓴다. 재인코딩이 없어 화질 손실도 없고 APK도 안 늘어난다. **다만 Android 구현만 있다** → `OQ-11` | — |
+| `OQ-11` | **`VideoSpeed` 모듈의 iOS 구현이 없다.** 현재 iOS 에서는 `TurboModuleRegistry.get` 이 null 을 돌려주고 등속 영상이 그대로 저장된다. iOS 는 `AVMutableComposition.scaleTimeRange` 로 같은 일을 짧게 처리할 수 있다 | iOS 대응 시 |

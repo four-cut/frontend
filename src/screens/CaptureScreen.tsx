@@ -12,6 +12,7 @@ import {
 } from 'react-native-vision-camera';
 
 import {images} from '../assets';
+import {speedUpSessionVideo} from '../capture/videoSpeed';
 import type {CaptureNavigation} from '../navigation/types';
 import {
   SHOT_COUNT,
@@ -101,7 +102,10 @@ export default function CaptureScreen() {
       const created = await videoOutput.createRecorder({});
       recorder.current = created;
       await created.startRecording(
-        filePath => setVideo(`file://${filePath}`),
+        filePath => {
+          // 녹화가 끝나면 배속본으로 바꿔 세션에 넣는다.
+          speedUpSessionVideo(filePath).then(setVideo);
+        },
         () => {
           // 영상 실패가 사진 촬영을 막지는 않는다.
         },

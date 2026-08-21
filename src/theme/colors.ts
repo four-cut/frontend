@@ -8,4 +8,6 @@ export const colors = {
   textMuted: '#9AA0AC',
   /** 탭바 상단 구분선 */
   divider: '#EDEEF0',
+  /** 아직 사진이 안 들어간 빈 슬롯 — 레이아웃 미리보기, 사진 선택 화면 */
+  slot: '#D9D9D9',
 } as const;

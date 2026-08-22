@@ -51,7 +51,6 @@ const styles = StyleSheet.create({
   wordmark: {
     fontSize: fontSize.wordmark,
     lineHeight: fontSize.wordmark * 1.2,
-    fontWeight: '900',
     fontFamily: fonts.display,
     color: colors.textPrimary,
     includeFontPadding: false,

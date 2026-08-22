@@ -222,7 +222,6 @@ const styles = StyleSheet.create({
   countdown: {
     fontSize: fontSize.countdown,
     lineHeight: fontSize.countdown * 1.2,
-    fontWeight: '900',
     fontFamily: fonts.display,
     color: colors.textPrimary,
     includeFontPadding: false,
@@ -233,7 +232,6 @@ const styles = StyleSheet.create({
   },
   progress: {
     fontSize: fontSize.progress,
-    fontWeight: '900',
     fontFamily: fonts.display,
     color: colors.textPrimary,
     includeFontPadding: false,
@@ -254,7 +252,6 @@ const styles = StyleSheet.create({
   shootLabel: {
     color: colors.white,
     fontSize: fontSize.button,
-    fontWeight: '700',
     fontFamily: fonts.bold,
     includeFontPadding: false,
   },
@@ -282,7 +279,6 @@ const styles = StyleSheet.create({
   },
   fallbackText: {
     fontSize: 18,
-    fontWeight: '700',
     fontFamily: fonts.bold,
     color: colors.textMuted,
     includeFontPadding: false,

@@ -31,6 +31,31 @@
 >
 > 사실이라면 **인쇄하기 버튼은 네이티브 print API 호출만 하면 된다.** → `OQ-09`
 
+### 백엔드 연계
+
+`four-cut/backend` (Spring Boot, `http://fourcut.duckdns.org:8080`) 가 프레임 규격과 합성을 갖고 있다. **클라이언트는 촬영본을 올리고 배치를 알려준 뒤 합성을 요청하는 역할이다.**
+
+| 엔드포인트 | 역할 |
+| --- | --- |
+| `GET /api/frames?orientation=` | 프레임 목록 |
+| `GET /api/frames/{frameId}` | 캔버스 크기 + 슬롯 좌표(`x,y,width,height`) |
+| `POST /api/sessions` | 세션 생성 (`frameId` → `requiredShotCount`) |
+| `POST /api/sessions/{id}/photos?shotIndex=` | 촬영본 1장 업로드 (multipart, part 이름 `file`) |
+| `GET /api/sessions/{id}/photos` | 촬영본 목록 (`photoId` 확보용) |
+| `PUT /api/sessions/{id}/arrangement` | 배치 저장 (`slotIndex` ↔ `capturedPhotoId`) |
+| `POST /api/sessions/{id}/composite` | **합성** → `imageUrl` |
+| `POST /api/sessions/{id}/video` | 영상 업로드 → `videoUrl` + `qrCodeUrl` |
+| `GET /api/sessions/{id}` | 상태 + 합성/영상/QR URL |
+
+**이 때문에 아래 것들이 서버 기준으로 바뀌어야 한다.**
+
+- `SR-03` 레이아웃 선택 → **프레임 목록 화면**. 세로형·가로형 2개 하드코딩이 아니라 `GET /api/frames` 결과다
+- `stripGeometry()` 의 시안 하드코딩 비율 → `FrameDetailResponse` 의 `canvasWidth/Height` + 슬롯 좌표
+- `cutCount` 상수(4/3) → `requiredShotCount`
+- **Skia 합성은 최종 산출물이 아니라 미리보기 전용**으로 역할이 줄어든다. 최종본은 서버가 프레임 이미지까지 얹어 만든다
+
+> **주의 — 평문 HTTP다.** 디버그 빌드는 `usesCleartextTraffic` 이 켜져 있어 그대로 붙지만, **릴리스 빌드는 Android 가 막는다.** 배포 전에 https 로 바꾸거나 network security config 를 넣어야 한다.
+
 ---
 
 ## 2. 용어
@@ -172,7 +197,7 @@
 
 ### SR-09 · 프레임 만들기
 
-홈의 두 번째 CTA와 `Frame-4`의 아웃라인 박스에 같은 문구가 등장한다. **시안이 없어 정의 불가.** 두 진입점이 같은 기능인지부터 확인 필요 → `OQ-03`
+홈의 두 번째 CTA와 `Frame-4`의 아웃라인 박스에 같은 문구가 등장한다. **독립 기능으로 확정됐다** — 전용 페이지와 저장 API가 별도로 개발 중이다. 만들어진 프레임은 `GET /api/frames` 로 촬영 플로우에 들어온다.
 
 ---
 
@@ -296,11 +321,19 @@ M1~M3은 네이티브 재빌드 없이 Fast Refresh로 진행할 수 있다. M4�
 
 ### M2 · 디자인 시스템
 
-- [ ] 디스플레이·본문 폰트 파일 확보 *(시안의 둥근 고딕 — 폰트 식별 필요)*
-- [ ] `assets/fonts` 배치 후 `npx react-native-asset` 실행
-- [ ] `typography.ts`의 `regular`·`bold`·`display` 실제 패밀리명으로 교체
-- [ ] 홈 화면 적용 결과 확인 — 워드마크 자간·행간 점검
+- [x] **임시** 폰트 적용 — Jua (SIL OFL). 시안의 실제 서체가 확정되면 교체
+- [x] `assets/fonts` 배치 후 `npx react-native-asset` 실행
+- [x] `typography.ts`의 `regular`·`bold`·`display` 교체
+- [x] 홈·안내사항 적용 결과 확인
 - [x] `fontSize` 스케일에 제목·본문·캡션 값 추가
+- [ ] 시안의 실제 서체로 교체
+
+> **함정 — `fontFamily` 와 `fontWeight` 를 같이 쓰면 안 된다.**
+> 굵기가 하나뿐인 폰트에 `fontWeight` 를 주면 Android 가 맞는 굵기를 못 찾고
+> **경고 없이 시스템 폰트로 되돌아간다.** 화면에는 평범한 고딕으로 보여서
+> 적용된 줄 알기 쉽다. 실제로 이 프로젝트에서 한 번 겪었고, `src/` 전체에서
+> `fontWeight` 를 걷어내고서야 폰트가 나왔다. 굵기가 여럿인 폰트로 교체할 때
+> 다시 검토할 것.
 
 ### M3 · 정적 화면 3종
 
@@ -359,7 +392,7 @@ M1~M3은 네이티브 재빌드 없이 Fast Refresh로 진행할 수 있다. M4�
 | ID | 내용 | 영향 |
 | --- | --- | --- |
 | ~~`OQ-01`~~ | **해결.** 「영상」은 **8장을 찍는 과정을 담은 녹화본**이고, 인생네컷처럼 **빠르게 지나가는 타임랩스**로 만든다. 세션 녹화는 구현했고, 속도 조절이 `OQ-10` 으로 남았다 | — |
-| `OQ-02` | **QR 저장 플로우.** SR-02 본문 3번이 QR을 명시하나 화면 시안이 없다. 오프라인 부스 동작을 그대로 옮긴 문구라면 앱에서는 불필요할 수 있다 | M6 |
+| ~~`OQ-02`~~ | **해결.** QR은 실제 기능이다. 서버가 `POST /api/sessions/{id}/video` 응답으로 `qrCodeUrl`을 만들어 준다 | — |
 | `OQ-03` | **프레임 만들기의 정체.** 홈의 두 번째 CTA와 `Frame-4`의 아웃라인 박스가 같은 기능인지, 커스텀 로고를 직접 만드는 화면인지 확정 필요 | SR-09 |
 | `OQ-04` | **가로형 촬영 매수.** 세로형은 8장 촬영 후 4장 선택. 가로형은 3컷인데 촬영도 8장인지 (`Frame-9`의 `5/8` 표기) 확인 필요 | M4 |
 | `OQ-05` | **갤러리 화면 시안 부재.** 하단 탭의 절반을 차지하는데 디자인이 없다 | M8 |

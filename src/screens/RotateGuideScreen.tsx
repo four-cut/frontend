@@ -44,7 +44,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: fontSize.calloutTitle,
     lineHeight: fontSize.calloutTitle * 1.2,
-    fontWeight: '900',
     fontFamily: fonts.display,
     color: colors.textPrimary,
     includeFontPadding: false,

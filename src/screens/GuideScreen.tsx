@@ -65,7 +65,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: fontSize.screenTitle,
     lineHeight: fontSize.screenTitle * 1.2,
-    fontWeight: '900',
     fontFamily: fonts.display,
     color: colors.textPrimary,
     includeFontPadding: false,
@@ -81,7 +80,6 @@ const styles = StyleSheet.create({
   noticeNumber: {
     minWidth: 22,
     fontSize: fontSize.listItem,
-    fontWeight: '700',
     fontFamily: fonts.bold,
     color: colors.textPrimary,
     includeFontPadding: false,
@@ -89,7 +87,6 @@ const styles = StyleSheet.create({
   noticeText: {
     flex: 1,
     fontSize: fontSize.listItem,
-    fontWeight: '700',
     fontFamily: fonts.bold,
     color: colors.textPrimary,
     includeFontPadding: false,

@@ -136,7 +136,6 @@ const styles = StyleSheet.create({
   },
   status: {
     fontSize: 14,
-    fontWeight: '700',
     fontFamily: fonts.bold,
     color: colors.textMuted,
     includeFontPadding: false,
@@ -147,14 +146,12 @@ const styles = StyleSheet.create({
   },
   sectionLabel: {
     fontSize: 15,
-    fontWeight: '700',
     fontFamily: fonts.bold,
     color: colors.textPrimary,
     includeFontPadding: false,
   },
   pending: {
     fontSize: 13,
-    fontWeight: '700',
     fontFamily: fonts.bold,
     color: colors.textMuted,
     includeFontPadding: false,

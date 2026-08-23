@@ -79,7 +79,7 @@ android {
 
     namespace "com.fourcut"
     defaultConfig {
-        applicationId "com.fourcut"
+        applicationId "com.fourcut.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

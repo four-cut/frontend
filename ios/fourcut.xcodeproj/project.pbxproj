@@ -264,6 +264,7 @@
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = fourcut/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				KAKAO_NATIVE_APP_KEY = f3b10a84d493da47c47a5196de06439b;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -294,6 +295,7 @@
 				DEVELOPMENT_TEAM = 9XP9Q9NGAM;
 				INFOPLIST_FILE = fourcut/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				KAKAO_NATIVE_APP_KEY = f3b10a84d493da47c47a5196de06439b;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

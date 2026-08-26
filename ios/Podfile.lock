@@ -1,4 +1,5 @@
 PODS:
+  - Alamofire (5.9.1)
   - boost (1.84.0):
     - ReactNativeDependencies
   - DoubleConversion (1.1.6):
@@ -14,6 +15,69 @@ PODS:
   - hermes-engine (250829098.0.16):
     - hermes-engine/Pre-built (= 250829098.0.16)
   - hermes-engine/Pre-built (250829098.0.16)
+  - kakao-login (6.0.4):
+    - KakaoSDKAuth (= 2.22.7)
+    - KakaoSDKCommon (= 2.22.7)
+    - KakaoSDKUser (= 2.22.7)
+    - React
+  - KakaoSDKAuth (2.22.7):
+    - KakaoSDKCommon (= 2.22.7)
+  - KakaoSDKCommon (2.22.7):
+    - KakaoSDKCommon/Common (= 2.22.7)
+    - KakaoSDKCommon/Network (= 2.22.7)
+  - KakaoSDKCommon/Common (2.22.7)
+  - KakaoSDKCommon/Network (2.22.7):
+    - Alamofire (~> 5.9.0)
+    - KakaoSDKCommon/Common (= 2.22.7)
+  - KakaoSDKUser (2.22.7):
+    - KakaoSDKAuth (= 2.22.7)
+  - NitroImage (0.15.1):
+    - hermes-engine
+    - NitroModules
+    - RCTRequired
+    - RCTTypeSafety
+    - React-bridging
+    - React-callinvoker
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
+  - NitroModules (0.36.5):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-bridging
+    - React-callinvoker
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
   - RCT-Folly (2024.11.18.00):
     - RCT-Folly/Default (= 2024.11.18.00)
     - ReactNativeDependencies
@@ -1315,6 +1379,30 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
+  - react-native-skia (2.11.0):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React
+    - React-bridging
+    - React-callinvoker
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
   - React-NativeModulesApple (0.87.0):
     - hermes-engine
     - React-bridging
@@ -1673,6 +1761,28 @@ PODS:
     - React-utils (= 0.87.0)
     - ReactNativeDependencies
   - ReactNativeDependencies (0.87.0)
+  - RNKeychain (10.0.0):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-bridging
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
   - RNScreens (4.27.0):
     - hermes-engine
     - RCTRequired
@@ -1722,6 +1832,31 @@ PODS:
     - Yoga
   - SocketRocket (0.7.1):
     - ReactNativeDependencies
+  - VisionCamera (5.2.2):
+    - hermes-engine
+    - NitroImage
+    - NitroModules
+    - RCTRequired
+    - RCTTypeSafety
+    - React-bridging
+    - React-callinvoker
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
   - Yoga (0.0.0):
     - React-Core-prebuilt
 
@@ -1733,6 +1868,9 @@ DEPENDENCIES:
   - fmt (from `build/rndeps-facades/fmt`)
   - glog (from `build/rndeps-facades/glog`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
+  - "kakao-login (from `../node_modules/@react-native-seoul/kakao-login`)"
+  - NitroImage (from `../node_modules/react-native-nitro-image`)
+  - NitroModules (from `../node_modules/react-native-nitro-modules`)
   - RCT-Folly (from `build/rndeps-facades/RCT-Folly`)
   - RCTDeprecation (from `build/rncore-facades/RCTDeprecation`)
   - RCTRequired (from `build/rncore-facades/RCTRequired`)
@@ -1775,6 +1913,7 @@ DEPENDENCIES:
   - React-microtasksnativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
   - React-mutationobservernativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/mutationobserver`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
+  - "react-native-skia (from `../node_modules/@shopify/react-native-skia`)"
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
   - React-networking (from `../node_modules/react-native/ReactCommon/react/networking`)
   - React-oscompat (from `../node_modules/react-native/ReactCommon/oscompat`)
@@ -1811,9 +1950,18 @@ DEPENDENCIES:
   - ReactCodegen (from `build/generated/ios/ReactCodegen`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - ReactNativeDependencies (from `../node_modules/react-native/third-party-podspecs/ReactNativeDependencies.podspec`)
+  - RNKeychain (from `../node_modules/react-native-keychain`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - SocketRocket (from `build/rndeps-facades/SocketRocket`)
+  - VisionCamera (from `../node_modules/react-native-vision-camera`)
   - Yoga (from `build/rncore-facades/Yoga`)
+
+SPEC REPOS:
+  trunk:
+    - Alamofire
+    - KakaoSDKAuth
+    - KakaoSDKCommon
+    - KakaoSDKUser
 
 EXTERNAL SOURCES:
   boost:
@@ -1831,6 +1979,12 @@ EXTERNAL SOURCES:
   hermes-engine:
     :podspec: "../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec"
     :tag: hermes-v250829098.0.16
+  kakao-login:
+    :path: "../node_modules/@react-native-seoul/kakao-login"
+  NitroImage:
+    :path: "../node_modules/react-native-nitro-image"
+  NitroModules:
+    :path: "../node_modules/react-native-nitro-modules"
   RCT-Folly:
     :path: build/rndeps-facades/RCT-Folly
   RCTDeprecation:
@@ -1913,6 +2067,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/react/nativemodule/mutationobserver"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
+  react-native-skia:
+    :path: "../node_modules/@shopify/react-native-skia"
   React-NativeModulesApple:
     :path: "../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios"
   React-networking:
@@ -1985,14 +2141,19 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   ReactNativeDependencies:
     :podspec: "../node_modules/react-native/third-party-podspecs/ReactNativeDependencies.podspec"
+  RNKeychain:
+    :path: "../node_modules/react-native-keychain"
   RNScreens:
     :path: "../node_modules/react-native-screens"
   SocketRocket:
     :path: build/rndeps-facades/SocketRocket
+  VisionCamera:
+    :path: "../node_modules/react-native-vision-camera"
   Yoga:
     :path: build/rncore-facades/Yoga
 
 SPEC CHECKSUMS:
+  Alamofire: f36a35757af4587d8e4f4bfa223ad10be2422b8c
   boost: 8502bfdc46e2804408af2e163049ece181009af4
   DoubleConversion: 501a575c40c0b50c89685762dd3e415e6bb26fb0
   fast_float: 7c925d1cebf8328d4018d061f49377e9f887e3b4
@@ -2000,6 +2161,12 @@ SPEC CHECKSUMS:
   fmt: ba0886e864ebb21d14c98b2e12e164b8002f5b93
   glog: 3cf7cb46f743c4bc758ae3e6d9c15bd1b4cfd6d4
   hermes-engine: 6a26e94b4a974cbadc751eed9caa12624c38f226
+  kakao-login: 5feac69c76f8c1f2886606bdb6a408a8d91ad0dc
+  KakaoSDKAuth: 45204252ff7c379c0f86c5573f97ec36885afca0
+  KakaoSDKCommon: 132164a6bac8bcd3a4346d3bf777f34f8f39fdca
+  KakaoSDKUser: 4c9cf1da78710d19d0b2c2dd32d1a44c544cdfa4
+  NitroImage: ed81835846ad87cccfab6234316a8faebe0032a5
+  NitroModules: 49b1952f34e45c227e4a20d0b6510502fe6737d3
   RCT-Folly: 82921e585c0400eda46fac1068297aa9dfb035e4
   RCTDeprecation: 6d66040b74f4be203495adda55b49c1a25190291
   RCTRequired: ebf172e0b04196922ba4640458f9926c1bb34012
@@ -2041,6 +2208,7 @@ SPEC CHECKSUMS:
   React-microtasksnativemodule: 512d9f7c6b66574d90832a6b10b6102d4a8fdf30
   React-mutationobservernativemodule: 2c5abeb9a4ae316ba6d9420ef8d9baa81faa9d56
   react-native-safe-area-context: f17f4ec987ecdd130820a4a850498b874fb70388
+  react-native-skia: 9e9b6d13824c7d38e043ad78ad37bb205c2ba833
   React-NativeModulesApple: 22b2f3e1538ceb1aab1ab182ccb0666ea2ec36ad
   React-networking: b58b3098d4a626f88bbaeaf6bf5e67b18ff39089
   React-oscompat: 72573ceb65b6c6c6bc34e51e0df8f44c91081a6d
@@ -2074,11 +2242,13 @@ SPEC CHECKSUMS:
   React-viewtransitionnativemodule: e49acd8b47e151107ff00f704604ea45c19aefff
   React-webperformancenativemodule: 5980edf76ca86ca218acff067891358e671934bc
   ReactAppDependencyProvider: ed5609dc8e30eeade35ba8e43128781ee8fdf4de
-  ReactCodegen: dca6757feb1e977c5cf6708872d7fe48b5a45528
+  ReactCodegen: 8fe6c1345ea9b474f1496eb56a605fd66b46c695
   ReactCommon: 5f5a302748322015f2e3334869cdd9b4d0395846
   ReactNativeDependencies: ec5530432d8191b38e278117d498aaff05ea9d6f
+  RNKeychain: 551d42b0ef53426f82551a0cc961cfa10ad33afa
   RNScreens: a2103f13fa603c405092daf70ca4eb3a6291fd6d
   SocketRocket: 37aec555668fb852ec12e3c0de59a86ca58f0871
+  VisionCamera: c11a2f0ed90ca3f3957edd30746e698a46f92557
   Yoga: d1c536142c5ff8ec8cd856ab2a7c227a1d875c8e
 
 PODFILE CHECKSUM: ba3e4c8fea305b883d65e1fed7cd24316917fb01

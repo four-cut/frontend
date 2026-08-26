@@ -1,6 +1,7 @@
 import {useCallback, useState} from 'react';
 
 import {useAuth} from './AuthContext';
+import {getGoogleLoginRequest, googleSignOut, googleUnlink} from './providers/google';
 import {getKakaoLoginRequest, kakaoSignOut, kakaoUnlink} from './providers/kakao';
 import {SignInCancelled} from './providers/errors';
 import type {Provider} from './types';
@@ -44,12 +45,14 @@ export function useSocialSignIn() {
    * 로그아웃이고, 여기서 막히면 사용자가 로그아웃을 못 하게 된다.
    */
   const signOutEverywhere = useCallback(async () => {
-    if (member?.provider === 'KAKAO') {
-      try {
+    try {
+      if (member?.provider === 'KAKAO') {
         await kakaoSignOut();
-      } catch {
-        // 무시. 아래에서 우리 세션은 확실히 지운다.
+      } else if (member?.provider === 'GOOGLE') {
+        await googleSignOut();
       }
+    } catch {
+      // 무시. 아래에서 우리 세션은 확실히 지운다.
     }
     await signOut();
   }, [member, signOut]);
@@ -61,6 +64,8 @@ export function useSocialSignIn() {
 export async function unlinkProvider(provider: Provider): Promise<void> {
   if (provider === 'kakao') {
     await kakaoUnlink();
+  } else if (provider === 'google') {
+    await googleUnlink();
   }
 }
 
@@ -69,8 +74,7 @@ function requestFor(provider: Provider) {
     case 'kakao':
       return getKakaoLoginRequest();
     case 'google':
-      // TODO: 구글 연동 시 구현. ID 토큰을 넘겨야 한다.
-      return Promise.reject(new Error('구글 로그인은 아직 준비되지 않았다'));
+      return getGoogleLoginRequest();
     case 'apple':
       // Apple Developer Program 이 없어 보류 중이다. types.ts 참고.
       return Promise.reject(new Error('애플 로그인은 아직 준비되지 않았다'));

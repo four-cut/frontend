@@ -2,6 +2,9 @@ import React, {useEffect, useState} from 'react';
 import {
   ActivityIndicator,
   Image,
+  Linking,
+  Modal,
+  Pressable,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -13,6 +16,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {composeStrip} from '../capture/composeStrip';
 import {ALBUM_NAME, saveToAlbum} from '../capture/saveToAlbum';
+import NativeMediaFile from '../specs/NativeMediaFile';
 import NativePrint from '../specs/NativePrint';
 import {STRIP_ASPECT} from '../capture/stripLayout';
 import HomeButton from '../components/HomeButton';
@@ -47,6 +51,7 @@ export default function LogoSelectScreen() {
     null,
   );
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [zoomed, setZoomed] = useState(false);
 
   useEffect(() => {
     if (!layout) {
@@ -119,6 +124,14 @@ export default function LogoSelectScreen() {
     failed: '다시 저장하기',
   }[saveState];
 
+  const handleShare = () => {
+    if (!strip) {
+      return;
+    }
+    // 시트를 띄우는 데까지가 우리 몫이라 실패해도 조용히 넘어간다.
+    NativeMediaFile?.shareFile(strip, 'image/png').catch(() => {});
+  };
+
   const goHome = () => {
     navigation.getParent<RootNavigation>()?.navigate('MainTabs', {
       screen: 'Shoot',
@@ -135,7 +148,11 @@ export default function LogoSelectScreen() {
       </View>
 
       <View style={styles.previewArea}>
-        <View
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="결과물 크게 보기"
+          disabled={!strip}
+          onPress={() => setZoomed(true)}
           style={[
             styles.sheet,
             {width: sheetWidth, height: sheetWidth * STRIP_ASPECT},
@@ -151,7 +168,7 @@ export default function LogoSelectScreen() {
           ) : (
             <ActivityIndicator color={colors.textPrimary} />
           )}
-        </View>
+        </Pressable>
       </View>
 
       <View style={[styles.actions, {paddingBottom: insets.bottom + 16}]}>
@@ -177,14 +194,50 @@ export default function LogoSelectScreen() {
           </Text>
         ) : null}
 
+        {saveState === 'saved' ? (
+          <PrimaryButton label="공유하기" onPress={handleShare} />
+        ) : null}
+
         {saveState === 'failed' && saveError ? (
-          <Text style={styles.saveError}>{saveError}</Text>
+          <>
+            <Text style={styles.saveError}>{saveError}</Text>
+            {/* 권한이 막힌 거라면 어디서 풀어야 하는지 알려 준다. */}
+            {saveError.includes('권한') ? (
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => Linking.openSettings()}
+                style={styles.settingsLink}>
+                <Text style={styles.settingsLinkText}>설정에서 권한 허용</Text>
+              </Pressable>
+            ) : null}
+          </>
         ) : null}
 
         {saveState === 'idle' && !video ? (
           <Text style={styles.saveNote}>영상은 아직 준비 중입니다</Text>
         ) : null}
       </View>
+
+      {/* 저장 전에 결과물을 크게 확인하고 싶은 건 자연스러운 요구다. */}
+      <Modal
+        visible={zoomed}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setZoomed(false)}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="닫기"
+          onPress={() => setZoomed(false)}
+          style={styles.zoomBackdrop}>
+          {strip ? (
+            <Image
+              source={{uri: strip}}
+              style={styles.zoomImage}
+              resizeMode="contain"
+            />
+          ) : null}
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -243,6 +296,28 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bold,
     color: colors.textMuted,
     includeFontPadding: false,
+  },
+  settingsLink: {
+    alignSelf: 'flex-start',
+    paddingVertical: 4,
+  },
+  settingsLinkText: {
+    fontSize: 13,
+    fontFamily: fonts.bold,
+    color: colors.textPrimary,
+    textDecorationLine: 'underline',
+    includeFontPadding: false,
+  },
+  zoomBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.92)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  zoomImage: {
+    width: '100%',
+    height: '100%',
   },
   saveError: {
     fontSize: 13,

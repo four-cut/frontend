@@ -1,6 +1,8 @@
 package com.fourcut.mediafile
 
+import android.content.Intent
 import android.util.Base64
+import androidx.core.content.FileProvider
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.fourcut.specs.NativeMediaFileSpec
@@ -34,8 +36,47 @@ class MediaFileModule(reactContext: ReactApplicationContext) :
     }
   }
 
+  override fun shareFile(fileUri: String, mimeType: String, promise: Promise) {
+    val activity = reactApplicationContext.currentActivity
+    if (activity == null) {
+      promise.reject(SHARE_ERROR_CODE, "화면이 없어 공유를 시작할 수 없습니다.")
+      return
+    }
+
+    try {
+      val file = File(fileUri.removePrefix("file://"))
+      if (!file.exists()) {
+        promise.reject(SHARE_ERROR_CODE, "공유할 파일을 찾을 수 없습니다.")
+        return
+      }
+
+      // 캐시 파일을 그대로 넘기면 FileUriExposedException 이 난다.
+      val shared =
+          FileProvider.getUriForFile(
+              reactApplicationContext,
+              "${reactApplicationContext.packageName}.fileprovider",
+              file,
+          )
+
+      val intent =
+          Intent(Intent.ACTION_SEND).apply {
+            type = mimeType
+            putExtra(Intent.EXTRA_STREAM, shared)
+            // 받는 앱이 이 URI 를 읽을 수 있게 일회성 권한을 준다.
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+          }
+
+      activity.startActivity(Intent.createChooser(intent, "공유하기"))
+      // 시트를 띄우는 데까지가 우리 몫이다. 이후 취소는 오류가 아니다.
+      promise.resolve(null)
+    } catch (error: Exception) {
+      promise.reject(SHARE_ERROR_CODE, error.message, error)
+    }
+  }
+
   companion object {
     const val NAME = "MediaFile"
     private const val ERROR_CODE = "MEDIA_FILE_WRITE_FAILED"
+    private const val SHARE_ERROR_CODE = "MEDIA_FILE_SHARE_FAILED"
   }
 }

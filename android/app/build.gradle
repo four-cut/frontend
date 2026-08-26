@@ -118,6 +118,9 @@ dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
 
+    // OS 인쇄 시트를 띄우는 PrintHelper. (PrintModule)
+    implementation("androidx.print:print:1.0.0")
+
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
     } else {

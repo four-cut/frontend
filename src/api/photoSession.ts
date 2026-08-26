@@ -2,25 +2,19 @@ import {apiGet, apiSend, apiUpload} from './client';
 import type {
   CapturedPhoto,
   CompositeImage,
-  FrameDetail,
-  FrameOrientation,
-  FrameSummary,
   SessionCreated,
   SessionStatus,
   SlotAssignment,
   VideoUploaded,
 } from './types';
 
-/** 프레임 목록. orientation 을 주면 그 방향만 걸러 온다. */
-export function getFrames(orientation?: FrameOrientation) {
-  const query = orientation ? `?orientation=${orientation}` : '';
-  return apiGet<FrameSummary[]>(`/api/frames${query}`);
-}
-
-/** 프레임 상세. 캔버스 크기와 슬롯 좌표가 여기 있다. */
-export function getFrame(frameId: number) {
-  return apiGet<FrameDetail>(`/api/frames/${frameId}`);
-}
+/**
+ * 촬영 세션 API.
+ *
+ * 프레임 조회는 `./frames` 의 fetchFrames / fetchFrameDetail 을 쓴다.
+ * 그쪽에 서버 없이 개발하기 위한 로컬 목업 스위치가 들어 있어서
+ * 여기서 따로 부르면 그 스위치를 우회하게 된다.
+ */
 
 /** 세션 시작. 프레임이 컷 수(requiredShotCount)를 정한다. */
 export function createSession(frameId: number) {
@@ -70,10 +64,11 @@ export function uploadVideo(
 ) {
   const query =
     durationSeconds === undefined ? '' : `?durationSeconds=${durationSeconds}`;
-  return apiUpload<VideoUploaded>(
-    `/api/sessions/${sessionId}/video${query}`,
-    {uri: fileUri, name: 'session.mp4', type: 'video/mp4'},
-  );
+  return apiUpload<VideoUploaded>(`/api/sessions/${sessionId}/video${query}`, {
+    uri: fileUri,
+    name: 'session.mp4',
+    type: 'video/mp4',
+  });
 }
 
 /** 세션 상태와 합성/영상/QR URL. */

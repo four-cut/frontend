@@ -1,5 +1,6 @@
 import {ImageFormat, Skia} from '@shopify/react-native-skia';
 
+import MediaFile from '../specs/NativeMediaFile';
 import type {CaptureLayout} from '../state/CaptureSessionContext';
 import {coverCrop, EXPORT_WIDTH, stripGeometry} from './stripLayout';
 
@@ -9,7 +10,8 @@ import {coverCrop, EXPORT_WIDTH, stripGeometry} from './stripLayout';
  * 화면을 캡처하는 방식이면 결과물이 화면 해상도에 묶여 인쇄 품질(NFR-02)을
  * 낼 수 없다. 그래서 오프스크린 서피스에 직접 그린다.
  *
- * @returns PNG data URI
+ * @returns 합성 결과의 `file://` 경로. 네이티브 모듈이 없는 환경에서는
+ *   미리보기용 data URI 를 돌려주며, 이 경우 앨범 저장과 인쇄는 할 수 없다.
  */
 export async function composeStrip(
   layout: CaptureLayout,
@@ -56,7 +58,13 @@ export async function composeStrip(
     );
   }
 
-  // 로고는 M6 에서 이 아래 여백에 그린다.
+  // 로고는 아래 여백에 그린다. (담당자 작업 중)
   const snapshot = surface.makeImageSnapshot();
-  return `data:image/png;base64,${snapshot.encodeToBase64(ImageFormat.PNG, 100)}`;
+  const base64 = snapshot.encodeToBase64(ImageFormat.PNG, 100);
+
+  // 앨범 저장과 인쇄가 모두 파일 경로를 받으므로 한 번 떨군다.
+  if (MediaFile) {
+    return await MediaFile.writeBase64(base64, 'png');
+  }
+  return `data:image/png;base64,${base64}`;
 }

@@ -118,7 +118,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: fontSize.screenTitle,
     lineHeight: fontSize.screenTitle * 1.2,
-    fontWeight: '900',
     fontFamily: fonts.display,
     color: colors.textPrimary,
     includeFontPadding: false,
@@ -132,7 +131,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 8,
     fontSize: 15,
-    fontWeight: '700',
     fontFamily: fonts.bold,
     color: colors.textPrimary,
     includeFontPadding: false,
@@ -168,7 +166,6 @@ const styles = StyleSheet.create({
   badgeLabel: {
     color: colors.white,
     fontSize: 12,
-    fontWeight: '700',
     fontFamily: fonts.bold,
     includeFontPadding: false,
   },

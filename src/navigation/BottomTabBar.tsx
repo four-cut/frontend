@@ -72,7 +72,6 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: fontSize.tabLabel,
-    fontWeight: '700',
     fontFamily: fonts.bold,
     includeFontPadding: false,
   },

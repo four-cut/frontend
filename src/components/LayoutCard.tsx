@@ -1,5 +1,5 @@
-import React from 'react';
-import {Pressable, StyleSheet, Text, View} from 'react-native';
+import React, {useState} from 'react';
+import {Image, Pressable, StyleSheet, Text, View} from 'react-native';
 
 import {CUT_COUNT, type CaptureLayout} from '../state/CaptureSessionContext';
 import {colors, fonts, fontSize} from '../theme';
@@ -22,12 +22,21 @@ const LANDSCAPE_SLOT_HEIGHT = CONTENT_WIDTH / 2.25;
 type Props = {
   layout: CaptureLayout;
   label: string;
+  /** 서버 프레임의 미리보기 이미지. 없거나 로드에 실패하면 슬롯 placeholder로 대체한다. */
+  previewImageUrl?: string;
   onPress: () => void;
 };
 
-export default function LayoutCard({layout, label, onPress}: Props) {
+export default function LayoutCard({
+  layout,
+  label,
+  previewImageUrl,
+  onPress,
+}: Props) {
   const isPortrait = layout === 'portrait';
   const slots = Array.from({length: CUT_COUNT[layout]}, (_, index) => index);
+  const [imageFailed, setImageFailed] = useState(false);
+  const showImage = !!previewImageUrl && !imageFailed;
 
   return (
     <Pressable
@@ -36,14 +45,23 @@ export default function LayoutCard({layout, label, onPress}: Props) {
       onPress={onPress}
       style={({pressed}) => [styles.card, pressed && styles.pressed]}>
       <View style={styles.sheet}>
-        <View style={isPortrait ? styles.portraitSlots : styles.landscapeSlots}>
-          {slots.map(index => (
-            <View
-              key={index}
-              style={isPortrait ? styles.portraitSlot : styles.landscapeSlot}
-            />
-          ))}
-        </View>
+        {showImage ? (
+          <Image
+            source={{uri: previewImageUrl}}
+            style={styles.sheetImage}
+            resizeMode="cover"
+            onError={() => setImageFailed(true)}
+          />
+        ) : (
+          <View style={isPortrait ? styles.portraitSlots : styles.landscapeSlots}>
+            {slots.map(index => (
+              <View
+                key={index}
+                style={isPortrait ? styles.portraitSlot : styles.landscapeSlot}
+              />
+            ))}
+          </View>
+        )}
       </View>
       <Text style={styles.label}>{label}</Text>
     </Pressable>
@@ -69,6 +87,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     padding: SHEET_PADDING,
   },
+  sheetImage: {
+    width: '100%',
+    height: '100%',
+  },
   portraitSlots: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -90,7 +112,6 @@ const styles = StyleSheet.create({
   label: {
     color: colors.white,
     fontSize: fontSize.cardLabel,
-    fontWeight: '700',
     fontFamily: fonts.bold,
     includeFontPadding: false,
   },

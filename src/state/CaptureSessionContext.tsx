@@ -6,9 +6,11 @@ import React, {
   useState,
 } from 'react';
 
+import type {FrameSummary} from '../api/frames';
+
 export type CaptureLayout = 'portrait' | 'landscape';
 
-/** 레이아웃별 컷 수 — 세로형은 2×2, 가로형은 3단 적층. (SR-03) */
+/** 레이아웃별 컷 수 — 서버에서 프레임을 못 받아왔을 때의 최후 폴백. */
 export const CUT_COUNT: Record<CaptureLayout, number> = {
   portrait: 4,
   landscape: 3,
@@ -20,9 +22,16 @@ export const SHOT_COUNT = 8;
 /** 컷 사이 카운트다운 초. (SR-02 안내사항 1번) */
 export const TIMER_SECONDS = 6;
 
+function toCaptureLayout(orientation: FrameSummary['orientation']): CaptureLayout {
+  return orientation === 'PORTRAIT' ? 'portrait' : 'landscape';
+}
+
 type CaptureSession = {
+  /** GET /api/frames 에서 고른 프레임. 선택 전엔 null. */
+  frame: FrameSummary | null;
+  /** frame.orientation 에서 파생. */
   layout: CaptureLayout | null;
-  /** layout 에서 파생. 레이아웃 선택 전에는 0. */
+  /** frame.requiredShotCount 에서 파생. 프레임 선택 전에는 0. */
   cutCount: number;
   /** 촬영본 경로. file:// 스킴을 포함한다. */
   shots: string[];
@@ -30,7 +39,7 @@ type CaptureSession = {
   selection: number[];
   /** 8장을 찍는 과정을 담은 영상. 녹화가 끝나야 채워진다. (OQ-01) */
   video: string | null;
-  selectLayout: (layout: CaptureLayout) => void;
+  selectFrame: (frame: FrameSummary) => void;
   addShot: (path: string) => void;
   setVideo: (path: string) => void;
   /** 이미 고른 사진이면 빼고, 아니면 컷 수까지만 더한다. */
@@ -47,15 +56,16 @@ type Props = {children: React.ReactNode};
  * 언마운트되면서 세션이 자동으로 정리된다. 별도 reset 이 필요 없다.
  */
 export function CaptureSessionProvider({children}: Props) {
-  const [layout, setLayout] = useState<CaptureLayout | null>(null);
+  const [frame, setFrame] = useState<FrameSummary | null>(null);
   const [shots, setShots] = useState<string[]>([]);
   const [selection, setSelection] = useState<number[]>([]);
   const [video, setVideo] = useState<string | null>(null);
 
-  const cutCount = layout ? CUT_COUNT[layout] : 0;
+  const layout = frame ? toCaptureLayout(frame.orientation) : null;
+  const cutCount = frame ? frame.requiredShotCount : 0;
 
-  const selectLayout = useCallback((next: CaptureLayout) => {
-    setLayout(next);
+  const selectFrame = useCallback((next: FrameSummary) => {
+    setFrame(next);
   }, []);
 
   const addShot = useCallback((path: string) => {
@@ -79,23 +89,25 @@ export function CaptureSessionProvider({children}: Props) {
 
   const value = useMemo<CaptureSession>(
     () => ({
+      frame,
       layout,
       cutCount,
       shots,
       selection,
       video,
-      selectLayout,
+      selectFrame,
       addShot,
       setVideo,
       toggleSelection,
     }),
     [
+      frame,
       layout,
       cutCount,
       shots,
       selection,
       video,
-      selectLayout,
+      selectFrame,
       addShot,
       toggleSelection,
     ],

@@ -204,13 +204,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-fourcut/Pods-fourcut-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-fourcut/Pods-fourcut-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -247,13 +243,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-fourcut/Pods-fourcut-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-fourcut/Pods-fourcut-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -285,6 +277,7 @@
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = fourcut/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				KAKAO_NATIVE_APP_KEY = f3b10a84d493da47c47a5196de06439b;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -295,8 +288,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
-				"PRODUCT_BUNDLE_IDENTIFIER[sdk=iphoneos*]" = org.reactjs.native.example.fourcutt;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fourcut.app;
 				PRODUCT_NAME = fourcut;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -316,6 +308,7 @@
 				DEVELOPMENT_TEAM = 9XP9Q9NGAM;
 				INFOPLIST_FILE = fourcut/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				KAKAO_NATIVE_APP_KEY = f3b10a84d493da47c47a5196de06439b;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -326,8 +319,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
-				"PRODUCT_BUNDLE_IDENTIFIER[sdk=iphoneos*]" = org.reactjs.native.example.fourcutt;
+				PRODUCT_BUNDLE_IDENTIFIER = com.fourcut.app;
 				PRODUCT_NAME = fourcut;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_VERSION = 5.0;

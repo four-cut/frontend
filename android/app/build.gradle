@@ -79,7 +79,14 @@ android {
 
     namespace "com.fourcut"
     defaultConfig {
-        applicationId "com.fourcut"
+        applicationId "com.fourcut.app"
+        // 카카오 SDK 는 kakao_app_key 문자열 리소스를 읽고,
+        // 리다이렉트 스킴은 매니페스트 플레이스홀더로 들어간다.
+        // 원본 값은 gradle.properties 에 있다.
+        resValue "string", "kakao_app_key", project.property("KAKAO_NATIVE_APP_KEY")
+        manifestPlaceholders = [
+            KAKAO_NATIVE_APP_KEY: project.property("KAKAO_NATIVE_APP_KEY")
+        ]
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

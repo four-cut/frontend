@@ -33,7 +33,9 @@
 
 ### 백엔드 연계
 
-`four-cut/backend` (Spring Boot, `http://fourcut.duckdns.org:8080`) 가 프레임 규격과 합성을 갖고 있다. **클라이언트는 촬영본을 올리고 배치를 알려준 뒤 합성을 요청하는 역할이다.**
+`four-cut/backend` (Spring Boot, `https://fourcut.duckdns.org`) 가 프레임 규격과 합성을 갖고 있다. **클라이언트는 촬영본을 올리고 배치를 알려준 뒤 합성을 요청하는 역할이다.**
+
+주소는 `src/config/api.ts` 한 곳에만 둔다. 요청은 `authFetch` 로 보내면 로그인 상태일 때 인증 헤더가 붙고 401 이면 토큰을 갱신해 재시도한다. 촬영 세션 API 자체는 인증이 필요 없어서 로그아웃 상태에서도 그대로 동작한다.
 
 | 엔드포인트 | 역할 |
 | --- | --- |
@@ -54,7 +56,7 @@
 - `cutCount` 상수(4/3) → `requiredShotCount`
 - **Skia 합성은 최종 산출물이 아니라 미리보기 전용**으로 역할이 줄어든다. 최종본은 서버가 프레임 이미지까지 얹어 만든다
 
-> **주의 — 평문 HTTP다.** 디버그 빌드는 `usesCleartextTraffic` 이 켜져 있어 그대로 붙지만, **릴리스 빌드는 Android 가 막는다.** 배포 전에 https 로 바꾸거나 network security config 를 넣어야 한다.
+> 2026-08-24 **HTTPS 로 전환됐다.** 이전 주소(`http://fourcut.duckdns.org:8080`)는 더 이상 응답하지 않는다. Let's Encrypt 인증서라 iOS ATS 예외 설정도 필요 없다.
 
 ---
 

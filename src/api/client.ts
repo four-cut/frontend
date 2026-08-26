@@ -1,11 +1,15 @@
+import {authFetch} from '../auth';
+
 /**
- * 백엔드 주소.
+ * 촬영 세션 API 호출부.
  *
- * 아직 https 가 아니라서 릴리스 빌드에서는 Android 가 평문 통신을 막는다.
- * 디버그 빌드는 usesCleartextTraffic 이 켜져 있어 그대로 동작한다.
- * 배포 전에 https 로 바꾸거나 network security config 를 넣어야 한다.
+ * 주소는 src/config/api.ts 한 곳에만 둔다. 여기서 다시 정의하면
+ * 서버 주소가 바뀔 때 한쪽만 고치는 사고가 난다.
+ *
+ * 요청은 authFetch 로 보낸다. 촬영 세션 API 자체는 인증이 필요 없지만,
+ * 로그인 상태면 헤더가 붙고 401 이면 토큰을 갱신해 재시도해 준다.
+ * 로그아웃 상태에서도 그대로 동작한다.
  */
-export const API_BASE_URL = 'http://fourcut.duckdns.org:8080';
 
 /** 서버가 에러를 돌려줬을 때. status 로 분기할 수 있게 담아 둔다. */
 export class ApiError extends Error {
@@ -19,23 +23,20 @@ export class ApiError extends Error {
   }
 }
 
-async function toError(response: Response, path: string): Promise<ApiError> {
-  let detail = response.statusText;
-  try {
-    const body = await response.text();
-    if (body) {
-      detail = body.slice(0, 300);
-    }
-  } catch {
-    // 본문을 못 읽어도 status 만으로 충분하다.
-  }
-  return new ApiError(response.status, path, `${response.status} ${detail}`);
-}
-
 async function parse<T>(response: Response, path: string): Promise<T> {
   if (!response.ok) {
-    throw await toError(response, path);
+    let detail = response.statusText;
+    try {
+      const body = await response.text();
+      if (body) {
+        detail = body.slice(0, 300);
+      }
+    } catch {
+      // 본문을 못 읽어도 status 만으로 충분하다.
+    }
+    throw new ApiError(response.status, path, `${response.status} ${detail}`);
   }
+
   // 204 No Content 는 본문이 없다.
   if (response.status === 204) {
     return undefined as T;
@@ -44,8 +45,7 @@ async function parse<T>(response: Response, path: string): Promise<T> {
 }
 
 export async function apiGet<T>(path: string): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`);
-  return parse<T>(response, path);
+  return parse<T>(await authFetch(path), path);
 }
 
 export async function apiSend<T>(
@@ -53,9 +53,10 @@ export async function apiSend<T>(
   path: string,
   body?: unknown,
 ): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const response = await authFetch(path, {
     method,
-    headers: body === undefined ? undefined : {'Content-Type': 'application/json'},
+    headers:
+      body === undefined ? undefined : {'Content-Type': 'application/json'},
     body: body === undefined ? undefined : JSON.stringify(body),
   });
   return parse<T>(response, path);
@@ -75,9 +76,6 @@ export async function apiUpload<T>(
   // RN 의 FormData 는 {uri, name, type} 형태를 파일로 취급한다.
   form.append('file', file as unknown as Blob);
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method: 'POST',
-    body: form,
-  });
+  const response = await authFetch(path, {method: 'POST', body: form});
   return parse<T>(response, path);
 }

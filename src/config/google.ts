@@ -12,5 +12,15 @@
  *
  * 웹 클라이언트 ID 는 비밀값이 아니다. 시크릿은 서버만 갖는다.
  */
-export const GOOGLE_WEB_CLIENT_ID = '';
-export const GOOGLE_IOS_CLIENT_ID = '';
+export const GOOGLE_WEB_CLIENT_ID =
+  '754445536794-357tba3rlb8tihrbov2bo277tg25vi7h.apps.googleusercontent.com';
+/**
+ * iOS 클라이언트 ID.
+ *
+ * 이 값을 뒤집은 형태(com.googleusercontent.apps.{앞부분})가 iOS 의 URL Scheme 이다.
+ * 구글이 로그인을 마치고 앱으로 돌아올 때 쓰므로 Info.plist 에도 등록돼 있어야 한다.
+ * 실제 값은 pbxproj 의 GOOGLE_IOS_REVERSED_CLIENT_ID 빌드 설정에 있다.
+ * 여기를 바꾸면 그쪽도 같이 바꿔야 한다.
+ */
+export const GOOGLE_IOS_CLIENT_ID =
+  '754445536794-io4jda5h0h76fihvnfcs23k3h43uk45h.apps.googleusercontent.com';

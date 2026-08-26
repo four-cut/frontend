@@ -52,6 +52,11 @@ export default function GalleryScreen() {
             onPress={() => start('kakao')}
             style={styles.action}
           />
+          <PrimaryButton
+            label={pending === 'google' ? '연결 중…' : '구글로 시작하기'}
+            onPress={() => start('google')}
+            style={styles.secondAction}
+          />
         </>
       )}
       {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -87,6 +92,10 @@ const styles = StyleSheet.create({
   },
   action: {
     marginTop: 24,
+    alignSelf: 'stretch',
+  },
+  secondAction: {
+    marginTop: 10,
     alignSelf: 'stretch',
   },
   error: {

@@ -75,7 +75,6 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 20,
-    fontWeight: '700',
     fontFamily: fonts.bold,
     color: colors.textPrimary,
   },

@@ -56,7 +56,6 @@ const styles = StyleSheet.create({
   label: {
     color: colors.white,
     fontSize: fontSize.button,
-    fontWeight: '700',
     fontFamily: fonts.bold,
     includeFontPadding: false,
   },

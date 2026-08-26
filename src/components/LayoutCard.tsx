@@ -112,7 +112,6 @@ const styles = StyleSheet.create({
   label: {
     color: colors.white,
     fontSize: fontSize.cardLabel,
-    fontWeight: '700',
     fontFamily: fonts.bold,
     includeFontPadding: false,
   },

@@ -15,7 +15,6 @@ import {images} from '../assets';
 import {speedUpSessionVideo} from '../capture/videoSpeed';
 import type {CaptureNavigation} from '../navigation/types';
 import {
-  SHOT_COUNT,
   TIMER_SECONDS,
   useCaptureSession,
 } from '../state/CaptureSessionContext';
@@ -25,17 +24,18 @@ import {colors, fonts, fontSize} from '../theme';
  * SR-05 촬영.
  *
  * 컷마다 6초를 세고 자동으로 찍는다. 「바로촬영」은 기다리지 않고 즉시 찍는다.
- * 레이아웃과 무관하게 8장을 찍고, 그중에서 컷 수만큼 고르는 건 다음 화면이다.
+ * 몇 장을 찍을지는 프레임이 정한다(requiredShotCount). 그중에서 슬롯 수만큼
+ * 고르는 건 다음 화면이다. 둘은 다른 값이다.
  */
 export default function CaptureScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<CaptureNavigation>();
   const isFocused = useIsFocused();
-  const {addShot, setVideo} = useCaptureSession();
+  const {addShot, setVideo, shotCount} = useCaptureSession();
 
   const {hasPermission, requestPermission} = useCameraPermission();
   const photoOutput = usePhotoOutput();
-  // 8장을 찍는 과정을 통째로 녹화한다. (OQ-01)
+  // 찍는 과정을 통째로 녹화한다. (OQ-01)
   // 소리는 담지 않아서 녹음 권한이 필요 없다.
   const videoOutput = useVideoOutput({enableAudio: false});
   const recorder = useRef<Recorder | null>(null);
@@ -51,7 +51,8 @@ export default function CaptureScreen() {
       ? frontDevice ?? backDevice
       : backDevice ?? frontDevice;
   const canFlip = frontDevice != null && backDevice != null;
-  const [shotCount, setShotCount] = useState(0);
+  // 지금까지 찍은 장수. 목표치(shotCount)와 헷갈리지 않게 이름을 나눈다.
+  const [taken, setTaken] = useState(0);
   const [remaining, setRemaining] = useState(TIMER_SECONDS);
 
   // 카운트다운과 바로촬영이 겹쳐 두 번 찍히는 걸 막는다.
@@ -71,7 +72,7 @@ export default function CaptureScreen() {
     try {
       const file = await photoOutput.capturePhotoToFile({}, {});
       addShot(`file://${file.filePath}`);
-      setShotCount(count => count + 1);
+      setTaken(count => count + 1);
     } finally {
       // 실패해도 카운트다운을 되돌려 플로우가 멈추지 않게 한다.
       setRemaining(TIMER_SECONDS);
@@ -80,7 +81,7 @@ export default function CaptureScreen() {
   }, [addShot, photoOutput]);
 
   useEffect(() => {
-    if (!hasPermission || !device || !isFocused || shotCount >= SHOT_COUNT) {
+    if (!hasPermission || !device || !isFocused || taken >= shotCount) {
       return;
     }
     const timer = setTimeout(() => {
@@ -91,7 +92,7 @@ export default function CaptureScreen() {
       }
     }, 1000);
     return () => clearTimeout(timer);
-  }, [capture, device, hasPermission, isFocused, remaining, shotCount]);
+  }, [capture, device, hasPermission, isFocused, remaining, shotCount, taken]);
 
   /** 카메라 세션이 뜬 뒤에야 레코더를 만들 수 있다. */
   const startRecording = useCallback(async () => {
@@ -116,7 +117,7 @@ export default function CaptureScreen() {
   }, [setVideo, videoOutput]);
 
   useEffect(() => {
-    if (shotCount < SHOT_COUNT) {
+    if (taken < shotCount) {
       return;
     }
     // 녹화를 먼저 닫아야 파일이 온전히 마무리된다.
@@ -132,9 +133,9 @@ export default function CaptureScreen() {
       navigation.replace('PhotoSelect');
     };
     finish();
-  }, [navigation, shotCount]);
+  }, [navigation, shotCount, taken]);
 
-  // 8장을 채우기 전에 화면을 벗어나면 녹화만 정리한다.
+  // 다 채우기 전에 화면을 벗어나면 녹화만 정리한다.
   useEffect(() => {
     return () => {
       recorder.current?.stopRecording().catch(() => {});
@@ -155,6 +156,9 @@ export default function CaptureScreen() {
   return (
     <View style={styles.container}>
       <Camera
+        // device만 바꾸면 일부 기기(삼성 등)에서 네이티브 세션이 안 바뀌고
+        // 이전 카메라를 계속 붙잡고 있는다. key로 강제 리마운트한다.
+        key={device.id}
         style={StyleSheet.absoluteFill}
         isActive={isFocused}
         device={device}
@@ -172,7 +176,7 @@ export default function CaptureScreen() {
 
         <View style={styles.footer}>
           <Text style={styles.progress}>
-            {Math.min(shotCount + 1, SHOT_COUNT)}/{SHOT_COUNT}
+            {Math.min(taken + 1, shotCount)}/{shotCount}
           </Text>
 
           <View style={styles.controls}>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  다른 앱에 넘겨줄 수 있는 경로.
+  합성한 스트립과 배속 영상은 모두 캐시 디렉터리에 떨어진다.
+-->
+<paths>
+    <cache-path name="cache" path="." />
+</paths>

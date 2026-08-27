@@ -16,7 +16,7 @@ export const CUT_COUNT: Record<CaptureLayout, number> = {
   landscape: 3,
 };
 
-/** 촬영 매수. 이 중에서 컷 수만큼 고른다. (SR-05) */
+/** 프레임을 못 받아왔을 때 쓸 기본 촬영 매수. 평소엔 서버 값을 쓴다. */
 export const SHOT_COUNT = 8;
 
 /** 컷 사이 카운트다운 초. (SR-02 안내사항 1번) */
@@ -31,7 +31,19 @@ type CaptureSession = {
   frame: FrameSummary | null;
   /** frame.orientation 에서 파생. */
   layout: CaptureLayout | null;
-  /** frame.requiredShotCount 에서 파생. 프레임 선택 전에는 0. */
+  /**
+   * 몇 장을 찍는지. frame.requiredShotCount 에서 파생.
+   *
+   * 서버도 이 값으로 shotIndex 를 검증한다. 이보다 큰 인덱스로 올리면
+   * INVALID_SHOT_INDEX 로 거부된다.
+   */
+  shotCount: number;
+  /**
+   * 몇 장을 고르는지. frame.slotCount 에서 파생. 프레임 선택 전에는 0.
+   *
+   * 촬영 장수와 다른 값이다. 8장 찍고 4장 고르는 게 기본이라
+   * 둘을 같은 값으로 두면 선택 화면이 8장을 요구하게 된다.
+   */
   cutCount: number;
   /** 촬영본 경로. file:// 스킴을 포함한다. */
   shots: string[];
@@ -62,7 +74,8 @@ export function CaptureSessionProvider({children}: Props) {
   const [video, setVideo] = useState<string | null>(null);
 
   const layout = frame ? toCaptureLayout(frame.orientation) : null;
-  const cutCount = frame ? frame.requiredShotCount : 0;
+  const shotCount = frame ? frame.requiredShotCount : SHOT_COUNT;
+  const cutCount = frame ? frame.slotCount : 0;
 
   const selectFrame = useCallback((next: FrameSummary) => {
     setFrame(next);
@@ -91,6 +104,7 @@ export function CaptureSessionProvider({children}: Props) {
     () => ({
       frame,
       layout,
+      shotCount,
       cutCount,
       shots,
       selection,
@@ -103,6 +117,7 @@ export function CaptureSessionProvider({children}: Props) {
     [
       frame,
       layout,
+      shotCount,
       cutCount,
       shots,
       selection,

@@ -12,6 +12,18 @@ export interface Spec extends TurboModule {
    * @param extension 확장자. 점은 빼고 넘긴다. 예: `png`
    */
   writeBase64(base64: string, extension: string): Promise<string>;
+
+  /**
+   * 파일을 다른 앱으로 공유한다. 공유 시트를 띄우는 데까지가 이 함수의 몫이고,
+   * 사용자가 취소해도 성공으로 끝난다.
+   *
+   * 캐시에 있는 파일을 그대로 넘기면 FileUriExposedException 이 나므로
+   * FileProvider 로 content:// 를 만들어 건넨다.
+   *
+   * @param fileUri `file://` 로 시작하는 로컬 경로.
+   * @param mimeType 예: `image/png`
+   */
+  shareFile(fileUri: string, mimeType: string): Promise<void>;
 }
 
 // getEnforcing 이 아니라 get 이다. 모듈이 없는 환경(iOS·jest)에서도

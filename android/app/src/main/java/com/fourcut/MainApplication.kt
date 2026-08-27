@@ -7,6 +7,7 @@ import com.facebook.react.ReactHost
 import com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.fourcut.mediafile.MediaFilePackage
+import com.fourcut.print.PrintPackage
 import com.fourcut.videospeed.VideoSpeedPackage
 
 class MainApplication : Application(), ReactApplication {
@@ -19,6 +20,7 @@ class MainApplication : Application(), ReactApplication {
           // 앱 안에서 만든 모듈이라 autolink 대상이 아니다.
           add(VideoSpeedPackage())
           add(MediaFilePackage())
+          add(PrintPackage())
         },
     )
   }

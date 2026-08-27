@@ -156,6 +156,9 @@ export default function CaptureScreen() {
   return (
     <View style={styles.container}>
       <Camera
+        // device만 바꾸면 일부 기기(삼성 등)에서 네이티브 세션이 안 바뀌고
+        // 이전 카메라를 계속 붙잡고 있는다. key로 강제 리마운트한다.
+        key={device.id}
         style={StyleSheet.absoluteFill}
         isActive={isFocused}
         device={device}

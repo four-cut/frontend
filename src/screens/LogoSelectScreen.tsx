@@ -42,6 +42,8 @@ export default function LogoSelectScreen() {
   const {width} = useWindowDimensions();
   const {layout, shots, selection, video} = useCaptureSession();
 
+  // composeStrip이 네이티브 모듈로 이미 file:// 경로까지 떨궈서 돌려준다.
+  // (네이티브 모듈이 없는 환경에서만 예외적으로 data URI로 돌아온다.)
   const [strip, setStrip] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
   const [printing, setPrinting] = useState(false);

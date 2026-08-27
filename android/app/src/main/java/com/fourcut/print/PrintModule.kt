@@ -1,11 +1,12 @@
 package com.fourcut.print
 
-import android.net.Uri
+import android.graphics.BitmapFactory
 import androidx.print.PrintHelper
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.UiThreadUtil
 import com.fourcut.specs.NativePrintSpec
+import java.io.File
 
 /**
  * 합성된 시트를 OS 인쇄 시트로 넘긴다. (SR-07)
@@ -29,10 +30,21 @@ class PrintModule(reactContext: ReactApplicationContext) :
     // PrintHelper 는 UI 스레드에서만 동작한다.
     UiThreadUtil.runOnUiThread {
       try {
+        // printBitmap(String, Uri) 는 내부적으로 ImageDecoder를 쓰는데
+        // 일부 기기(One UI 등)에서 "Failed to create image decoder: unimplemented"로
+        // 조용히 실패해 미리보기가 "오류가 발생했습니다"로 뜬다.
+        // 직접 BitmapFactory로 디코딩해서 Bitmap을 넘기면 이 경로를 피한다.
+        val file = File(fileUri.removePrefix("file://"))
+        val bitmap = BitmapFactory.decodeFile(file.absolutePath)
+        if (bitmap == null) {
+          promise.reject(ERROR_CODE, "이미지를 읽지 못했습니다.")
+          return@runOnUiThread
+        }
+
         val helper = PrintHelper(activity)
         // 사진이 잘리지 않도록 용지에 맞춰 넣는다.
         helper.scaleMode = PrintHelper.SCALE_MODE_FIT
-        helper.printBitmap(jobName, Uri.parse(fileUri))
+        helper.printBitmap(jobName, bitmap)
         // 시트를 띄우는 데까지가 우리 몫이다. 이후 취소는 오류가 아니다.
         promise.resolve(null)
       } catch (error: Exception) {

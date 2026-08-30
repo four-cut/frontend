@@ -59,10 +59,18 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string/>
+	<key>NSCameraUsageDescription</key>
+	<string>네컷 사진을 촬영하기 위해 카메라를 사용합니다.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>완성된 네컷 사진과 영상을 사진 앱에 저장합니다.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>찍고갈래? 앨범을 만들어 결과물을 모아 두기 위해 사진 앱에 접근합니다.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Jua-Regular.ttf</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>
@@ -82,9 +90,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>UIAppFonts</key>
-	<array>
-		<string>Jua-Regular.ttf</string>
-	</array>
 </dict>
 </plist>

@@ -1,5 +1,15 @@
+const preset = require('@react-native/jest-preset');
+
 module.exports = {
   preset: '@react-native/jest-preset',
+  transform: {
+    // 프리셋의 에셋 변환 목록에는 이미지·영상만 있고 폰트가 없다. 그대로 두면
+    // require('...ttf') 를 jest 가 JS 로 파싱하려다 깨진다. 이미지와 같은
+    // 변환기에 태워 런타임처럼 불투명한 asset id 로 돌려받는다.
+    ...preset.transform,
+    '^.+\\.(ttf|otf|woff|woff2)$':
+      preset.transform['^.+\\.(bmp|gif|jpg|jpeg|mp4|png|psd|svg|webp)$'],
+  },
   // 구글 로그인 SDK 는 import 시점에 네이티브 모듈을 강제로 조회해서
   // (TurboModuleRegistry.getEnforcing) 테스트 환경에서 바로 터진다.
   // 라이브러리가 제공하는 목을 먼저 깔아 준다.

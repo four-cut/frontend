@@ -57,6 +57,18 @@ export function composeSession(sessionId: string) {
 }
 
 /** 촬영 과정 영상 업로드. 서버가 QR 코드까지 만들어 준다. */
+/**
+ * 촬영 과정 영상을 올리고 QR 을 받는다.
+ *
+ * 서버가 1 MiB 를 넘는 파일을 거부한다. Spring 기본
+ * `spring.servlet.multipart.max-file-size` 가 1MB 인데, 초과분이 413 이 아니라
+ * 401 UNAUTHORIZED 로 돌아온다(에러 디스패치가 인증 필요 경로로 잡힌다).
+ * 인증 문제로 보이지만 아니다.
+ *
+ * 2026-08-31 측정: 1,048,000B → 200 / 1,100,000B → 401.
+ * 8컷 2배속 영상이 2.3MB 정도라 지금은 항상 걸린다. 서버에서 상한을 올려야
+ * 풀린다. (담당: 승균)
+ */
 export function uploadVideo(
   sessionId: string,
   fileUri: string,

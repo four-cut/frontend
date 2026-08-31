@@ -108,6 +108,18 @@ export function fetchFrames(orientation?: FrameOrientation): Promise<FrameSummar
   return apiGet<FrameSummary[]>(`/api/frames${query}`);
 }
 
+/**
+ * USE_LOCAL_FRAMES 와 무관하게 항상 서버 목록을 가져온다.
+ *
+ * 세션은 서버에 실제로 존재하는 frameId 에만 붙일 수 있다. 화면에서 고른
+ * 프레임은 지금 목이거나(id 2) 사용자가 방금 만든 것(id 3+)이라 서버에는 없어서
+ * 그대로 넘기면 404 가 난다. QR 은 영상만 담고 프레임 장식과는 무관하므로
+ * 서버에 있는 아무 프레임에나 세션을 걸면 된다.
+ */
+export function fetchRemoteFrames(): Promise<FrameSummary[]> {
+  return apiGet<FrameSummary[]>('/api/frames');
+}
+
 export function fetchFrameDetail(frameId: number): Promise<FrameDetail> {
   if (USE_LOCAL_FRAMES) {
     const detail = LOCAL_FRAME_DETAILS[frameId];

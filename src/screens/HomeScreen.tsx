@@ -4,7 +4,7 @@ import {useNavigation} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {images} from '../assets';
 import PrimaryButton from '../components/PrimaryButton';
-import type {ShootNavigation} from '../navigation/types';
+import type {RootNavigation, ShootNavigation} from '../navigation/types';
 import {colors, fonts, fontSize} from '../theme';
 
 export default function HomeScreen() {
@@ -23,10 +23,11 @@ export default function HomeScreen() {
           label="촬영하기"
           onPress={() => navigation.navigate('Guide')}
         />
-        {/* 프레임 만들기는 시안이 없어 아직 목적지가 정해지지 않았다. (SR-09 / OQ-03) */}
         <PrimaryButton
           label="프레임 만들기"
-          onPress={() => {}}
+          onPress={() =>
+            navigation.getParent<RootNavigation>()?.navigate('FrameBuilder')
+          }
           style={styles.secondAction}
         />
       </View>

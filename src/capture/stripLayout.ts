@@ -33,6 +33,35 @@ export type StripGeometry = {
   slotHeight: number;
 };
 
+/** 레이아웃별 슬롯(사진) 개수. CaptureSessionContext의 CUT_COUNT와 같은 값을 유지해야 한다. */
+const SLOT_COUNT: Record<CaptureLayout, number> = {
+  portrait: 4,
+  landscape: 3,
+};
+
+export type SlotRect = {x: number; y: number; width: number; height: number};
+
+/**
+ * 슬롯(사진이 들어갈 자리)의 픽셀 좌표. composeStrip이 사진을 그리는 위치와
+ * 정확히 같은 계산이라, 프레임 만들기 편집 화면·미리보기에서 이 자리를
+ * 배경/스티커/텍스트로부터 가려서(마스킹) 실제 결과물과 똑같이 보여줄 수 있다.
+ */
+export function computeSlotRects(
+  layout: CaptureLayout,
+  geometry: StripGeometry,
+): SlotRect[] {
+  return Array.from({length: SLOT_COUNT[layout]}, (_, index) => {
+    const column = index % geometry.columns;
+    const row = Math.floor(index / geometry.columns);
+    return {
+      x: geometry.padding + column * (geometry.slotWidth + geometry.gap),
+      y: geometry.padding + row * (geometry.slotHeight + geometry.gap),
+      width: geometry.slotWidth,
+      height: geometry.slotHeight,
+    };
+  });
+}
+
 /**
  * 시트 폭을 주면 나머지 치수를 계산한다.
  * 화면 미리보기는 작은 폭으로, 인쇄용 합성은 EXPORT_WIDTH 로 부른다.

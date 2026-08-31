@@ -1,6 +1,7 @@
 package com.fourcut.mediafile
 
 import android.content.Intent
+import android.net.Uri
 import android.util.Base64
 import androidx.core.content.FileProvider
 import com.facebook.react.bridge.Promise
@@ -71,6 +72,26 @@ class MediaFileModule(reactContext: ReactApplicationContext) :
       promise.resolve(null)
     } catch (error: Exception) {
       promise.reject(SHARE_ERROR_CODE, error.message, error)
+    }
+  }
+
+  override fun copyToCacheFile(uri: String, promise: Promise) {
+    if (uri.startsWith("file://")) {
+      promise.resolve(uri)
+      return
+    }
+    try {
+      val input = reactApplicationContext.contentResolver.openInputStream(Uri.parse(uri))
+      if (input == null) {
+        promise.reject(ERROR_CODE, "이미지를 열 수 없습니다.")
+        return
+      }
+      val file =
+          File(reactApplicationContext.cacheDir, "picked_${System.currentTimeMillis()}")
+      input.use { stream -> file.outputStream().use { out -> stream.copyTo(out) } }
+      promise.resolve("file://" + file.absolutePath)
+    } catch (error: Exception) {
+      promise.reject(ERROR_CODE, error.message, error)
     }
   }
 

@@ -5,6 +5,7 @@ import {
   Linking,
   Modal,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -14,8 +15,10 @@ import {
 import {useNavigation} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {fetchFrameDetail, fetchFrames, type FrameSummary} from '../api/frames';
 import {composeStrip} from '../capture/composeStrip';
 import {ALBUM_NAME, saveToAlbum} from '../capture/saveToAlbum';
+import type {FrameDesign} from '../frameBuilder/types';
 import NativeMediaFile from '../specs/NativeMediaFile';
 import NativePrint from '../specs/NativePrint';
 import {STRIP_ASPECT} from '../capture/stripLayout';
@@ -40,7 +43,8 @@ export default function LogoSelectScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<CaptureNavigation>();
   const {width} = useWindowDimensions();
-  const {layout, shots, selection, video} = useCaptureSession();
+  const {layout, shots, selection, video, frame, selectFrame} =
+    useCaptureSession();
 
   // composeStrip이 네이티브 모듈로 이미 file:// 경로까지 떨궈서 돌려준다.
   // (네이티브 모듈이 없는 환경에서만 예외적으로 data URI로 돌아온다.)
@@ -55,6 +59,36 @@ export default function LogoSelectScreen() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [zoomed, setZoomed] = useState(false);
 
+  // 촬영한 방향과 같은 프레임만 고를 수 있다 — 방향이 다르면 슬롯 수(4/3장)가
+  // 안 맞아서 다시 찍어야 한다.
+  const [frames, setFrames] = useState<FrameSummary[] | null>(null);
+  const [design, setDesign] = useState<FrameDesign | undefined>(undefined);
+  const [frameLoadFailedId, setFrameLoadFailedId] = useState<number | null>(
+    null,
+  );
+
+  useEffect(() => {
+    if (!layout) {
+      return;
+    }
+    const orientation = layout === 'portrait' ? 'PORTRAIT' : 'LANDSCAPE';
+    fetchFrames(orientation)
+      .then(setFrames)
+      .catch(() => setFrames([]));
+  }, [layout]);
+
+  const chooseFrame = async (summary: FrameSummary) => {
+    selectFrame(summary);
+    setFrameLoadFailedId(null);
+    try {
+      const detail = await fetchFrameDetail(summary.frameId);
+      setDesign(detail.design);
+    } catch {
+      setFrameLoadFailedId(summary.frameId);
+      setDesign(undefined);
+    }
+  };
+
   useEffect(() => {
     if (!layout) {
       return;
@@ -62,7 +96,7 @@ export default function LogoSelectScreen() {
     let cancelled = false;
     const photos = selection.map(index => shots[index]);
 
-    composeStrip(layout, photos)
+    composeStrip(layout, photos, design)
       .then(uri => {
         if (!cancelled) {
           setStrip(uri);
@@ -77,7 +111,7 @@ export default function LogoSelectScreen() {
     return () => {
       cancelled = true;
     };
-  }, [layout, selection, shots]);
+  }, [layout, selection, shots, design]);
 
   // 프린터/매수/용지 크기 선택은 OS 인쇄 시트가 담당한다 (EXT-01).
   const handlePrint = async () => {
@@ -174,8 +208,53 @@ export default function LogoSelectScreen() {
       </View>
 
       <View style={[styles.actions, {paddingBottom: insets.bottom + 16}]}>
-        <Text style={styles.sectionLabel}>커스텀 로고 선택</Text>
-        <Text style={styles.pending}>로고 선택은 준비 중입니다</Text>
+        <Text style={styles.sectionLabel}>내 프레임 고르기</Text>
+        {frames === null ? (
+          <ActivityIndicator color={colors.textPrimary} style={styles.frameListLoading} />
+        ) : frames.length === 0 ? (
+          <Text style={styles.pending}>고를 수 있는 프레임이 없습니다</Text>
+        ) : (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.frameList}>
+            {frames.map(item => (
+              <Pressable
+                key={item.frameId}
+                accessibilityRole="button"
+                accessibilityLabel={`${item.name} 프레임 적용`}
+                onPress={() => chooseFrame(item)}
+                style={styles.frameThumbWrap}>
+                {item.previewImageUrl ? (
+                  <Image
+                    source={{uri: item.previewImageUrl}}
+                    style={[
+                      styles.frameThumb,
+                      frame?.frameId === item.frameId && styles.frameThumbSelected,
+                    ]}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View
+                    style={[
+                      styles.frameThumb,
+                      styles.frameThumbBlank,
+                      frame?.frameId === item.frameId && styles.frameThumbSelected,
+                    ]}
+                  />
+                )}
+                <Text style={styles.frameThumbLabel} numberOfLines={1}>
+                  {item.name}
+                </Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+        )}
+        {frameLoadFailedId !== null ? (
+          <Text style={styles.saveError}>
+            프레임을 불러오지 못했습니다. 다시 시도해주세요.
+          </Text>
+        ) : null}
         <PrimaryButton
           label={printing ? '인쇄 준비 중...' : '인쇄하기'}
           disabled={!strip || printing}
@@ -287,6 +366,36 @@ const styles = StyleSheet.create({
   pending: {
     fontSize: 13,
     fontFamily: fonts.bold,
+    color: colors.textMuted,
+    includeFontPadding: false,
+  },
+  frameListLoading: {
+    alignSelf: 'flex-start',
+  },
+  frameList: {
+    gap: 10,
+    paddingRight: 16,
+  },
+  frameThumbWrap: {
+    width: 64,
+    alignItems: 'center',
+    gap: 4,
+  },
+  frameThumb: {
+    width: 56,
+    height: 56,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: colors.divider,
+  },
+  frameThumbSelected: {
+    borderColor: colors.black,
+  },
+  frameThumbBlank: {
+    backgroundColor: colors.slot,
+  },
+  frameThumbLabel: {
+    fontSize: 11,
     color: colors.textMuted,
     includeFontPadding: false,
   },

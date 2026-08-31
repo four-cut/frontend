@@ -24,6 +24,20 @@ export interface Spec extends TurboModule {
    * @param mimeType 예: `image/png`
    */
   shareFile(fileUri: string, mimeType: string): Promise<void>;
+
+  /**
+   * content:// 같은 스킴의 이미지를 캐시 디렉터리로 복사하고 `file://` 경로를
+   * 돌려준다.
+   *
+   * Skia의 Data.fromURI는 안드로이드에서 content:// 를 못 읽는다 — java.net.URL이
+   * 그 프로토콜을 모른다며 MalformedURLException을 던지는데, 네이티브 쪽에서
+   * 이 실패를 조용히 삼켜서 Promise가 영영 안 풀리고 멈춰버린다. 앨범(스티커,
+   * 배경 사진)에서 고른 이미지는 항상 content:// 로 오므로, Skia에 넘기기 전에
+   * 반드시 이 함수를 거쳐야 한다.
+   *
+   * @param uri 원본 경로. 이미 file://면 복사 없이 그대로 돌려준다.
+   */
+  copyToCacheFile(uri: string): Promise<string>;
 }
 
 // getEnforcing 이 아니라 get 이다. 모듈이 없는 환경(iOS·jest)에서도

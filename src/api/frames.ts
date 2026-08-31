@@ -1,4 +1,6 @@
 import {apiGet} from './client';
+import {EXPORT_WIDTH, stripGeometry} from '../capture/stripLayout';
+import type {FrameDesign} from '../frameBuilder/types';
 
 /** 백엔드 FrameOrientation과 맞춘 값. */
 export type FrameOrientation = 'PORTRAIT' | 'LANDSCAPE';
@@ -31,6 +33,8 @@ export type FrameDetail = {
   requiredShotCount: number;
   previewImageUrl: string;
   slots: FrameSlot[];
+  /** 배경색·텍스트·스티커. 베이직 프레임처럼 없으면 무배경(흰색)으로 합성한다. */
+  design?: FrameDesign;
 };
 
 /**
@@ -113,4 +117,74 @@ export function fetchFrameDetail(frameId: number): Promise<FrameDetail> {
   }
 
   return apiGet<FrameDetail>(`/api/frames/${frameId}`);
+}
+
+/** 세로형·가로형 슬롯 배치는 촬영 화면과 값을 맞춰뒀다. (CUT_COUNT) */
+const SLOT_COUNT_BY_ORIENTATION: Record<FrameOrientation, number> = {
+  PORTRAIT: 4,
+  LANDSCAPE: 3,
+};
+
+function buildSlots(orientation: FrameOrientation): FrameSlot[] {
+  const layout = orientation === 'PORTRAIT' ? 'portrait' : 'landscape';
+  const geometry = stripGeometry(layout, EXPORT_WIDTH);
+  const slotCount = SLOT_COUNT_BY_ORIENTATION[orientation];
+
+  return Array.from({length: slotCount}, (_, index) => {
+    const column = index % geometry.columns;
+    const row = Math.floor(index / geometry.columns);
+    return {
+      slotIndex: index,
+      x: Math.round(geometry.padding + column * (geometry.slotWidth + geometry.gap)),
+      y: Math.round(geometry.padding + row * (geometry.slotHeight + geometry.gap)),
+      width: Math.round(geometry.slotWidth),
+      height: Math.round(geometry.slotHeight),
+    };
+  });
+}
+
+let nextLocalFrameId = LOCAL_FRAMES.length + 1;
+
+/**
+ * 프레임 만들기에서 완성한 디자인을 로컬 프레임 목록에 추가한다.
+ *
+ * 지금은 세션이 살아있는 동안만 유지된다 — 앱을 다시 켜면 사라진다.
+ * S3 연동이 붙으면 이 함수 대신 업로드 API를 호출하고, 서버가 내려주는
+ * 목록을 그대로 쓰면 된다 (USE_LOCAL_FRAMES를 false로 바꾸는 시점).
+ */
+export function addLocalFrame(input: {
+  name: string;
+  orientation: FrameOrientation;
+  previewImageUrl: string;
+  design: FrameDesign;
+}): FrameSummary {
+  const frameId = nextLocalFrameId++;
+  const slots = buildSlots(input.orientation);
+
+  const summary: FrameSummary = {
+    frameId,
+    name: input.name,
+    orientation: input.orientation,
+    requiredShotCount: 8,
+    slotCount: slots.length,
+    previewImageUrl: input.previewImageUrl,
+  };
+
+  LOCAL_FRAMES.push(summary);
+  LOCAL_FRAME_DETAILS[frameId] = {
+    frameId,
+    name: input.name,
+    orientation: input.orientation,
+    canvasWidth: EXPORT_WIDTH,
+    canvasHeight: stripGeometry(
+      input.orientation === 'PORTRAIT' ? 'portrait' : 'landscape',
+      EXPORT_WIDTH,
+    ).height,
+    requiredShotCount: 8,
+    previewImageUrl: input.previewImageUrl,
+    slots,
+    design: input.design,
+  };
+
+  return summary;
 }

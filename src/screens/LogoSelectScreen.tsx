@@ -15,7 +15,13 @@ import {
 import {useNavigation} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {fetchFrameDetail, fetchFrames, type FrameSummary} from '../api/frames';
+import {
+  fetchFrameDetail,
+  fetchFrames,
+  fetchRemoteFrames,
+  type FrameSummary,
+} from '../api/frames';
+import {createSession, uploadVideo} from '../api/photoSession';
 import {composeStrip} from '../capture/composeStrip';
 import {ALBUM_NAME, saveToAlbum} from '../capture/saveToAlbum';
 import type {FrameDesign} from '../frameBuilder/types';
@@ -29,6 +35,7 @@ import {useCaptureSession} from '../state/CaptureSessionContext';
 import {colors, fonts} from '../theme';
 
 type SaveState = 'idle' | 'saving' | 'saved' | 'failed';
+type QrState = 'idle' | 'preparing' | 'ready' | 'failed';
 
 /** 시안(Frame-3)에서 시트가 화면 폭을 차지하는 비율 */
 const SHEET_WIDTH_RATIO = 0.52;
@@ -58,6 +65,10 @@ export default function LogoSelectScreen() {
   );
   const [saveError, setSaveError] = useState<string | null>(null);
   const [zoomed, setZoomed] = useState(false);
+
+  const [qrState, setQrState] = useState<QrState>('idle');
+  const [qrUrl, setQrUrl] = useState<string | null>(null);
+  const [qrError, setQrError] = useState<string | null>(null);
 
   // 촬영한 방향과 같은 프레임만 고를 수 있다 — 방향이 다르면 슬롯 수(4/3장)가
   // 안 맞아서 다시 찍어야 한다.
@@ -166,6 +177,46 @@ export default function LogoSelectScreen() {
     }
     // 시트를 띄우는 데까지가 우리 몫이라 실패해도 조용히 넘어간다.
     NativeMediaFile?.shareFile(strip, 'image/png').catch(() => {});
+  };
+
+  /**
+   * 부스에 태블릿으로 두면 손님 기기가 아니라서 앨범 저장·공유가 소용없다.
+   * QR 을 찍어 각자 폰으로 받아가는 경로가 필요하다.
+   *
+   * 지금은 서버가 영상만 QR 로 만들어 준다. 합성 이미지를 올릴 엔드포인트와
+   * 사진·영상을 함께 내려주는 다운로드 페이지가 생기면 여기서 한 번 더
+   * 올리고 QR 이 그 페이지를 가리키게 된다.
+   */
+  const handleQr = async () => {
+    if (qrState === 'preparing') {
+      return;
+    }
+    if (!video) {
+      setQrError('영상이 아직 준비되지 않았습니다');
+      setQrState('failed');
+      return;
+    }
+
+    setQrState('preparing');
+    setQrError(null);
+    try {
+      // 화면에서 고른 프레임 id 는 서버에 없을 수 있어서 그대로 못 쓴다.
+      const remote = await fetchRemoteFrames();
+      const frameId = remote[0]?.frameId;
+      if (frameId === undefined) {
+        throw new Error('서버에 등록된 프레임이 없습니다');
+      }
+
+      const session = await createSession(frameId);
+      const uploaded = await uploadVideo(session.sessionId, video);
+      setQrUrl(uploaded.qrCodeUrl);
+      setQrState('ready');
+    } catch (error) {
+      setQrError(
+        error instanceof Error ? error.message : 'QR 을 만들지 못했습니다',
+      );
+      setQrState('failed');
+    }
   };
 
   const goHome = () => {
@@ -294,6 +345,16 @@ export default function LogoSelectScreen() {
           </>
         ) : null}
 
+        <PrimaryButton
+          label={qrState === 'preparing' ? 'QR 만드는 중...' : 'QR로 받기'}
+          disabled={!video || qrState === 'preparing'}
+          onPress={qrState === 'ready' ? () => setQrState('ready') : handleQr}
+        />
+
+        {qrState === 'failed' && qrError ? (
+          <Text style={styles.saveError}>{qrError}</Text>
+        ) : null}
+
         {saveState === 'idle' && !video ? (
           <Text style={styles.saveNote}>영상은 아직 준비 중입니다</Text>
         ) : null}
@@ -317,6 +378,33 @@ export default function LogoSelectScreen() {
               resizeMode="contain"
             />
           ) : null}
+        </Pressable>
+      </Modal>
+
+      {/* 각자 폰으로 받아가는 경로. 부스 태블릿에서는 이게 유일한 수단이다. */}
+      <Modal
+        visible={qrState === 'ready' && !!qrUrl}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setQrState('idle')}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="닫기"
+          onPress={() => setQrState('idle')}
+          style={styles.qrBackdrop}>
+          <View style={styles.qrCard}>
+            <Text style={styles.qrTitle}>QR을 찍어 받아가세요</Text>
+            {qrUrl ? (
+              <Image
+                source={{uri: qrUrl}}
+                style={styles.qrImage}
+                resizeMode="contain"
+              />
+            ) : null}
+            <Text style={styles.qrHint}>
+              휴대폰 카메라로 찍으면 다운로드 화면이 열립니다
+            </Text>
+          </View>
         </Pressable>
       </Modal>
     </View>
@@ -417,6 +505,37 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bold,
     color: colors.textPrimary,
     textDecorationLine: 'underline',
+    includeFontPadding: false,
+  },
+  qrBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.92)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  qrCard: {
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'center',
+    gap: 16,
+  },
+  qrTitle: {
+    fontSize: 20,
+    fontFamily: fonts.display,
+    color: colors.textPrimary,
+    includeFontPadding: false,
+  },
+  qrImage: {
+    width: 220,
+    height: 220,
+  },
+  qrHint: {
+    fontSize: 13,
+    fontFamily: fonts.bold,
+    color: colors.textMuted,
+    textAlign: 'center',
     includeFontPadding: false,
   },
   zoomBackdrop: {

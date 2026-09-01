@@ -31,6 +31,8 @@ export type CaptureStackParamList = {
 export type RootStackParamList = {
   MainTabs: NavigatorScreenParams<MainTabParamList> | undefined;
   CaptureFlow: NavigatorScreenParams<CaptureStackParamList> | undefined;
+  /** 프레임 만들기 — 편집 중엔 탭바가 필요 없어 CaptureFlow처럼 루트에 둔다. */
+  FrameBuilder: undefined;
 };
 
 /**

@@ -1,5 +1,11 @@
 import {ImageFormat, Skia} from '@shopify/react-native-skia';
 
+import {
+  drawBackgroundImage,
+  drawStickerElements,
+  drawTextElements,
+} from '../frameBuilder/drawDesignElements';
+import type {FrameDesign} from '../frameBuilder/types';
 import MediaFile from '../specs/NativeMediaFile';
 import type {CaptureLayout} from '../state/CaptureSessionContext';
 import {coverCrop, EXPORT_WIDTH, stripGeometry} from './stripLayout';
@@ -10,12 +16,16 @@ import {coverCrop, EXPORT_WIDTH, stripGeometry} from './stripLayout';
  * 화면을 캡처하는 방식이면 결과물이 화면 해상도에 묶여 인쇄 품질(NFR-02)을
  * 낼 수 없다. 그래서 오프스크린 서피스에 직접 그린다.
  *
+ * design을 주면 프레임 만들기에서 만든 배경·스티커·텍스트도 같이 그린다 —
+ * 스티커는 사진 밑(배경), 텍스트는 사진 위(장식)에 놓는다.
+ *
  * @returns 합성 결과의 `file://` 경로. 네이티브 모듈이 없는 환경에서는
  *   미리보기용 data URI 를 돌려주며, 이 경우 앨범 저장과 인쇄는 할 수 없다.
  */
 export async function composeStrip(
   layout: CaptureLayout,
   photoUris: string[],
+  design?: FrameDesign,
 ): Promise<string> {
   const geometry = stripGeometry(layout, EXPORT_WIDTH);
   const surface = Skia.Surface.MakeOffscreen(
@@ -27,7 +37,26 @@ export async function composeStrip(
   }
 
   const canvas = surface.getCanvas();
-  canvas.clear(Skia.Color('white'));
+  canvas.clear(Skia.Color(design?.backgroundColor ?? 'white'));
+
+  if (design?.backgroundImageUri) {
+    await drawBackgroundImage(
+      canvas,
+      geometry.width,
+      geometry.height,
+      design.backgroundImageUri,
+    );
+  }
+
+  if (design?.stickerElements.length) {
+    await drawStickerElements(
+      canvas,
+      geometry.width,
+      geometry.height,
+      design.stickerElements,
+    );
+  }
+
   const paint = Skia.Paint();
 
   for (let index = 0; index < photoUris.length; index++) {
@@ -55,6 +84,15 @@ export async function composeStrip(
       Skia.XYWHRect(crop.x, crop.y, crop.width, crop.height),
       Skia.XYWHRect(x, y, geometry.slotWidth, geometry.slotHeight),
       paint,
+    );
+  }
+
+  if (design?.textElements.length) {
+    await drawTextElements(
+      canvas,
+      geometry.width,
+      geometry.height,
+      design.textElements,
     );
   }
 

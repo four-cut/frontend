@@ -1,5 +1,6 @@
 #import "MediaFileModule.h"
 
+#import <Photos/Photos.h>
 #import <UIKit/UIKit.h>
 
 @implementation MediaFileModule
@@ -120,12 +121,106 @@ static NSString *StripDataUriPrefix(NSString *value) {
   });
 }
 
+/**
+ * 캐시에 바이트를 쓰고 file:// 경로를 돌려준다.
+ *
+ * HEIC 는 JPEG 로 바꿔서 쓴다. Skia 가 HEIC 를 디코딩하지 못해서,
+ * 그대로 두면 합성 때 이 사진만 조용히 빠진다.
+ */
+static NSString *WriteToCache(NSData *data, NSString *uti, NSError **error) {
+  NSData *payload = data;
+  NSString *extension = @"jpg";
+
+  BOOL isHeic = uti != nil &&
+                ([uti isEqualToString:@"public.heic"] ||
+                 [uti isEqualToString:@"public.heif"] ||
+                 [uti hasPrefix:@"public.heif"]);
+  if (isHeic) {
+    UIImage *image = [UIImage imageWithData:data];
+    NSData *jpeg = image != nil ? UIImageJPEGRepresentation(image, 0.95) : nil;
+    if (jpeg == nil) {
+      if (error != NULL) {
+        *error = [NSError errorWithDomain:@"MediaFile"
+                                     code:1
+                                 userInfo:@{NSLocalizedDescriptionKey :
+                                                @"HEIC 를 변환하지 못했습니다"}];
+      }
+      return nil;
+    }
+    payload = jpeg;
+  } else if ([uti isEqualToString:@"public.png"]) {
+    extension = @"png";
+  }
+
+  NSString *name = [NSString stringWithFormat:@"%@.%@", NSUUID.UUID.UUIDString,
+                                              extension];
+  NSURL *target = [CacheDirectory() URLByAppendingPathComponent:name];
+  if (![payload writeToURL:target options:NSDataWritingAtomic error:error]) {
+    return nil;
+  }
+  return target.absoluteString;
+}
+
 - (void)copyToCacheFile:(NSString *)uri
                 resolve:(RCTPromiseResolveBlock)resolve
                  reject:(RCTPromiseRejectBlock)reject {
   // 이미 파일이면 복사할 이유가 없다.
   if ([uri hasPrefix:@"file://"] || [uri hasPrefix:@"/"]) {
     resolve(uri);
+    return;
+  }
+
+  // 앨범에서 고른 사진은 ph://<localIdentifier> 로 온다. localIdentifier 자체가
+  // "UUID/L0/001" 처럼 슬래시를 포함하므로 ph:// 뒤를 통째로 써야 한다.
+  // 일반 파일 API 로는 못 읽어서 PhotoKit 을 거친다.
+  if ([uri hasPrefix:@"ph://"]) {
+    NSString *identifier = [uri substringFromIndex:@"ph://".length];
+    PHAsset *asset =
+        [PHAsset fetchAssetsWithLocalIdentifiers:@[ identifier ] options:nil]
+            .firstObject;
+    if (asset == nil) {
+      // 일부 버전은 뒤에 /L0/001 을 덧붙인다. 앞부분만으로 한 번 더 찾는다.
+      NSRange slash = [identifier rangeOfString:@"/"];
+      if (slash.location != NSNotFound) {
+        NSString *head = [identifier substringToIndex:slash.location];
+        asset = [PHAsset fetchAssetsWithLocalIdentifiers:@[ head ] options:nil]
+                    .firstObject;
+      }
+    }
+    if (asset == nil) {
+      reject(@"E_ASSET", @"사진을 찾지 못했습니다", nil);
+      return;
+    }
+
+    PHImageRequestOptions *options = [PHImageRequestOptions new];
+    options.networkAccessAllowed = YES;  // iCloud 사진도 받아 온다
+    options.synchronous = NO;
+    options.version = PHImageRequestOptionsVersionCurrent;
+
+    [PHImageManager.defaultManager
+        requestImageDataAndOrientationForAsset:asset
+                                       options:options
+                                 resultHandler:^(NSData *data, NSString *uti,
+                                                 CGImagePropertyOrientation _,
+                                                 NSDictionary *info) {
+                                   if (data == nil) {
+                                     reject(@"E_READ",
+                                            @"사진을 읽지 못했습니다",
+                                            info[PHImageErrorKey]);
+                                     return;
+                                   }
+                                   NSError *error = nil;
+                                   NSString *path =
+                                       WriteToCache(data, uti, &error);
+                                   if (path == nil) {
+                                     reject(@"E_WRITE",
+                                            error.localizedDescription
+                                                ?: @"파일을 쓰지 못했습니다",
+                                            error);
+                                     return;
+                                   }
+                                   resolve(path);
+                                 }];
     return;
   }
 
@@ -136,27 +231,20 @@ static NSString *StripDataUriPrefix(NSString *value) {
   }
 
   NSError *error = nil;
-  NSData *data = [NSData dataWithContentsOfURL:source
-                                       options:0
-                                         error:&error];
+  NSData *data = [NSData dataWithContentsOfURL:source options:0 error:&error];
   if (data == nil) {
     reject(@"E_READ", error.localizedDescription ?: @"파일을 읽지 못했습니다",
            error);
     return;
   }
 
-  NSString *extension = source.pathExtension.length > 0 ? source.pathExtension
-                                                        : @"jpg";
-  NSString *name = [NSString stringWithFormat:@"%@.%@",
-                                              NSUUID.UUID.UUIDString,
-                                              extension];
-  NSURL *target = [CacheDirectory() URLByAppendingPathComponent:name];
-  if (![data writeToURL:target options:NSDataWritingAtomic error:&error]) {
+  NSString *path = WriteToCache(data, nil, &error);
+  if (path == nil) {
     reject(@"E_WRITE", error.localizedDescription ?: @"파일을 쓰지 못했습니다",
            error);
     return;
   }
-  resolve(target.absoluteString);
+  resolve(path);
 }
 
 - (std::shared_ptr<facebook::react::TurboModule>)

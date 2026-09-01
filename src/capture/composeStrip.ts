@@ -63,7 +63,11 @@ export async function composeStrip(
     const data = await Skia.Data.fromURI(photoUris[index]);
     const image = Skia.Image.MakeImageFromEncoded(data);
     if (!image) {
-      continue;
+      // 조용히 건너뛰면 사진이 한 장도 없는 흰 종이가 결과로 나와서
+      // 원인을 짚기가 어렵다. 실패로 끊어 화면이 알 수 있게 한다.
+      throw new Error(
+        `사진을 읽지 못했습니다: ${photoUris[index]} (지원하지 않는 형식일 수 있습니다)`,
+      );
     }
 
     const column = index % geometry.columns;

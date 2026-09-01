@@ -59,7 +59,7 @@ PODS:
     - KakaoSDKCommon/Common (= 2.22.7)
   - KakaoSDKUser (2.22.7):
     - KakaoSDKAuth (= 2.22.7)
-  - NitroImage (0.15.1):
+  - NitroImage (0.15.2):
     - hermes-engine
     - NitroModules
     - RCTRequired
@@ -83,7 +83,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - NitroModules (0.36.5):
+  - NitroModules (0.37.1):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -1906,7 +1906,7 @@ PODS:
     - Yoga
   - SocketRocket (0.7.1):
     - ReactNativeDependencies
-  - VisionCamera (5.2.2):
+  - VisionCamera (5.2.3):
     - hermes-engine
     - NitroImage
     - NitroModules
@@ -2258,8 +2258,8 @@ SPEC CHECKSUMS:
   KakaoSDKAuth: 45204252ff7c379c0f86c5573f97ec36885afca0
   KakaoSDKCommon: 132164a6bac8bcd3a4346d3bf777f34f8f39fdca
   KakaoSDKUser: 4c9cf1da78710d19d0b2c2dd32d1a44c544cdfa4
-  NitroImage: ed81835846ad87cccfab6234316a8faebe0032a5
-  NitroModules: 49b1952f34e45c227e4a20d0b6510502fe6737d3
+  NitroImage: c36a60d5febe30a6794978cd30c9e9f92392ff95
+  NitroModules: bc0fc666f20b2ec140d276087e8ade17ad541985
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   RCT-Folly: 82921e585c0400eda46fac1068297aa9dfb035e4
   RCTDeprecation: 6d66040b74f4be203495adda55b49c1a25190291
@@ -2344,7 +2344,7 @@ SPEC CHECKSUMS:
   RNKeychain: 551d42b0ef53426f82551a0cc961cfa10ad33afa
   RNScreens: a2103f13fa603c405092daf70ca4eb3a6291fd6d
   SocketRocket: 37aec555668fb852ec12e3c0de59a86ca58f0871
-  VisionCamera: c11a2f0ed90ca3f3957edd30746e698a46f92557
+  VisionCamera: 4d231852424e0d2d27a13645f929139d08c8e423
   Yoga: d1c536142c5ff8ec8cd856ab2a7c227a1d875c8e
 
 PODFILE CHECKSUM: ba3e4c8fea305b883d65e1fed7cd24316917fb01

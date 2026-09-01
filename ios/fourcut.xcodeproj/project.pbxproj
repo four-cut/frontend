@@ -7,25 +7,34 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		026D63DAA0EC99DAE2861844 /* VideoSpeedModule.mm in Sources */ = {isa = PBXBuildFile; fileRef = EB7668C72C34DD2C56E6DC9F /* VideoSpeedModule.mm */; };
 		0C80B921A6F3F58F76C31292 /* libPods-fourcut.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DCACB8F33CDC322A6C60F78 /* libPods-fourcut.a */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		54D6FE25FFE805A64CB122C9 /* MediaFileModule.mm in Sources */ = {isa = PBXBuildFile; fileRef = 3EA845CF1F165437FCF7D7BF /* MediaFileModule.mm */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		925CB92544F569CDCC8AE951 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
+		C6671FD615FBA0A1D9A1267B /* PrintModule.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7CED7071CBF5A4AF3C10C225 /* PrintModule.mm */; };
 		E16D5D0EF9AE4B84B818B2D1 /* Jua-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E0D552586CE14AD38D85FC8B /* Jua-Regular.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		10BF8CB3CF549AA4BF1AB6D7 /* VideoSpeedModule.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = VideoSpeedModule.h; path = fourcut/VideoSpeedModule.h; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* fourcut.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = fourcut.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = fourcut/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = fourcut/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = fourcut/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		3B4392A12AC88292D35C810B /* Pods-fourcut.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-fourcut.debug.xcconfig"; path = "Target Support Files/Pods-fourcut/Pods-fourcut.debug.xcconfig"; sourceTree = "<group>"; };
+		3EA845CF1F165437FCF7D7BF /* MediaFileModule.mm */ = {isa = PBXFileReference; includeInIndex = 1; name = MediaFileModule.mm; path = fourcut/MediaFileModule.mm; sourceTree = "<group>"; };
 		5709B34CF0A7D63546082F79 /* Pods-fourcut.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-fourcut.release.xcconfig"; path = "Target Support Files/Pods-fourcut/Pods-fourcut.release.xcconfig"; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-fourcut.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-fourcut.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		5E832081B9AB2AE59BE328D7 /* PrintModule.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = PrintModule.h; path = fourcut/PrintModule.h; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = fourcut/AppDelegate.swift; sourceTree = "<group>"; };
+		7CED7071CBF5A4AF3C10C225 /* PrintModule.mm */ = {isa = PBXFileReference; includeInIndex = 1; name = PrintModule.mm; path = fourcut/PrintModule.mm; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = fourcut/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		8890745167A25D164381F1A2 /* MediaFileModule.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = MediaFileModule.h; path = fourcut/MediaFileModule.h; sourceTree = "<group>"; };
 		E0D552586CE14AD38D85FC8B /* Jua-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Jua-Regular.ttf"; path = "../assets/fonts/Jua-Regular.ttf"; sourceTree = "<group>"; };
+		EB7668C72C34DD2C56E6DC9F /* VideoSpeedModule.mm */ = {isa = PBXFileReference; includeInIndex = 1; name = VideoSpeedModule.mm; path = fourcut/VideoSpeedModule.mm; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -49,6 +58,12 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
+				8890745167A25D164381F1A2 /* MediaFileModule.h */,
+				3EA845CF1F165437FCF7D7BF /* MediaFileModule.mm */,
+				5E832081B9AB2AE59BE328D7 /* PrintModule.h */,
+				7CED7071CBF5A4AF3C10C225 /* PrintModule.mm */,
+				10BF8CB3CF549AA4BF1AB6D7 /* VideoSpeedModule.h */,
+				EB7668C72C34DD2C56E6DC9F /* VideoSpeedModule.mm */,
 			);
 			name = fourcut;
 			sourceTree = "<group>";
@@ -260,6 +275,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
+				54D6FE25FFE805A64CB122C9 /* MediaFileModule.mm in Sources */,
+				C6671FD615FBA0A1D9A1267B /* PrintModule.mm in Sources */,
+				026D63DAA0EC99DAE2861844 /* VideoSpeedModule.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

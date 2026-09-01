@@ -34,7 +34,10 @@ export default function CaptureScreen() {
   const {addShot, setVideo, shotCount} = useCaptureSession();
 
   const {hasPermission, requestPermission} = useCameraPermission();
-  const photoOutput = usePhotoOutput();
+  // containerFormat 기본값 'native' 는 iOS 에서 HEIC 를 뜻한다. Skia 가
+  // HEIC 를 디코딩하지 못해 합성 때 사진이 전부 빠지고 흰 종이만 남는다.
+  // (Android 는 기본이 JPEG 라 이 문제가 드러나지 않았다.)
+  const photoOutput = usePhotoOutput({containerFormat: 'jpeg'});
   // 찍는 과정을 통째로 녹화한다. (OQ-01)
   // 소리는 담지 않아서 녹음 권한이 필요 없다.
   const videoOutput = useVideoOutput({enableAudio: false});

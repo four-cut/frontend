@@ -1,6 +1,7 @@
 import {apiGet} from './client';
-import {EXPORT_WIDTH, stripGeometry} from '../capture/stripLayout';
-import type {FrameDesign} from '../frameBuilder/types';
+import {computeSlotRects, EXPORT_WIDTH, stripGeometry} from '../capture/stripLayout';
+import {DEFAULT_STICKERS, resolveStickerUri} from '../frameBuilder/defaultStickers';
+import type {FrameDesign, StickerElement} from '../frameBuilder/types';
 
 /** 백엔드 FrameOrientation과 맞춘 값. */
 export type FrameOrientation = 'PORTRAIT' | 'LANDSCAPE';
@@ -64,6 +65,60 @@ const LOCAL_FRAMES: FrameSummary[] = [
   },
 ];
 
+const LOGO_STICKER = DEFAULT_STICKERS.find(sticker => sticker.id === 'logo');
+
+/**
+ * 베이직 프레임 아래쪽 빈 여백(슬롯이 다 차지 않고 남는 자리)에 앱 로고를
+ * 작게 넣는다. computeSlotRects로 슬롯이 끝나는 지점을 구해서, 그 아래
+ * 남는 공간 가운데에 배치한다 — 프레임 만들기에서 만든 프레임과 같은 방식.
+ *
+ * LOGO_STICKER.uri는 릴리즈 빌드에서 파일 경로가 아니라 안드로이드 리소스
+ * 이름뿐이라 resolveStickerUri로 실제 file:// 경로로 바꾼 뒤에 써야 Skia가
+ * 읽을 수 있다. 그래서 이 함수도, 이걸 부르는 쪽도 비동기다.
+ */
+async function buildBasicFrameDesign(orientation: FrameOrientation): Promise<FrameDesign> {
+  const layout = orientation === 'PORTRAIT' ? 'portrait' : 'landscape';
+  const geometry = stripGeometry(layout, EXPORT_WIDTH);
+  const stickerElements: StickerElement[] = [];
+
+  if (LOGO_STICKER) {
+    const uri = await resolveStickerUri(LOGO_STICKER.uri);
+    const slots = computeSlotRects(layout, geometry);
+    const slotsBottom = Math.max(...slots.map(slot => slot.y + slot.height));
+    const marginHeight = geometry.height - slotsBottom;
+    const widthRatio = 0.22;
+    const width = widthRatio * geometry.width;
+    const height = width / LOGO_STICKER.aspectRatio;
+
+    stickerElements.push({
+      id: `logo-${orientation}`,
+      uri,
+      aspectRatio: LOGO_STICKER.aspectRatio,
+      widthRatio,
+      xRatio: (geometry.width - width) / 2 / geometry.width,
+      yRatio: (slotsBottom + (marginHeight - height) / 2) / geometry.height,
+    });
+  }
+
+  return {
+    backgroundColor: '#FFFFFF',
+    backgroundImageUri: null,
+    textElements: [],
+    stickerElements,
+  };
+}
+
+const basicFrameDesignCache = new Map<FrameOrientation, Promise<FrameDesign>>();
+
+function getBasicFrameDesign(orientation: FrameOrientation): Promise<FrameDesign> {
+  let cached = basicFrameDesignCache.get(orientation);
+  if (!cached) {
+    cached = buildBasicFrameDesign(orientation);
+    basicFrameDesignCache.set(orientation, cached);
+  }
+  return cached;
+}
+
 const LOCAL_FRAME_DETAILS: Record<number, FrameDetail> = {
   1: {
     frameId: 1,
@@ -120,12 +175,18 @@ export function fetchRemoteFrames(): Promise<FrameSummary[]> {
   return apiGet<FrameSummary[]>('/api/frames');
 }
 
-export function fetchFrameDetail(frameId: number): Promise<FrameDetail> {
+export async function fetchFrameDetail(frameId: number): Promise<FrameDetail> {
   if (USE_LOCAL_FRAMES) {
     const detail = LOCAL_FRAME_DETAILS[frameId];
-    return detail
-      ? Promise.resolve(detail)
-      : Promise.reject(new Error(`프레임 ${frameId}을 찾을 수 없습니다.`));
+    if (!detail) {
+      throw new Error(`프레임 ${frameId}을 찾을 수 없습니다.`);
+    }
+    // 베이직 프레임(1, 2)은 로고 스티커 uri를 비동기로 한 번 해석해야 해서
+    // 모듈 로드 시점이 아니라 여기서 지연 생성한다.
+    if (!detail.design && (frameId === 1 || frameId === 2)) {
+      detail.design = await getBasicFrameDesign(detail.orientation);
+    }
+    return detail;
   }
 
   return apiGet<FrameDetail>(`/api/frames/${frameId}`);

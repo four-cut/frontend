@@ -81,7 +81,19 @@ class MediaFileModule(reactContext: ReactApplicationContext) :
       return
     }
     try {
-      val input = reactApplicationContext.contentResolver.openInputStream(Uri.parse(uri))
+      // 릴리즈 빌드에서 번들 이미지(require)의 resolveAssetSource().uri는
+      // URI가 아니라 안드로이드 drawable 리소스 이름뿐이다 (스킴이 없음).
+      // Metro가 붙는 개발 모드의 http:// 와 달리 Skia가 못 읽으므로,
+      // 리소스로 찾아 캐시 파일로 떠준다.
+      val input =
+          if (uri.contains("://")) {
+            reactApplicationContext.contentResolver.openInputStream(Uri.parse(uri))
+          } else {
+            val resId =
+                reactApplicationContext.resources.getIdentifier(
+                    uri, "drawable", reactApplicationContext.packageName)
+            if (resId == 0) null else reactApplicationContext.resources.openRawResource(resId)
+          }
       if (input == null) {
         promise.reject(ERROR_CODE, "이미지를 열 수 없습니다.")
         return

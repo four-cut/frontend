@@ -21,6 +21,11 @@ import {addLocalFrame} from '../api/frames';
 import AlbumPickerSheet, {type StickerPick} from '../frameBuilder/AlbumPickerSheet';
 import BackButton from '../components/BackButton';
 import PrimaryButton from '../components/PrimaryButton';
+import {
+  DEFAULT_STICKERS,
+  resolveStickerUri,
+  type DefaultSticker,
+} from '../frameBuilder/defaultStickers';
 import {PALETTE} from '../frameBuilder/palette';
 import {renderFrameDesign} from '../frameBuilder/renderFrameDesign';
 import type {StickerElement, TextElement} from '../frameBuilder/types';
@@ -187,7 +192,7 @@ export default function FrameBuilderScreen() {
     );
   };
 
-  const handlePickSticker = ({uri, aspectRatio}: StickerPick) => {
+  const addSticker = (uri: string, aspectRatio: number) => {
     const id = makeId();
     setStickerElements(prev => [
       ...prev,
@@ -202,9 +207,19 @@ export default function FrameBuilderScreen() {
         widthRatio: 0.35,
       },
     ]);
-    setStickerPickerOpen(false);
     setSelectedId(null);
     setSelectedStickerId(id);
+  };
+
+  const handlePickSticker = ({uri, aspectRatio}: StickerPick) => {
+    addSticker(uri, aspectRatio);
+    setStickerPickerOpen(false);
+  };
+
+  const handlePickDefaultSticker = async (sticker: DefaultSticker) => {
+    const uri = await resolveStickerUri(sticker.uri);
+    addSticker(uri, sticker.aspectRatio);
+    setStickerSourceOpen(false);
   };
 
   const removeSelectedSticker = () => {
@@ -433,6 +448,7 @@ export default function FrameBuilderScreen() {
           setStickerSourceOpen(false);
           setStickerPickerOpen(true);
         }}
+        onPickDefault={handlePickDefaultSticker}
         onClose={() => setStickerSourceOpen(false)}
       />
 
@@ -1122,17 +1138,20 @@ type StickerSourceSheetProps = {
   visible: boolean;
   insetBottom: number;
   onPickFromGallery: () => void;
+  onPickDefault: (sticker: DefaultSticker) => void;
   onClose: () => void;
 };
 
 /**
- * "스티커" 버튼을 누르면 뜨는 첫 화면 — 지금은 "갤러리에서 선택" 한 줄뿐이지만,
- * 나중에 기본 스티커 그리드가 생기면 이 목록 아래에 추가하면 된다.
+ * "스티커" 버튼을 누르면 뜨는 첫 화면 — "갤러리에서 선택"과 기본 스티커
+ * 그리드(DEFAULT_STICKERS)를 함께 보여준다. 기본 스티커가 늘어나면
+ * defaultStickers.ts에 추가하기만 하면 여기 그리드에 자동으로 나온다.
  */
 function StickerSourceSheet({
   visible,
   insetBottom,
   onPickFromGallery,
+  onPickDefault,
   onClose,
 }: StickerSourceSheetProps) {
   return (
@@ -1167,6 +1186,28 @@ function StickerSourceSheet({
             </View>
             <Text style={styles.galleryRowChevron}>›</Text>
           </Pressable>
+
+          {DEFAULT_STICKERS.length > 0 ? (
+            <>
+              <Text style={styles.defaultStickerLabel}>기본 스티커</Text>
+              <View style={styles.defaultStickerGrid}>
+                {DEFAULT_STICKERS.map(sticker => (
+                  <Pressable
+                    key={sticker.id}
+                    accessibilityRole="button"
+                    accessibilityLabel={sticker.label}
+                    onPress={() => onPickDefault(sticker)}
+                    style={styles.defaultStickerItem}>
+                    <Image
+                      source={{uri: sticker.uri}}
+                      style={styles.defaultStickerImage}
+                      resizeMode="contain"
+                    />
+                  </Pressable>
+                ))}
+              </View>
+            </>
+          ) : null}
         </Pressable>
       </Pressable>
     </Modal>
@@ -1476,6 +1517,32 @@ const styles = StyleSheet.create({
   galleryRowChevron: {
     fontSize: 22,
     color: colors.textMuted,
+  },
+  defaultStickerLabel: {
+    fontSize: 13,
+    fontFamily: fonts.bold,
+    color: colors.textMuted,
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  defaultStickerGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  defaultStickerItem: {
+    width: 64,
+    height: 64,
+    borderRadius: 12,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.divider,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 8,
+  },
+  defaultStickerImage: {
+    width: '100%',
+    height: '100%',
   },
   sheetTitle: {
     fontSize: 18,

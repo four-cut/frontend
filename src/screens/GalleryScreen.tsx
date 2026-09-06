@@ -224,6 +224,9 @@ const styles = StyleSheet.create({
   thumb: {
     borderRadius: 6,
     backgroundColor: colors.divider,
+    // 스트립 배경이 흰색이라 테두리가 없으면 흰 화면 위에 떠 보인다.
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.imageBorder,
   },
   more: {
     marginVertical: 16,

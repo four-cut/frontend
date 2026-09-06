@@ -28,8 +28,16 @@ export type CaptureStackParamList = {
   LogoSelect: undefined;
 };
 
+/**
+ * 로그인이 필요한 동작. 로그인을 마치면 여기로 이어서 보낸다.
+ * 네비게이션 파라미터로 실려야 해서 문자열 유니온으로 둔다.
+ */
+export type AuthGateTarget = 'Guide' | 'FrameBuilder' | 'Gallery';
+
 export type RootStackParamList = {
   MainTabs: NavigatorScreenParams<MainTabParamList> | undefined;
+  /** 로그인 화면. next 가 있으면 성공 후 그 곳으로 이어 간다. */
+  Login: {next?: AuthGateTarget} | undefined;
   CaptureFlow: NavigatorScreenParams<CaptureStackParamList> | undefined;
   /** 프레임 만들기 — 편집 중엔 탭바가 필요 없어 CaptureFlow처럼 루트에 둔다. */
   FrameBuilder: undefined;

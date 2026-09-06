@@ -122,6 +122,35 @@ static NSString *StripDataUriPrefix(NSString *value) {
 }
 
 /**
+ * 바이트 앞머리를 보고 확장자를 정한다.
+ *
+ * uti 를 못 받는 경로(원격 URL 복사 등)도 있어서, 확장자를 무조건 jpg 로
+ * 붙이면 PNG 가 .jpg 로 저장된다. Skia 는 내용을 보고 판단해서 상관없지만,
+ * 이 파일이 공유나 앨범 저장으로 넘어가면 확장자를 믿는 쪽이 잘못 읽는다.
+ */
+static NSString *ExtensionForData(NSData *data) {
+  const unsigned char *bytes = (const unsigned char *)data.bytes;
+  const NSUInteger length = data.length;
+
+  if (length >= 8 && bytes[0] == 0x89 && bytes[1] == 'P' && bytes[2] == 'N' &&
+      bytes[3] == 'G') {
+    return @"png";
+  }
+  if (length >= 3 && bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF) {
+    return @"jpg";
+  }
+  if (length >= 6 && memcmp(bytes, "GIF8", 4) == 0) {
+    return @"gif";
+  }
+  if (length >= 12 && memcmp(bytes, "RIFF", 4) == 0 &&
+      memcmp(bytes + 8, "WEBP", 4) == 0) {
+    return @"webp";
+  }
+  // 못 알아보면 jpg 로 둔다. 대부분의 사진이 jpg 다.
+  return @"jpg";
+}
+
+/**
  * 캐시에 바이트를 쓰고 file:// 경로를 돌려준다.
  *
  * HEIC 는 JPEG 로 바꿔서 쓴다. Skia 가 HEIC 를 디코딩하지 못해서,
@@ -129,12 +158,10 @@ static NSString *StripDataUriPrefix(NSString *value) {
  */
 static NSString *WriteToCache(NSData *data, NSString *uti, NSError **error) {
   NSData *payload = data;
-  NSString *extension = @"jpg";
+  NSString *extension;
 
-  BOOL isHeic = uti != nil &&
-                ([uti isEqualToString:@"public.heic"] ||
-                 [uti isEqualToString:@"public.heif"] ||
-                 [uti hasPrefix:@"public.heif"]);
+  BOOL isHeic = uti != nil && ([uti isEqualToString:@"public.heic"] ||
+                               [uti hasPrefix:@"public.heif"]);
   if (isHeic) {
     UIImage *image = [UIImage imageWithData:data];
     NSData *jpeg = image != nil ? UIImageJPEGRepresentation(image, 0.95) : nil;
@@ -148,8 +175,9 @@ static NSString *WriteToCache(NSData *data, NSString *uti, NSError **error) {
       return nil;
     }
     payload = jpeg;
-  } else if ([uti isEqualToString:@"public.png"]) {
-    extension = @"png";
+    extension = @"jpg";
+  } else {
+    extension = ExtensionForData(data);
   }
 
   NSString *name = [NSString stringWithFormat:@"%@.%@", NSUUID.UUID.UUIDString,

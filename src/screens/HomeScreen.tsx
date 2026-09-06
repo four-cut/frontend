@@ -5,11 +5,13 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {images} from '../assets';
 import PrimaryButton from '../components/PrimaryButton';
 import type {RootNavigation, ShootNavigation} from '../navigation/types';
+import {useAuthGate} from '../navigation/useAuthGate';
 import {colors, fonts, fontSize} from '../theme';
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<ShootNavigation>();
+  const gate = useAuthGate();
 
   return (
     <View style={[styles.container, {paddingTop: insets.top}]}>
@@ -21,12 +23,14 @@ export default function HomeScreen() {
       <View style={styles.actions}>
         <PrimaryButton
           label="촬영하기"
-          onPress={() => navigation.navigate('Guide')}
+          onPress={() => gate('Guide', () => navigation.navigate('Guide'))}
         />
         <PrimaryButton
           label="프레임 만들기"
           onPress={() =>
-            navigation.getParent<RootNavigation>()?.navigate('FrameBuilder')
+            gate('FrameBuilder', () =>
+              navigation.getParent<RootNavigation>()?.navigate('FrameBuilder'),
+            )
           }
           style={styles.secondAction}
         />

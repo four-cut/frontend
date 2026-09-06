@@ -5,9 +5,11 @@ import type {BottomTabBarProps} from '@react-navigation/bottom-tabs';
 
 import {colors, fonts, fontSize} from '../theme';
 import {TABS} from './tabs';
+import {useAuthGate} from './useAuthGate';
 
 export default function BottomTabBar({state, navigation}: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
+  const gate = useAuthGate();
 
   return (
     <View style={[styles.container, {paddingBottom: insets.bottom || 12}]}>
@@ -27,8 +29,15 @@ export default function BottomTabBar({state, navigation}: BottomTabBarProps) {
             canPreventDefault: true,
           });
 
-          if (!focused && !event.defaultPrevented) {
-            navigation.navigate(route.name);
+          if (focused || event.defaultPrevented) {
+            return;
+          }
+          const go = () => navigation.navigate(route.name);
+          // 로그인이 필요한 탭이면 로그인 화면을 먼저 띄운다.
+          if (tab.requiresAuth) {
+            gate('Gallery', go);
+          } else {
+            go();
           }
         };
 

@@ -8,13 +8,12 @@ import {colors, fonts} from '../theme';
 /**
  * 자리표시용 화면 — 갤러리 UI 는 추후 작업.
  *
- * 지금은 로그인 상태를 확인하고 조작할 수 있는 유일한 진입점 역할을 겸한다.
- * 시안에 로그인 화면이 없어서 위치를 임의로 정하지 않고, 이미 비어 있던
- * 이 탭에 임시로 붙였다. 갤러리 실제 UI 를 만들 때 정리해야 한다.
+ * 로그인해야 들어올 수 있는 탭이라(BottomTabBar 의 requiresAuth), 여기서는
+ * 로그인 수단을 다시 보여줄 필요가 없다. 지금은 내 정보와 로그아웃만 둔다.
  */
 export default function GalleryScreen() {
   const {status, member} = useAuth();
-  const {start, signOutEverywhere, pending, error} = useSocialSignIn();
+  const {signOutEverywhere} = useSocialSignIn();
 
   if (status === 'loading') {
     return (
@@ -44,22 +43,8 @@ export default function GalleryScreen() {
           />
         </>
       ) : (
-        <>
-          <Text style={styles.name}>갤러리</Text>
-          <Text style={styles.detail}>로그인하면 내 사진을 볼 수 있어요</Text>
-          <PrimaryButton
-            label={pending === 'kakao' ? '연결 중…' : '카카오로 시작하기'}
-            onPress={() => start('kakao')}
-            style={styles.action}
-          />
-          <PrimaryButton
-            label={pending === 'google' ? '연결 중…' : '구글로 시작하기'}
-            onPress={() => start('google')}
-            style={styles.secondAction}
-          />
-        </>
+        <Text style={styles.detail}>로그인이 필요합니다</Text>
       )}
-      {error ? <Text style={styles.error}>{error}</Text> : null}
     </View>
   );
 }
@@ -80,6 +65,7 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 20,
+    fontWeight: '700',
     fontFamily: fonts.bold,
     color: colors.textPrimary,
   },
@@ -92,16 +78,5 @@ const styles = StyleSheet.create({
   action: {
     marginTop: 24,
     alignSelf: 'stretch',
-  },
-  secondAction: {
-    marginTop: 10,
-    alignSelf: 'stretch',
-  },
-  error: {
-    marginTop: 16,
-    fontSize: 13,
-    fontFamily: fonts.regular,
-    color: '#D8342B',
-    textAlign: 'center',
   },
 });

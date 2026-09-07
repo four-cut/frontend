@@ -4,8 +4,6 @@ import {
   FlatList,
   Image,
   Modal,
-  PermissionsAndroid,
-  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -13,6 +11,7 @@ import {
 } from 'react-native';
 import {CameraRoll, type PhotoIdentifier} from '@react-native-camera-roll/camera-roll';
 
+import {ensurePhotoReadPermission} from '../gallery/photoPermission';
 import NativeMediaFile from '../specs/NativeMediaFile';
 import {colors, fonts} from '../theme';
 
@@ -29,18 +28,6 @@ type Props = {
   /** 스티커 고를 때와 배경 사진 고를 때 문구가 달라야 해서 밖에서 받는다. */
   title?: string;
 };
-
-async function ensureReadPermission(): Promise<boolean> {
-  if (Platform.OS !== 'android') {
-    return true;
-  }
-  const permission =
-    Number(Platform.Version) >= 33
-      ? PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES
-      : PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE;
-  const result = await PermissionsAndroid.request(permission);
-  return result === PermissionsAndroid.RESULTS.GRANTED;
-}
 
 export default function AlbumPickerSheet({
   visible,
@@ -64,7 +51,7 @@ export default function AlbumPickerSheet({
     let cancelled = false;
     setStatus('loading');
     (async () => {
-      const granted = await ensureReadPermission();
+      const granted = await ensurePhotoReadPermission();
       if (cancelled) {
         return;
       }

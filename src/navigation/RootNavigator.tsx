@@ -5,6 +5,7 @@ import CaptureNavigator from './CaptureNavigator';
 import MainTabNavigator from './MainTabNavigator';
 import type {RootStackParamList} from './types';
 import FrameBuilderScreen from '../screens/FrameBuilderScreen';
+import LoginScreen from '../screens/LoginScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -18,6 +19,12 @@ export default function RootNavigator() {
       <Stack.Screen name="MainTabs" component={MainTabNavigator} />
       <Stack.Screen name="CaptureFlow" component={CaptureNavigator} />
       <Stack.Screen name="FrameBuilder" component={FrameBuilderScreen} />
+      {/* 로그인은 하던 일을 잠시 덮는 것이라 모달로 띄운다. */}
+      <Stack.Screen
+        name="Login"
+        component={LoginScreen}
+        options={{presentation: 'modal'}}
+      />
     </Stack.Navigator>
   );
 }

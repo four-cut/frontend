@@ -225,7 +225,8 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: colors.divider,
     // 스트립 배경이 흰색이라 테두리가 없으면 흰 화면 위에 떠 보인다.
-    borderWidth: StyleSheet.hairlineWidth,
+    // hairline 으로는 눈에 안 잡혀서 1px 로 둔다.
+    borderWidth: 1,
     borderColor: colors.imageBorder,
   },
   more: {

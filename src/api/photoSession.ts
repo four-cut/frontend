@@ -56,19 +56,23 @@ export function composeSession(sessionId: string) {
   );
 }
 
-/** 촬영 과정 영상 업로드. 서버가 QR 코드까지 만들어 준다. */
 /**
- * 촬영 과정 영상을 올리고 QR 을 받는다.
+ * 앱이 Skia 로 만든 최종 스트립을 올린다.
  *
- * 서버가 1 MiB 를 넘는 파일을 거부한다. Spring 기본
- * `spring.servlet.multipart.max-file-size` 가 1MB 인데, 초과분이 413 이 아니라
- * 401 UNAUTHORIZED 로 돌아온다(에러 디스패치가 인증 필요 경로로 잡힌다).
- * 인증 문제로 보이지만 아니다.
+ * QR 다운로드 페이지는 세션에 올라와 있는 것만 버튼으로 보여 준다. 이걸
+ * 안 올리면 페이지에 「영상 저장하기」만 뜨고 사진은 받아갈 수 없다.
  *
- * 2026-08-31 측정: 1,048,000B → 200 / 1,100,000B → 401.
- * 8컷 2배속 영상이 2.3MB 정도라 지금은 항상 걸린다. 서버에서 상한을 올려야
- * 풀린다. (담당: 승균)
+ * 서버 합성(`POST /composite`)과 같은 자리에 저장된다. 앱은 이미 화면에
+ * 보여 준 그림을 그대로 올리므로 서버가 다시 합성할 필요가 없다.
  */
+export function uploadCompositeImage(sessionId: string, fileUri: string) {
+  return apiUpload<CompositeImage>(
+    `/api/sessions/${sessionId}/composite/image`,
+    {uri: fileUri, name: 'strip.png', type: 'image/png'},
+  );
+}
+
+/** 촬영 과정 영상을 올리고 QR 을 받는다. */
 export function uploadVideo(
   sessionId: string,
   fileUri: string,

@@ -19,10 +19,11 @@ export default function LayoutSelectScreen() {
   const navigation = useNavigation<CaptureNavigation>();
   const {selectLayout} = useCaptureSession();
 
-  // 가로형은 기기를 눕혀야 촬영할 수 있으므로 회전 안내를 한 번 거친다. (SR-04)
+  // 가로형의 회전 안내는 이제 촬영 화면 안에서 기기 방향을 감지해 처리한다.
+  // (세로로 들고 있으면 "돌려주세요"를 덮어 보여 주고, 가로로 돌리면 자동 촬영)
   const choose = (layout: CaptureLayout) => {
     selectLayout(layout);
-    navigation.navigate(layout === 'portrait' ? 'Capture' : 'RotateGuide');
+    navigation.navigate('Capture');
   };
 
   return (

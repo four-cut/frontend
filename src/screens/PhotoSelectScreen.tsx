@@ -38,7 +38,10 @@ export default function PhotoSelectScreen() {
   const thumbWidth = layout === 'portrait' ? THUMB_HEIGHT * 0.66 : THUMB_HEIGHT * 1.6;
 
   const goHome = () => {
-    navigation.getParent<RootNavigation>()?.navigate('MainTabs', {
+    // navigate 는 MainTabs 를 CaptureFlow 위에 새로 쌓는다. 그러면 촬영 세션이
+    // 살아 있는 채로 홈만 덮여서, 다시 촬영하면 이전 촬영본이 딸려 온다.
+    // popTo 는 아래에 있는 MainTabs 로 되돌아가면서 CaptureFlow 를 걷어낸다.
+    navigation.getParent<RootNavigation>()?.popTo('MainTabs', {
       screen: 'Shoot',
       params: {screen: 'Home'},
     });

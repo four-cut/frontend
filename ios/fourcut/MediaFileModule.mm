@@ -275,6 +275,30 @@ static NSString *WriteToCache(NSData *data, NSString *uti, NSError **error) {
   resolve(path);
 }
 
+- (void)deleteFiles:(NSArray *)uris
+            resolve:(RCTPromiseResolveBlock)resolve
+             reject:(RCTPromiseRejectBlock)reject {
+  NSFileManager *manager = [NSFileManager defaultManager];
+  NSInteger removed = 0;
+
+  for (id entry in uris) {
+    if (![entry isKindOfClass:[NSString class]]) {
+      continue;
+    }
+    NSString *raw = (NSString *)entry;
+    NSString *path = [raw hasPrefix:@"file://"] ? [NSURL URLWithString:raw].path : raw;
+    if (path == nil) {
+      continue;
+    }
+    // 이미 없는 파일은 실패가 아니다. 지워진 것만 센다.
+    if ([manager removeItemAtPath:path error:nil]) {
+      removed++;
+    }
+  }
+
+  resolve(@(removed));
+}
+
 - (std::shared_ptr<facebook::react::TurboModule>)
     getTurboModule:(const facebook::react::ObjCTurboModule::InitParams &)params {
   return std::make_shared<facebook::react::NativeMediaFileSpecJSI>(params);

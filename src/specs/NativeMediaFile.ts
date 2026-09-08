@@ -38,6 +38,19 @@ export interface Spec extends TurboModule {
    * @param uri 원본 경로. 이미 file://면 복사 없이 그대로 돌려준다.
    */
   copyToCacheFile(uri: string): Promise<string>;
+
+  /**
+   * 임시 파일들을 지우고 실제로 지워진 개수를 돌려준다.
+   *
+   * 촬영본은 8장을 찍고 그중 4장(가로형은 3장)만 쓴다. 나머지는 캐시에
+   * 그대로 남는데, 안드로이드는 저장 공간이 빠듯할 때나 캐시를 비우므로
+   * 여러 번 찍으면 계속 쌓인다. (NFR-04)
+   *
+   * 이미 없는 파일은 실패가 아니다. 세는 데서만 빠진다.
+   *
+   * @param uris `file://` 로 시작해도 되고 그냥 경로여도 된다.
+   */
+  deleteFiles(uris: Array<string>): Promise<number>;
 }
 
 // getEnforcing 이 아니라 get 이다. 모듈이 없는 환경(iOS·jest)에서도

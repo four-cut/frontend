@@ -14,7 +14,7 @@ const RATIO = {
 };
 
 /** 컷 한 장의 가로세로비(w/h). 세로형은 세로 사진, 가로형은 가로 사진. */
-const SLOT_ASPECT: Record<CaptureLayout, number> = {
+export const SLOT_ASPECT: Record<CaptureLayout, number> = {
   portrait: 0.66,
   landscape: 2.25,
 };

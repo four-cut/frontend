@@ -2,11 +2,14 @@ import React, {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 
 import type {FrameSummary} from '../api/frames';
+import MediaFile from '../specs/NativeMediaFile';
 
 export type CaptureLayout = 'portrait' | 'landscape';
 
@@ -65,6 +68,28 @@ export function CaptureSessionProvider({children}: Props) {
 
   const shotCount = SHOT_COUNT;
   const cutCount = layout ? CUT_COUNT[layout] : 0;
+
+  // 언마운트 시점에는 state 가 이미 닫혀 있어서 최신 값을 따로 들고 있어야 한다.
+  const latest = useRef({shots, selection});
+  useEffect(() => {
+    latest.current = {shots, selection};
+  }, [shots, selection]);
+
+  // 플로우를 벗어날 때 안 고른 촬영본을 지운다. 8장을 찍고 4장(가로형은 3장)만
+  // 쓰는데 나머지가 캐시에 계속 쌓인다. (NFR-04)
+  useEffect(
+    () => () => {
+      const {shots: taken, selection: picked} = latest.current;
+      const unused = taken.filter((_, index) => !picked.includes(index));
+      if (unused.length === 0 || !MediaFile) {
+        return;
+      }
+      // 화면은 이미 사라진 뒤라 실패를 알릴 곳이 없다. 다음 정리나
+      // 시스템 캐시 비우기에 맡긴다.
+      MediaFile.deleteFiles(unused).catch(() => {});
+    },
+    [],
+  );
 
   const selectLayout = useCallback((next: CaptureLayout) => {
     setLayout(next);

@@ -6,6 +6,7 @@ import android.util.Base64
 import androidx.core.content.FileProvider
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReadableArray
 import com.fourcut.specs.NativeMediaFileSpec
 import java.io.File
 
@@ -105,6 +106,22 @@ class MediaFileModule(reactContext: ReactApplicationContext) :
     } catch (error: Exception) {
       promise.reject(ERROR_CODE, error.message, error)
     }
+  }
+
+  override fun deleteFiles(uris: ReadableArray, promise: Promise) {
+    var removed = 0
+    for (index in 0 until uris.size()) {
+      val raw = uris.getString(index) ?: continue
+      try {
+        val path = if (raw.startsWith("file://")) Uri.parse(raw).path else raw
+        if (path != null && File(path).delete()) {
+          removed++
+        }
+      } catch (error: Exception) {
+        // 한 장이 안 지워졌다고 나머지까지 포기할 이유는 없다.
+      }
+    }
+    promise.resolve(removed)
   }
 
   companion object {

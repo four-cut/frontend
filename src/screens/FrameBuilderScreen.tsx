@@ -254,7 +254,8 @@ export default function FrameBuilderScreen() {
         previewImageUrl,
         design: {backgroundColor, backgroundImageUri, textElements, stickerElements},
       });
-      navigation.navigate('MainTabs', {
+      // navigate 로는 FrameBuilder 가 아래에 남아 계속 쌓인다. (LogoSelect 와 같은 이유)
+      navigation.popTo('MainTabs', {
         screen: 'Shoot',
         params: {screen: 'Home'},
       });

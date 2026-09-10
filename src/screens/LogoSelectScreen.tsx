@@ -21,7 +21,11 @@ import {
   fetchRemoteFrames,
   type FrameSummary,
 } from '../api/frames';
-import {createSession, uploadVideo} from '../api/photoSession';
+import {
+  createSession,
+  uploadCompositeImage,
+  uploadVideo,
+} from '../api/photoSession';
 import {composeStrip} from '../capture/composeStrip';
 import {ALBUM_NAME, saveToAlbum} from '../capture/saveToAlbum';
 import type {FrameDesign} from '../frameBuilder/types';
@@ -69,6 +73,8 @@ export default function LogoSelectScreen() {
   const [qrState, setQrState] = useState<QrState>('idle');
   const [qrUrl, setQrUrl] = useState<string | null>(null);
   const [qrError, setQrError] = useState<string | null>(null);
+  /** QR 페이지에 사진까지 올라갔는지. 영상만 올라간 경우와 구분한다. */
+  const [qrHasPhoto, setQrHasPhoto] = useState(false);
 
   // 촬영한 방향과 같은 프레임만 고를 수 있다 — 방향이 다르면 슬롯 수(4/3장)가
   // 안 맞아서 다시 찍어야 한다.
@@ -208,7 +214,21 @@ export default function LogoSelectScreen() {
       }
 
       const session = await createSession(frameId);
+
+      // 사진을 못 올려도 영상만으로 QR 은 쓸 수 있다. 여기서 전체를 실패시키면
+      // 원래 되던 것까지 막히므로, 실패는 기억만 해두고 계속 간다.
+      let photoUploaded = false;
+      if (strip?.startsWith('file://')) {
+        try {
+          await uploadCompositeImage(session.sessionId, strip);
+          photoUploaded = true;
+        } catch {
+          // 아래에서 안내 문구로 알린다.
+        }
+      }
+
       const uploaded = await uploadVideo(session.sessionId, video);
+      setQrHasPhoto(photoUploaded);
       setQrUrl(uploaded.qrCodeUrl);
       setQrState('ready');
     } catch (error) {
@@ -407,6 +427,11 @@ export default function LogoSelectScreen() {
             <Text style={styles.qrHint}>
               휴대폰 카메라로 찍으면 다운로드 화면이 열립니다
             </Text>
+            {qrHasPhoto ? null : (
+              <Text style={styles.qrWarn}>
+                사진을 올리지 못해 영상만 받을 수 있어요
+              </Text>
+            )}
           </View>
         </Pressable>
       </Modal>
@@ -533,6 +558,13 @@ const styles = StyleSheet.create({
   qrImage: {
     width: 220,
     height: 220,
+  },
+  qrWarn: {
+    fontSize: 13,
+    fontFamily: fonts.bold,
+    color: '#D8342B',
+    textAlign: 'center',
+    includeFontPadding: false,
   },
   qrHint: {
     fontSize: 13,

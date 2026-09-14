@@ -2,8 +2,10 @@ import React, {useState} from 'react';
 import {
   Alert,
   Image,
+  Keyboard,
   Modal,
   PanResponder,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -37,6 +39,13 @@ import {colors, fonts, fontSize} from '../theme';
 /** 화면에 그리는 캔버스 폭. 실제 인쇄 해상도는 renderFrameDesign이 따로 맞춘다. */
 const CANVAS_WIDTH_RATIO = 0.82;
 
+/**
+ * 색상 선택 바텀시트가 차지하는 높이 비율. 배경·글자색을 고를 때 시트가
+ * 화면을 너무 많이 가리면 색 비교가 어려워서, 화면 하단 1/3로 제한하고
+ * 캔버스를 나머지 2/3에 맞춰 축소해 항상 보이게 한다.
+ */
+const COLOR_SHEET_HEIGHT_RATIO = 1 / 3;
+
 /** 텍스트·스티커를 캔버스 밖으로 끌 때, 네 방향 모두 이만큼(px)까지만 나가게 한다. */
 const DRAG_OVERFLOW_PX = 24;
 
@@ -57,6 +66,63 @@ const SLOT_LABELS: Record<CaptureLayout, string[]> = {
 function clamp(value: number, min: number, max: number) {
   'worklet';
   return Math.min(max, Math.max(min, value));
+}
+
+/**
+ * 실제로 올라온 키보드 높이(px)를 추적한다. Modal 안에서는
+ * KeyboardAvoidingView의 자동 계산이 잘 안 맞는다 — "height" 방식은 이미
+ * 작게 줄여둔 시트 높이에서 키보드 높이를 빼려다 음수가 나와 시트가 통째로
+ * 사라졌었다. 대신 실측한 키보드 높이만큼 시트를 직접 marginBottom으로
+ * 밀어올린다.
+ */
+function useKeyboardHeight(): number {
+  const [height, setHeight] = React.useState(0);
+  React.useEffect(() => {
+    const showEvent = Platform.OS === 'android' ? 'keyboardDidShow' : 'keyboardWillShow';
+    const hideEvent = Platform.OS === 'android' ? 'keyboardDidHide' : 'keyboardWillHide';
+    const showSub = Keyboard.addListener(showEvent, event =>
+      setHeight(event.endCoordinates.height),
+    );
+    const hideSub = Keyboard.addListener(hideEvent, () => setHeight(0));
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+  return height;
+}
+
+/**
+ * 안드로이드 EditText는 터치가 시작되면 텍스트 선택 드래그를 위해
+ * 부모의 스크롤 가로채기를 스스로 막아버린다
+ * (requestDisallowInterceptTouchEvent) — 시트를 스크롤하려고 숫자·색상
+ * 코드 입력칸 위에서 손가락을 쓸어도 입력칸이 그 터치를 통째로 잡고
+ * 안 놔줘서 스크롤이 안 먹고, 포커스가 잡혔다 풀렸다 하며 키보드가
+ * 뜨려다 마는 게 반복돼 화면이 위아래로 움찔거린다. 이 값들은 커서로
+ * 정교하게 편집할 일이 없는 짧은 숫자·코드라 드래그 편집 자체가 필요 없다.
+ *
+ * TextInput에 pointerEvents="none"만 주는 건 안드로이드에서 잘 안 먹는다
+ * (EditText가 그 설정과 무관하게 터치를 직접 받아버린다) — 대신 투명한
+ * Pressable을 TextInput "위"에 절대 위치로 완전히 덮어서, 터치가 물리적으로
+ * EditText에 닿을 일 자체를 없앤다. 이 Pressable은 스와치 버튼과 똑같이
+ * 평범한 Pressable이라 부모의 스크롤 가로채기를 막지 않는다.
+ */
+function TapToFocusInput({
+  inputRef,
+  style,
+  ...rest
+}: React.ComponentProps<typeof TextInput> & {
+  inputRef: React.RefObject<React.ElementRef<typeof TextInput> | null>;
+}) {
+  return (
+    <View style={styles.tapToFocusWrapper}>
+      <TextInput ref={inputRef} style={style} {...rest} />
+      <Pressable
+        style={StyleSheet.absoluteFill}
+        onPress={() => inputRef.current?.focus()}
+      />
+    </View>
+  );
 }
 
 function makeId() {
@@ -105,7 +171,7 @@ const CHANNEL_TINT: Record<keyof Rgb, string> = {
 export default function FrameBuilderScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<RootNavigation>();
-  const {width: windowWidth} = useWindowDimensions();
+  const {width: windowWidth, height: windowHeight} = useWindowDimensions();
 
   const [layout, setLayout] = useState<CaptureLayout>('portrait');
   const [backgroundColor, setBackgroundColor] = useState<string>(colors.white);
@@ -126,9 +192,18 @@ export default function FrameBuilderScreen() {
   // 캔버스 크기를 잡으면 그 여백보다 캔버스가 커져서 위로는 레이아웃 뱃지를,
   // 아래로는 툴바를 가리며 넘친다 — 실측한 canvasArea 안에 꼭 맞게 축소한다.
   const AREA_MARGIN = 0.96;
+  // 색상 시트는 Modal이라 canvasArea 레이아웃에 잡히지 않는다 — 시트가 떠
+  // 있으면 화면 하단 1/3만큼을 직접 빼서, 캔버스가 시트에 가려지지 않고
+  // 나머지 2/3 안에서 실시간으로 줄어들게 한다.
+  const colorSheetOpen = backgroundPickerOpen || textColorPickerOpen;
+  const colorSheetHeight = windowHeight * COLOR_SHEET_HEIGHT_RATIO;
   const maxCanvasWidth = windowWidth * CANVAS_WIDTH_RATIO;
   const availableWidth = canvasArea.width > 0 ? canvasArea.width * AREA_MARGIN : maxCanvasWidth;
-  const availableHeight = canvasArea.height > 0 ? canvasArea.height * AREA_MARGIN : Infinity;
+  const rawAvailableHeight =
+    canvasArea.height > 0 ? canvasArea.height * AREA_MARGIN : Infinity;
+  const availableHeight = colorSheetOpen
+    ? Math.max(rawAvailableHeight - colorSheetHeight, 80)
+    : rawAvailableHeight;
   let canvasWidth = Math.min(maxCanvasWidth, availableWidth);
   let canvasHeight = canvasWidth * STRIP_ASPECT;
   if (canvasHeight > availableHeight) {
@@ -302,7 +377,10 @@ export default function FrameBuilderScreen() {
       </View>
 
       <View
-        style={styles.canvasArea}
+        style={[
+          styles.canvasArea,
+          colorSheetOpen && {paddingBottom: colorSheetHeight},
+        ]}
         onLayout={event =>
           setCanvasArea({
             width: event.nativeEvent.layout.width,
@@ -896,15 +974,22 @@ type RgbSliderProps = {
 };
 
 /**
- * 슬라이더 라이브러리 없이 PanResponder로 직접 만든다. 터치 시작 위치로
- * 값을 바로 옮기고(탭-투-점프), 이후 드래그는 시작값 + 델타로 계산한다 —
- * DraggableText와 같은 방식이라 화면 이동 중 값이 튀는 문제가 없다.
+ * 슬라이더 라이브러리 없이 PanResponder로 직접 만든다.
+ *
+ * 트랙 전체가 아니라 손잡이(막대)에만 팬레스폰더를 붙인다 — 예전엔 트랙
+ * 전체가 터치를 가로채서, 시트를 스크롤하려고 트랙 위에서 위아래로 쓸어도
+ * 슬라이더가 그걸 가로 드래그로 먼저 가로채 값이 바뀌면서 스크롤이 아예
+ * 안 됐다. 손잡이(작은 원)만 반응하게 하면 트랙 위 스와이프는 그대로
+ * ScrollView로 넘어가고, 값은 손잡이를 직접 잡고 끌 때만 바뀐다.
  */
 function RgbSlider({channel, value, onChange}: RgbSliderProps) {
   const widthRef = React.useRef(0);
   const startValueRef = React.useRef(value);
+  const valueRef = React.useRef(value);
+  valueRef.current = value;
   const onChangeRef = React.useRef(onChange);
   onChangeRef.current = onChange;
+  const inputRef = React.useRef<React.ElementRef<typeof TextInput>>(null);
 
   const [textValue, setTextValue] = React.useState(String(value));
   React.useEffect(() => {
@@ -924,16 +1009,8 @@ function RgbSlider({channel, value, onChange}: RgbSliderProps) {
     () =>
       PanResponder.create({
         onStartShouldSetPanResponder: () => true,
-        onPanResponderGrant: (event: GestureResponderEvent) => {
-          const width = widthRef.current;
-          if (width <= 0) {
-            return;
-          }
-          const next = clamp255(
-            (event.nativeEvent.locationX / width) * 255,
-          );
-          startValueRef.current = next;
-          onChangeRef.current(next);
+        onPanResponderGrant: () => {
+          startValueRef.current = valueRef.current;
         },
         onPanResponderMove: (
           _event: GestureResponderEvent,
@@ -951,6 +1028,8 @@ function RgbSlider({channel, value, onChange}: RgbSliderProps) {
     [],
   );
 
+  const percent = (value / 255) * 100;
+
   return (
     <View style={styles.rgbSliderRow}>
       <Text style={styles.rgbSliderLabel}>{CHANNEL_LABEL[channel]}</Text>
@@ -958,16 +1037,21 @@ function RgbSlider({channel, value, onChange}: RgbSliderProps) {
         style={styles.rgbSliderTrack}
         onLayout={event => {
           widthRef.current = event.nativeEvent.layout.width;
-        }}
-        {...responder.panHandlers}>
+        }}>
         <View
           style={[
             styles.rgbSliderFill,
-            {width: `${(value / 255) * 100}%`, backgroundColor: CHANNEL_TINT[channel]},
+            {width: `${percent}%`, backgroundColor: CHANNEL_TINT[channel]},
           ]}
         />
+        <View
+          {...responder.panHandlers}
+          hitSlop={{top: 14, bottom: 14, left: 14, right: 14}}
+          style={[styles.rgbSliderThumb, {left: `${percent}%`}]}
+        />
       </View>
-      <TextInput
+      <TapToFocusInput
+        inputRef={inputRef}
         value={textValue}
         onChangeText={setTextValue}
         onSubmitEditing={commitTextValue}
@@ -989,6 +1073,7 @@ type RgbHexEditorProps = {
 function RgbHexEditor({color, onChange}: RgbHexEditorProps) {
   const [hexInput, setHexInput] = React.useState(color);
   const [hexError, setHexError] = React.useState(false);
+  const hexInputRef = React.useRef<React.ElementRef<typeof TextInput>>(null);
 
   React.useEffect(() => {
     setHexInput(color);
@@ -1020,7 +1105,8 @@ function RgbHexEditor({color, onChange}: RgbHexEditorProps) {
       <RgbSlider channel="b" value={rgb.b} onChange={v => updateChannel('b', v)} />
 
       <View style={styles.hexRow}>
-        <TextInput
+        <TapToFocusInput
+          inputRef={hexInputRef}
           value={hexInput}
           onChangeText={text => {
             setHexInput(text);
@@ -1072,16 +1158,38 @@ function ColorPickerSheet({
   hasImage,
   onClearImage,
 }: ColorPickerSheetProps) {
+  const {height: windowHeight} = useWindowDimensions();
+  const sheetMaxHeight = windowHeight * COLOR_SHEET_HEIGHT_RATIO;
+  const keyboardHeight = useKeyboardHeight();
+
   return (
     <Modal
       visible={visible}
       transparent
       animationType="slide"
       onRequestClose={onClose}>
-      <Pressable style={styles.sheetBackdrop} onPress={onClose}>
-        <Pressable
-          style={[styles.sheet, {paddingBottom: insetBottom + 20}]}
-          onPress={() => {}}>
+      {/* 뒤로 닫는 영역과 시트를 부모-자식이 아니라 형제로 둔다 — 예전처럼
+          시트를 Pressable로 감싸서 뒤 배경 탭을 막으면, RN의 JS 제스처
+          responder가 그 Pressable에 걸려서 안의 네이티브 ScrollView가
+          스크롤을 가로챌 기회를 아예 못 얻는다(터치가 JS 쪽에 잡히면 보통의
+          안드로이드 뷰 계층 터치 전달을 안 탄다). 닫는 영역을 시트 위쪽
+          "남는 공간"에만 딱 맞게 형제로 분리하면 시트 영역은 터치를 가로채는
+          Pressable이 전혀 없어 스크롤이 정상 동작한다. */}
+      <View style={styles.colorSheetContainer}>
+        <Pressable style={styles.colorSheetDismissArea} onPress={onClose} />
+        {/* KeyboardAvoidingView는 Modal 안에서 잘 안 맞는다 — "height" 방식은
+            이미 1/3로 줄여둔 시트 높이에서 키보드 높이를 빼려다 음수가 나와
+            시트가 통째로 사라졌다. 실측한 키보드 높이(useKeyboardHeight)만큼
+            직접 marginBottom을 줘서 시트를 밀어올린다. */}
+        <View
+          style={[
+            styles.sheet,
+            {
+              maxHeight: sheetMaxHeight,
+              marginBottom: keyboardHeight,
+              paddingBottom: insetBottom + 20,
+            },
+          ]}>
           <View style={styles.sheetHeader}>
             <Text style={styles.sheetTitle}>{title}</Text>
             <Pressable accessibilityRole="button" onPress={onClose}>
@@ -1129,8 +1237,8 @@ function ColorPickerSheet({
               </View>
             ) : null}
           </ScrollView>
-        </Pressable>
-      </Pressable>
+        </View>
+      </View>
     </Modal>
   );
 }
@@ -1464,6 +1572,17 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
     justifyContent: 'flex-end',
   },
+  // 색상 시트 전용 — 닫는 영역(dismissArea)과 시트를 형제로 두는 바깥 껍데기.
+  colorSheetContainer: {
+    flex: 1,
+  },
+  // 시트 위 "남는 공간"만 차지하는 탭-닫기 영역. 뒤 배경을 어둡게 하지
+  // 않아야 캔버스 색을 있는 그대로 비교할 수 있어서 투명으로 둔다.
+  // (sheetBackdrop과 구분해서 다른 시트는 그대로 어둡게 유지)
+  colorSheetDismissArea: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
   sheet: {
     backgroundColor: colors.white,
     borderTopLeftRadius: 20,
@@ -1591,6 +1710,11 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 10,
   },
+  // 자식 크기에 맞춰 감싸기만 하는 컨테이너 — 투명 Pressable을 TextInput
+  // 위에 absoluteFill로 덮기 위한 위치 기준점 역할만 한다.
+  tapToFocusWrapper: {
+    alignSelf: 'flex-start',
+  },
   rgbSliderLabel: {
     width: 14,
     fontSize: 13,
@@ -1602,20 +1726,37 @@ const styles = StyleSheet.create({
     height: 32,
     borderRadius: 16,
     backgroundColor: colors.divider,
-    overflow: 'hidden',
+    justifyContent: 'center',
   },
   rgbSliderFill: {
     height: '100%',
+    borderRadius: 16,
+  },
+  // 트랙 위에서 값을 바꾸는 손잡이. hitSlop으로 실제 터치 영역은 더
+  // 넓지만(트랙 스크롤과 구분되도록), 시각적으로는 작게 유지한다.
+  rgbSliderThumb: {
+    position: 'absolute',
+    top: 4,
+    width: 24,
+    height: 24,
+    marginLeft: -12,
+    borderRadius: 12,
+    backgroundColor: colors.white,
+    borderWidth: 2,
+    borderColor: colors.textPrimary,
   },
   rgbSliderValueInput: {
-    width: 44,
-    height: 32,
+    width: 64,
+    height: 36,
     borderRadius: 8,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.divider,
     textAlign: 'right',
-    paddingHorizontal: 6,
-    fontSize: 13,
+    textAlignVertical: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 0,
+    fontSize: 14,
+    includeFontPadding: false,
     color: colors.textPrimary,
   },
   hexRow: {
@@ -1625,7 +1766,11 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   hexInput: {
-    flex: 1,
+    // flex:1로 행 전체를 채우면 터치 영역도 그만큼 넓어져서, 시트를
+    // 스크롤하려고 이 줄 위에서 손가락을 쓸어도 텍스트 입력칸이 먼저
+    // 커서 위치 지정으로 가로채 스크롤이 안 먹는다. "#RRGGBB" 정도만
+    // 들어가면 되니 폭을 고정해서 나머지 공간은 스크롤이 그대로 통하게 둔다.
+    width: 150,
     height: 40,
     borderRadius: 8,
     borderWidth: StyleSheet.hairlineWidth,

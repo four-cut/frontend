@@ -60,9 +60,23 @@ export default function CaptureScreen() {
   const needsRotate = isLandscape && captureOrientation == null;
 
   // 눕힌 방향에 따라 화면(세로 고정) 콘텐츠를 반대로 돌려 사용자에게 똑바로
-  // 보이게 한다. 기기 상단이 왼쪽을 향하면('left', 하단이 오른쪽) 콘텐츠를
-  // 시계방향(+90)으로, 반대('right', 하단이 왼쪽)면 반시계(-90)로 돌린다.
+  // 보이게 한다. 기기 상단이 왼쪽을 향하면('left') 콘텐츠를 시계방향(+90)으로,
+  // 반대('right')면 반시계(-90)로 돌린다.
   const rotation = captureOrientation === 'left' ? 90 : -90;
+  const upright = `${rotation}deg`;
+
+  // 사용자가 보는 "위"와 "오른쪽"이 화면 좌표계의 어느 가장자리인지.
+  //
+  // 화면은 세로로 고정돼 있고 기기만 눕으므로, 눕힌 방향에 따라 두 방향이
+  // 정반대가 된다. 기기를 반시계로 눕히면('left') 기기 상단 = 사용자의 왼쪽,
+  // 기기 우변 = 사용자의 위다. 화면 좌표로 옮기면 이렇게 된다.
+  //
+  //   'left'  (rotation +90) → 사용자 위 = 화면 오른쪽, 사용자 오른쪽 = 화면 아래
+  //   'right' (rotation -90) → 사용자 위 = 화면 왼쪽,   사용자 오른쪽 = 화면 위
+  //
+  // 카운트다운은 사용자의 위, 촬영 버튼은 사용자의 오른쪽에 둔다.
+  const userTop = rotation === 90 ? styles.lsRight : styles.lsLeft;
+  const userRight = rotation === 90 ? styles.lsBottom : styles.lsTop;
 
   // 가로형: 화면은 세로로 고정돼 있으니(Info.plist) 촬영 UI 를 통째로 90도
   // 돌려 기기를 눕힌 사용자에게 똑바로 보이게 한다. 이때 프리뷰가 실제 사진
@@ -294,30 +308,19 @@ export default function CaptureScreen() {
 
       {isLandscape ? (
         // 가로형 오버레이는 회전 상자 밖, 화면 절대좌표에 개별 배치한다.
-        // 눕힌 방향(rotation)에 따라 사용자 기준 "위(카운트다운)/오른쪽(버튼)"이
-        // 화면 좌표계의 어느 가장자리인지 달라지므로, 그에 맞춰 위치를 고른다.
-        // 각 요소는 rotation 만큼 회전시켜 글자가 사용자에게 똑바로 보이게 한다.
+        // 위치는 위에서 구한 userTop/userRight 가 정하고, 글자는 rotation 만큼
+        // 돌려 사용자에게 똑바로 보이게 한다 — 상자를 돌리는 각과 같은 각이다.
         !needsRotate && (
           <View pointerEvents="box-none" style={StyleSheet.absoluteFill}>
-            <View
-              pointerEvents="none"
-              style={rotation === 90 ? styles.lsCountdownA : styles.lsCountdownB}>
+            <View pointerEvents="none" style={userTop}>
               <Text
-                style={[
-                  styles.countdown,
-                  {transform: [{rotate: `${rotation + 180}deg`}]},
-                ]}>
+                style={[styles.countdown, {transform: [{rotate: upright}]}]}>
                 {remaining}
               </Text>
             </View>
-            <View style={rotation === 90 ? styles.lsShootA : styles.lsShootB}>
-              <View
-                style={[
-                  styles.footer,
-                  {transform: [{rotate: `${rotation}deg`}]},
-                ]}>
-                <Text
-                  style={[styles.progress, {transform: [{rotate: '180deg'}]}]}>
+            <View style={userRight}>
+              <View style={[styles.footer, {transform: [{rotate: upright}]}]}>
+                <Text style={styles.progress}>
                   {Math.min(taken + 1, shotCount)}/{shotCount}
                 </Text>
                 <Pressable
@@ -412,10 +415,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  // 가로형 오버레이 위치. rotation +90(하단 오른쪽, 사용자 위=화면 왼쪽)일 때 A,
-  // rotation -90(하단 왼쪽, 사용자 위=화면 오른쪽)일 때 B 를 쓴다.
-  // 카운트다운=사용자 위, 촬영버튼=사용자 오른쪽.
-  lsCountdownA: {
+  // 가로형 오버레이 위치 — 이름은 "화면의 어느 가장자리"를 뜻한다.
+  // 그게 사용자의 위인지 오른쪽인지는 눕힌 방향이 정한다(userTop/userRight).
+  lsLeft: {
     position: 'absolute',
     top: 0,
     bottom: 0,
@@ -423,7 +425,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     justifyContent: 'center',
   },
-  lsCountdownB: {
+  lsRight: {
     position: 'absolute',
     top: 0,
     bottom: 0,
@@ -431,7 +433,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     justifyContent: 'center',
   },
-  lsShootA: {
+  lsTop: {
     position: 'absolute',
     top: 12,
     left: 0,
@@ -439,7 +441,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
   },
-  lsShootB: {
+  lsBottom: {
     position: 'absolute',
     bottom: 12,
     left: 0,

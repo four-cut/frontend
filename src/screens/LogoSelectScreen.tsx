@@ -7,11 +7,11 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
   useWindowDimensions,
   Vibration,
   View,
 } from 'react-native';
+import {Text} from '../components/AppText';
 import {useNavigation} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -28,6 +28,7 @@ import {
 } from '../api/photoSession';
 import {composeStrip} from '../capture/composeStrip';
 import {ALBUM_NAME, saveToAlbum} from '../capture/saveToAlbum';
+import {useT} from '../i18n';
 import type {FrameDesign} from '../frameBuilder/types';
 import NativeMediaFile from '../specs/NativeMediaFile';
 import NativePrint from '../specs/NativePrint';
@@ -52,6 +53,7 @@ const SHEET_WIDTH_RATIO = 0.52;
  */
 export default function LogoSelectScreen() {
   const insets = useSafeAreaInsets();
+  const t = useT();
   const navigation = useNavigation<CaptureNavigation>();
   const {width} = useWindowDimensions();
   const {layout, shots, selection, video, frame, selectFrame} =
@@ -137,7 +139,7 @@ export default function LogoSelectScreen() {
     }
     setPrinting(true);
     try {
-      await NativePrint?.printImage(strip, '찍고갈래 네컷');
+      await NativePrint?.printImage(strip, t.result.printJob);
     } catch {
       // 사용자가 인쇄 시트를 취소한 경우도 여기로 온다 — 별도 처리 불필요.
     } finally {
@@ -164,18 +166,13 @@ export default function LogoSelectScreen() {
       }
     } catch (error) {
       setSaveError(
-        error instanceof Error ? error.message : '저장에 실패했습니다',
+        error instanceof Error ? error.message : t.result.saveFailed,
       );
       setSaveState('failed');
     }
   };
 
-  const saveLabel = {
-    idle: '사진, 영상 저장하기',
-    saving: '저장 중...',
-    saved: '저장됨',
-    failed: '다시 저장하기',
-  }[saveState];
+  const saveLabel = t.result.save[saveState];
 
   const handleShare = () => {
     if (!strip) {
@@ -198,7 +195,7 @@ export default function LogoSelectScreen() {
       return;
     }
     if (!video) {
-      setQrError('영상이 아직 준비되지 않았습니다');
+      setQrError(t.result.qrVideoNotReady);
       setQrState('failed');
       return;
     }
@@ -210,7 +207,7 @@ export default function LogoSelectScreen() {
       const remote = await fetchRemoteFrames();
       const frameId = remote[0]?.frameId;
       if (frameId === undefined) {
-        throw new Error('서버에 등록된 프레임이 없습니다');
+        throw new Error(t.result.qrNoFrame);
       }
 
       const session = await createSession(frameId);
@@ -232,9 +229,7 @@ export default function LogoSelectScreen() {
       setQrUrl(uploaded.qrCodeUrl);
       setQrState('ready');
     } catch (error) {
-      setQrError(
-        error instanceof Error ? error.message : 'QR 을 만들지 못했습니다',
-      );
+      setQrError(error instanceof Error ? error.message : t.result.qrFailed);
       setQrState('failed');
     }
   };
@@ -260,7 +255,7 @@ export default function LogoSelectScreen() {
       <View style={styles.previewArea}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="결과물 크게 보기"
+          accessibilityLabel={t.result.zoomA11y}
           disabled={!strip}
           onPress={() => setZoomed(true)}
           style={[
@@ -274,7 +269,7 @@ export default function LogoSelectScreen() {
               resizeMode="contain"
             />
           ) : failed ? (
-            <Text style={styles.status}>합성에 실패했습니다</Text>
+            <Text style={styles.status}>{t.result.composeFailed}</Text>
           ) : (
             <ActivityIndicator color={colors.textPrimary} />
           )}
@@ -282,11 +277,14 @@ export default function LogoSelectScreen() {
       </View>
 
       <View style={[styles.actions, {paddingBottom: insets.bottom + 16}]}>
-        <Text style={styles.sectionLabel}>내 프레임 고르기</Text>
+        <Text style={styles.sectionLabel}>{t.result.myFrames}</Text>
         {frames === null ? (
-          <ActivityIndicator color={colors.textPrimary} style={styles.frameListLoading} />
+          <ActivityIndicator
+            color={colors.textPrimary}
+            style={styles.frameListLoading}
+          />
         ) : frames.length === 0 ? (
-          <Text style={styles.pending}>고를 수 있는 프레임이 없습니다</Text>
+          <Text style={styles.pending}>{t.result.noFrames}</Text>
         ) : (
           <ScrollView
             horizontal
@@ -296,7 +294,7 @@ export default function LogoSelectScreen() {
               <Pressable
                 key={item.frameId}
                 accessibilityRole="button"
-                accessibilityLabel={`${item.name} 프레임 적용`}
+                accessibilityLabel={t.result.applyFrameA11y(item.name)}
                 onPress={() => chooseFrame(item)}
                 style={styles.frameThumbWrap}>
                 {item.previewImageUrl ? (
@@ -304,7 +302,8 @@ export default function LogoSelectScreen() {
                     source={{uri: item.previewImageUrl}}
                     style={[
                       styles.frameThumb,
-                      frame?.frameId === item.frameId && styles.frameThumbSelected,
+                      frame?.frameId === item.frameId &&
+                        styles.frameThumbSelected,
                     ]}
                     resizeMode="cover"
                   />
@@ -313,7 +312,8 @@ export default function LogoSelectScreen() {
                     style={[
                       styles.frameThumb,
                       styles.frameThumbBlank,
-                      frame?.frameId === item.frameId && styles.frameThumbSelected,
+                      frame?.frameId === item.frameId &&
+                        styles.frameThumbSelected,
                     ]}
                   />
                 )}
@@ -325,12 +325,10 @@ export default function LogoSelectScreen() {
           </ScrollView>
         )}
         {frameLoadFailedId !== null ? (
-          <Text style={styles.saveError}>
-            프레임을 불러오지 못했습니다. 다시 시도해주세요.
-          </Text>
+          <Text style={styles.saveError}>{t.result.framesLoadFailed}</Text>
         ) : null}
         <PrimaryButton
-          label={printing ? '인쇄 준비 중...' : '인쇄하기'}
+          label={printing ? t.result.printing : t.result.print}
           disabled={!strip || printing}
           onPress={handlePrint}
         />
@@ -344,32 +342,36 @@ export default function LogoSelectScreen() {
         {/* 무엇이 어디에 저장됐는지 말해 준다. 조용히 끝내면 됐는지 알 수 없다. */}
         {saveState === 'saved' && saved ? (
           <Text style={styles.saveNote}>
-            사진 앱 &gt; {ALBUM_NAME} 앨범에 저장했어요
-            {saved.video ? '' : ' (영상은 저장되지 않았습니다)'}
+            {t.result.savedTo(ALBUM_NAME)}
+            {saved.video ? '' : t.result.videoNotSaved}
           </Text>
         ) : null}
 
         {saveState === 'saved' ? (
-          <PrimaryButton label="공유하기" onPress={handleShare} />
+          <PrimaryButton label={t.common.share} onPress={handleShare} />
         ) : null}
 
         {saveState === 'failed' && saveError ? (
           <>
             <Text style={styles.saveError}>{saveError}</Text>
-            {/* 권한이 막힌 거라면 어디서 풀어야 하는지 알려 준다. */}
-            {saveError.includes('권한') ? (
+            {/* 권한이 막힌 거라면 어디서 풀어야 하는지 알려 준다.
+                문구에 "권한"이 들었는지 보던 것을 사전 문구와 그대로 맞춘다 —
+                일본어에는 그 글자가 없어서 안내가 통째로 안 뜬다. */}
+            {saveError === t.errors.noSavePermission ? (
               <Pressable
                 accessibilityRole="button"
                 onPress={() => Linking.openSettings()}
                 style={styles.settingsLink}>
-                <Text style={styles.settingsLinkText}>설정에서 권한 허용</Text>
+                <Text style={styles.settingsLinkText}>
+                  {t.result.openSettings}
+                </Text>
               </Pressable>
             ) : null}
           </>
         ) : null}
 
         <PrimaryButton
-          label={qrState === 'preparing' ? 'QR 만드는 중...' : 'QR로 받기'}
+          label={qrState === 'preparing' ? t.result.qrPreparing : t.result.qr}
           disabled={!video || qrState === 'preparing'}
           onPress={qrState === 'ready' ? () => setQrState('ready') : handleQr}
         />
@@ -379,7 +381,7 @@ export default function LogoSelectScreen() {
         ) : null}
 
         {saveState === 'idle' && !video ? (
-          <Text style={styles.saveNote}>영상은 아직 준비 중입니다</Text>
+          <Text style={styles.saveNote}>{t.result.videoPending}</Text>
         ) : null}
       </View>
 
@@ -391,7 +393,7 @@ export default function LogoSelectScreen() {
         onRequestClose={() => setZoomed(false)}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="닫기"
+          accessibilityLabel={t.common.close}
           onPress={() => setZoomed(false)}
           style={styles.zoomBackdrop}>
           {strip ? (
@@ -412,11 +414,11 @@ export default function LogoSelectScreen() {
         onRequestClose={() => setQrState('idle')}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="닫기"
+          accessibilityLabel={t.common.close}
           onPress={() => setQrState('idle')}
           style={styles.qrBackdrop}>
           <View style={styles.qrCard}>
-            <Text style={styles.qrTitle}>QR을 찍어 받아가세요</Text>
+            <Text style={styles.qrTitle}>{t.result.qrTitle}</Text>
             {qrUrl ? (
               <Image
                 source={{uri: qrUrl}}
@@ -424,13 +426,9 @@ export default function LogoSelectScreen() {
                 resizeMode="contain"
               />
             ) : null}
-            <Text style={styles.qrHint}>
-              휴대폰 카메라로 찍으면 다운로드 화면이 열립니다
-            </Text>
+            <Text style={styles.qrHint}>{t.result.qrHint}</Text>
             {qrHasPhoto ? null : (
-              <Text style={styles.qrWarn}>
-                사진을 올리지 못해 영상만 받을 수 있어요
-              </Text>
+              <Text style={styles.qrWarn}>{t.result.qrVideoOnly}</Text>
             )}
           </View>
         </Pressable>

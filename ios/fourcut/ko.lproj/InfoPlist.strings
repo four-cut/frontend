@@ -1,0 +1,5 @@
+/* 권한 요청 팝업 문구. 앱 안에서 고른 언어가 아니라 기기 언어를 따른다 —
+   이 문구는 iOS 가 앱 밖에서 띄운다. */
+"NSCameraUsageDescription" = "네컷 사진을 촬영하기 위해 카메라를 사용합니다.";
+"NSPhotoLibraryAddUsageDescription" = "완성된 네컷 사진과 영상을 사진 앱에 저장합니다.";
+"NSPhotoLibraryUsageDescription" = "찍고갈래? 앨범을 만들어 결과물을 모아 두기 위해 사진 앱에 접근합니다.";

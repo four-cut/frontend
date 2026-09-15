@@ -1,0 +1,4 @@
+/* 권한 요청 팝업 문구(일본어). */
+"NSCameraUsageDescription" = "4カット写真を撮影するためにカメラを使用します。";
+"NSPhotoLibraryAddUsageDescription" = "完成した4カット写真と動画を写真アプリに保存します。";
+"NSPhotoLibraryUsageDescription" = "찍고갈래? アルバムを作成して作品をまとめるために写真アプリにアクセスします。";

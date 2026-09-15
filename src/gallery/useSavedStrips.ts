@@ -18,10 +18,17 @@ export type StripItem = {
   takenAt: number;
 };
 
-/** 같은 달에 찍은 것끼리 묶은 한 덩어리. */
+/**
+ * 같은 달에 찍은 것끼리 묶은 한 덩어리.
+ *
+ * 머리말 문구를 여기서 만들지 않는다 — "2026년 8월"과 "2026年8月"은 언어마다
+ * 다르고, 언어는 화면이 그릴 때 정해진다. 묶기는 숫자만 넘기고 문구는 화면이
+ * 만든다.
+ */
 export type MonthSection = {
-  /** 예: "2026년 8월" */
-  title: string;
+  year: number;
+  /** 1 ~ 12. Date 의 0-기준이 아니다. */
+  month: number;
   data: StripItem[];
 };
 
@@ -52,7 +59,8 @@ export function groupByMonth(items: StripItem[]): MonthSection[] {
     if (key !== currentKey) {
       currentKey = key;
       sections.push({
-        title: `${date.getFullYear()}년 ${date.getMonth() + 1}월`,
+        year: date.getFullYear(),
+        month: date.getMonth() + 1,
         data: [],
       });
     }

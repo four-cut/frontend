@@ -2,6 +2,7 @@ import React from 'react';
 import {Image, Pressable, StyleSheet} from 'react-native';
 
 import {images} from '../assets';
+import {useT} from '../i18n';
 import {colors} from '../theme';
 
 type Props = {
@@ -10,10 +11,11 @@ type Props = {
 
 /** 촬영 플로우를 끝내고 홈으로 돌아가는 버튼. (SR-06 / SR-07) */
 export default function HomeButton({onPress}: Props) {
+  const t = useT();
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel="홈으로"
+      accessibilityLabel={t.common.home}
       hitSlop={14}
       onPress={onPress}
       style={({pressed}) => [styles.button, pressed && styles.pressed]}>

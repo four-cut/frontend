@@ -1,6 +1,10 @@
 import {ImageFormat, Skia} from '@shopify/react-native-skia';
 
-import {computeSlotRects, EXPORT_WIDTH, stripGeometry} from '../capture/stripLayout';
+import {
+  computeSlotRects,
+  EXPORT_WIDTH,
+  stripGeometry,
+} from '../capture/stripLayout';
 import {
   drawBackgroundImage,
   drawSlotMasks,
@@ -10,6 +14,7 @@ import {
 import type {StickerElement, TextElement} from './types';
 import MediaFile from '../specs/NativeMediaFile';
 import type {CaptureLayout} from '../state/CaptureSessionContext';
+import {getStrings} from '../i18n';
 
 /**
  * 배경(색·사진)과 스티커·텍스트가 있는 시트를 그린다 (SR-09 프레임 만들기).
@@ -31,18 +36,28 @@ export async function renderFrameDesign(
     Math.round(geometry.height),
   );
   if (!surface) {
-    throw new Error('디자인을 그릴 오프스크린 서피스를 만들지 못했습니다.');
+    throw new Error(getStrings().errors.surfaceFailed);
   }
 
   const canvas = surface.getCanvas();
   canvas.clear(Skia.Color(backgroundColor));
 
   if (backgroundImageUri) {
-    await drawBackgroundImage(canvas, geometry.width, geometry.height, backgroundImageUri);
+    await drawBackgroundImage(
+      canvas,
+      geometry.width,
+      geometry.height,
+      backgroundImageUri,
+    );
   }
 
   // 스티커를 먼저 그려서 나중에 그리는 텍스트가 항상 위에 보이게 한다.
-  await drawStickerElements(canvas, geometry.width, geometry.height, stickerElements);
+  await drawStickerElements(
+    canvas,
+    geometry.width,
+    geometry.height,
+    stickerElements,
+  );
 
   // 실제로는 이 자리에 촬영본이 들어간다 — 배경/스티커가 비쳐 보이면
   // 편집 중에 헷갈리므로 슬롯색으로 가린다.

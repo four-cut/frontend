@@ -9,6 +9,7 @@ import type {FrameDesign} from '../frameBuilder/types';
 import MediaFile from '../specs/NativeMediaFile';
 import type {CaptureLayout} from '../state/CaptureSessionContext';
 import {coverCrop, EXPORT_WIDTH, stripGeometry} from './stripLayout';
+import {getStrings} from '../i18n';
 
 /**
  * 고른 사진들을 출력 시트 한 장으로 합친다. (SR-07)
@@ -33,7 +34,7 @@ export async function composeStrip(
     Math.round(geometry.height),
   );
   if (!surface) {
-    throw new Error('스트립을 그릴 오프스크린 서피스를 만들지 못했습니다.');
+    throw new Error(getStrings().errors.surfaceFailed);
   }
 
   const canvas = surface.getCanvas();
@@ -65,9 +66,7 @@ export async function composeStrip(
     if (!image) {
       // 조용히 건너뛰면 사진이 한 장도 없는 흰 종이가 결과로 나와서
       // 원인을 짚기가 어렵다. 실패로 끊어 화면이 알 수 있게 한다.
-      throw new Error(
-        `사진을 읽지 못했습니다: ${photoUris[index]} (지원하지 않는 형식일 수 있습니다)`,
-      );
+      throw new Error(getStrings().errors.photoUnreadable(photoUris[index]));
     }
 
     const column = index % geometry.columns;

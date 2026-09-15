@@ -6,16 +6,17 @@ import {
   Pressable,
   SectionList,
   StyleSheet,
-  Text,
   useWindowDimensions,
   View,
 } from 'react-native';
+import {Text} from '../components/AppText';
 import {useFocusEffect} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {useAuth, useSocialSignIn} from '../auth';
 import {STRIP_ASPECT} from '../capture/stripLayout';
 import {useSavedStrips, type StripItem} from '../gallery/useSavedStrips';
+import {useT} from '../i18n';
 import {colors, fonts} from '../theme';
 
 const COLUMNS = 3;
@@ -39,6 +40,7 @@ function toRows(items: StripItem[]): StripItem[][] {
  */
 export default function GalleryScreen() {
   const insets = useSafeAreaInsets();
+  const t = useT();
   const {width} = useWindowDimensions();
   const {status: authStatus, member} = useAuth();
   const {signOutEverywhere} = useSocialSignIn();
@@ -56,7 +58,12 @@ export default function GalleryScreen() {
   const thumbWidth = (width - EDGE * 2 - GAP * (COLUMNS - 1)) / COLUMNS;
 
   const rowSections = useMemo(
-    () => sections.map(s => ({title: s.title, data: toRows(s.data)})),
+    () =>
+      sections.map(s => ({
+        year: s.year,
+        month: s.month,
+        data: toRows(s.data),
+      })),
     [sections],
   );
 
@@ -65,13 +72,13 @@ export default function GalleryScreen() {
   return (
     <View style={[styles.container, {paddingTop: insets.top + 12}]}>
       <View style={styles.header}>
-        <Text style={styles.title}>내 네컷</Text>
+        <Text style={styles.title}>{t.gallery.title}</Text>
         {member ? (
           <Pressable
             accessibilityRole="button"
             onPress={signOutEverywhere}
             hitSlop={8}>
-            <Text style={styles.signOut}>로그아웃</Text>
+            <Text style={styles.signOut}>{t.gallery.signOut}</Text>
           </Pressable>
         ) : null}
       </View>
@@ -82,14 +89,12 @@ export default function GalleryScreen() {
         </View>
       ) : status === 'denied' ? (
         <View style={styles.center}>
-          <Text style={styles.guide}>사진 접근을 허용해야 볼 수 있어요</Text>
+          <Text style={styles.guide}>{t.gallery.needPermission}</Text>
         </View>
       ) : isEmpty ? (
         <View style={styles.center}>
-          <Text style={styles.guide}>아직 저장한 네컷이 없어요</Text>
-          <Text style={styles.guideSub}>
-            촬영을 마치고 저장하면 여기에 모여요
-          </Text>
+          <Text style={styles.guide}>{t.gallery.empty}</Text>
+          <Text style={styles.guideSub}>{t.gallery.emptyHint}</Text>
         </View>
       ) : (
         <SectionList
@@ -103,7 +108,9 @@ export default function GalleryScreen() {
           onEndReached={loadMore}
           onEndReachedThreshold={0.5}
           renderSectionHeader={({section}) => (
-            <Text style={styles.month}>{section.title}</Text>
+            <Text style={styles.month}>
+              {t.gallery.monthTitle(section.year, section.month)}
+            </Text>
           )}
           renderItem={({item: row}) => (
             <View style={styles.row}>
@@ -111,7 +118,7 @@ export default function GalleryScreen() {
                 <Pressable
                   key={item.id}
                   accessibilityRole="button"
-                  accessibilityLabel="크게 보기"
+                  accessibilityLabel={t.gallery.zoomA11y}
                   onPress={() => setZoomed(item)}
                   style={{width: thumbWidth}}>
                   <Image
@@ -150,7 +157,7 @@ export default function GalleryScreen() {
         onRequestClose={() => setZoomed(null)}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="닫기"
+          accessibilityLabel={t.common.close}
           onPress={() => setZoomed(null)}
           style={styles.zoomBackdrop}>
           {zoomed ? (

@@ -13,7 +13,9 @@
 		54D6FE25FFE805A64CB122C9 /* MediaFileModule.mm in Sources */ = {isa = PBXBuildFile; fileRef = 3EA845CF1F165437FCF7D7BF /* MediaFileModule.mm */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		8DDDA43216A0E542FC30D19F /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 3CDAE8A8F910ED0C426FC66C /* InfoPlist.strings */; };
 		925CB92544F569CDCC8AE951 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
+		A02E16DA61E84226B2F15DD2 /* ZenMaruGothic-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F0557364AA4B45359D220451 /* ZenMaruGothic-Regular.ttf */; };
 		C6671FD615FBA0A1D9A1267B /* PrintModule.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7CED7071CBF5A4AF3C10C225 /* PrintModule.mm */; };
 		E16D5D0EF9AE4B84B818B2D1 /* Jua-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E0D552586CE14AD38D85FC8B /* Jua-Regular.ttf */; };
 /* End PBXBuildFile section */
@@ -30,12 +32,15 @@
 		5DCACB8F33CDC322A6C60F78 /* libPods-fourcut.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-fourcut.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5E832081B9AB2AE59BE328D7 /* PrintModule.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = PrintModule.h; path = fourcut/PrintModule.h; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = fourcut/AppDelegate.swift; sourceTree = "<group>"; };
+		7BDEE4E4C85AC2CC21C7CDAA /* ja */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = ja; path = fourcut/ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		7CED7071CBF5A4AF3C10C225 /* PrintModule.mm */ = {isa = PBXFileReference; includeInIndex = 1; name = PrintModule.mm; path = fourcut/PrintModule.mm; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = fourcut/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		8890745167A25D164381F1A2 /* MediaFileModule.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = MediaFileModule.h; path = fourcut/MediaFileModule.h; sourceTree = "<group>"; };
+		B7FA73AEC216AB3BAD856286 /* ko */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = ko; path = fourcut/ko.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		E0D552586CE14AD38D85FC8B /* Jua-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Jua-Regular.ttf"; path = "../assets/fonts/Jua-Regular.ttf"; sourceTree = "<group>"; };
 		EB7668C72C34DD2C56E6DC9F /* VideoSpeedModule.mm */ = {isa = PBXFileReference; includeInIndex = 1; name = VideoSpeedModule.mm; path = fourcut/VideoSpeedModule.mm; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		F0557364AA4B45359D220451 /* ZenMaruGothic-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "ZenMaruGothic-Regular.ttf"; path = "../assets/fonts/ZenMaruGothic-Regular.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,6 +69,7 @@
 				7CED7071CBF5A4AF3C10C225 /* PrintModule.mm */,
 				10BF8CB3CF549AA4BF1AB6D7 /* VideoSpeedModule.h */,
 				EB7668C72C34DD2C56E6DC9F /* VideoSpeedModule.mm */,
+				3CDAE8A8F910ED0C426FC66C /* InfoPlist.strings */,
 			);
 			name = fourcut;
 			sourceTree = "<group>";
@@ -120,6 +126,7 @@
 			isa = PBXGroup;
 			children = (
 				E0D552586CE14AD38D85FC8B /* Jua-Regular.ttf */,
+				F0557364AA4B45359D220451 /* ZenMaruGothic-Regular.ttf */,
 			);
 			name = Resources;
 			path = "";
@@ -164,11 +171,13 @@
 			};
 			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "fourcut" */;
 			compatibilityVersion = "Xcode 12.0";
-			developmentRegion = en;
+			developmentRegion = ko;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
+				ko,
+				ja,
 			);
 			mainGroup = 83CBB9F61A601CBA00E9B192;
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
@@ -189,6 +198,8 @@
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				925CB92544F569CDCC8AE951 /* PrivacyInfo.xcprivacy in Resources */,
 				E16D5D0EF9AE4B84B818B2D1 /* Jua-Regular.ttf in Resources */,
+				A02E16DA61E84226B2F15DD2 /* ZenMaruGothic-Regular.ttf in Resources */,
+				8DDDA43216A0E542FC30D19F /* InfoPlist.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -282,6 +293,18 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		3CDAE8A8F910ED0C426FC66C /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B7FA73AEC216AB3BAD856286 /* ko */,
+				7BDEE4E4C85AC2CC21C7CDAA /* ja */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {

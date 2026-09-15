@@ -1,11 +1,13 @@
 import {Image} from 'react-native';
 
 import {images} from '../assets';
+import type {Strings} from '../i18n';
 import MediaFile from '../specs/NativeMediaFile';
 
 export type DefaultSticker = {
   id: string;
-  label: string;
+  /** 이름은 사전 키로 들고 있는다 — 이 목록은 모듈 로드 때 한 번만 만들어진다. */
+  labelKey: keyof Strings['stickers'];
   uri: string;
   aspectRatio: number;
 };
@@ -26,7 +28,7 @@ const logoSource = Image.resolveAssetSource(images.logo)!;
 export const DEFAULT_STICKERS: DefaultSticker[] = [
   {
     id: 'logo',
-    label: '찍고갈래 로고',
+    labelKey: 'logo',
     uri: logoSource.uri,
     aspectRatio: (logoSource.width ?? 1) / (logoSource.height ?? 1),
   },

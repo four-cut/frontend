@@ -4,16 +4,17 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
   useWindowDimensions,
   View,
 } from 'react-native';
+import {Text} from '../components/AppText';
 import {useNavigation} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import HomeButton from '../components/HomeButton';
 import PrimaryButton from '../components/PrimaryButton';
 import StripPreview from '../components/StripPreview';
+import {useT} from '../i18n';
 import type {CaptureNavigation, RootNavigation} from '../navigation/types';
 import {useCaptureSession} from '../state/CaptureSessionContext';
 import {colors, fonts, fontSize} from '../theme';
@@ -28,6 +29,7 @@ export default function PhotoSelectScreen() {
   const {width} = useWindowDimensions();
   const {layout, cutCount, shots, selection, toggleSelection} =
     useCaptureSession();
+  const t = useT();
 
   if (!layout) {
     return null;
@@ -35,7 +37,8 @@ export default function PhotoSelectScreen() {
 
   const chosen = selection.map(index => shots[index]);
   const complete = selection.length === cutCount;
-  const thumbWidth = layout === 'portrait' ? THUMB_HEIGHT * 0.66 : THUMB_HEIGHT * 1.6;
+  const thumbWidth =
+    layout === 'portrait' ? THUMB_HEIGHT * 0.66 : THUMB_HEIGHT * 1.6;
 
   const goHome = () => {
     // navigate 는 MainTabs 를 CaptureFlow 위에 새로 쌓는다. 그러면 촬영 세션이
@@ -53,7 +56,7 @@ export default function PhotoSelectScreen() {
         <HomeButton onPress={goHome} />
       </View>
 
-      <Text style={styles.title}>사진을 선택해주세요</Text>
+      <Text style={styles.title}>{t.photoSelect.title}</Text>
 
       <View style={styles.previewArea}>
         <StripPreview
@@ -64,7 +67,7 @@ export default function PhotoSelectScreen() {
       </View>
 
       <Text style={styles.counter}>
-        사진 선택 ({selection.length}/{cutCount})
+        {t.photoSelect.count(selection.length, cutCount)}
       </Text>
 
       <ScrollView
@@ -79,7 +82,10 @@ export default function PhotoSelectScreen() {
             <Pressable
               key={uri}
               accessibilityRole="button"
-              accessibilityLabel={`촬영본 ${index + 1}${picked ? `, ${order + 1}번으로 선택됨` : ''}`}
+              accessibilityLabel={t.photoSelect.shotA11y(
+                index + 1,
+                picked ? order + 1 : null,
+              )}
               accessibilityState={{selected: picked}}
               onPress={() => toggleSelection(index)}
               style={[
@@ -87,7 +93,11 @@ export default function PhotoSelectScreen() {
                 {width: thumbWidth, height: THUMB_HEIGHT},
                 picked && styles.thumbPicked,
               ]}>
-              <Image source={{uri}} style={styles.thumbImage} resizeMode="cover" />
+              <Image
+                source={{uri}}
+                style={styles.thumbImage}
+                resizeMode="cover"
+              />
               {picked ? (
                 <View style={styles.badge}>
                   <Text style={styles.badgeLabel}>{order + 1}</Text>
@@ -100,7 +110,7 @@ export default function PhotoSelectScreen() {
 
       <View style={[styles.actions, {paddingBottom: insets.bottom + 16}]}>
         <PrimaryButton
-          label="다음"
+          label={t.common.next}
           disabled={!complete}
           onPress={() => navigation.navigate('LogoSelect')}
         />

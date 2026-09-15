@@ -1,4 +1,5 @@
 import {authFetch} from '../auth';
+import {getStrings} from '../i18n';
 
 /**
  * 서버 API 호출부.
@@ -16,11 +17,7 @@ const TIMEOUT_MS = 8000;
 
 /** 서버가 에러를 돌려줬을 때. status 로 분기할 수 있게 담아 둔다. */
 export class ApiError extends Error {
-  constructor(
-    readonly status: number,
-    readonly path: string,
-    message: string,
-  ) {
+  constructor(readonly status: number, readonly path: string, message: string) {
     super(message);
     this.name = 'ApiError';
   }
@@ -40,7 +37,7 @@ async function parse<T>(response: Response, path: string): Promise<T> {
     throw new ApiError(
       response.status,
       path,
-      `${path} 요청이 실패했습니다 (${response.status} ${detail})`,
+      getStrings().errors.requestFailed(path, response.status, detail),
     );
   }
 

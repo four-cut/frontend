@@ -2,6 +2,7 @@ import React from 'react';
 import {Image, Pressable, StyleSheet} from 'react-native';
 
 import {images} from '../assets';
+import {useT} from '../i18n';
 import {colors} from '../theme';
 
 type Props = {
@@ -9,10 +10,11 @@ type Props = {
 };
 
 export default function BackButton({onPress}: Props) {
+  const t = useT();
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel="뒤로 가기"
+      accessibilityLabel={t.common.back}
       hitSlop={14}
       onPress={onPress}
       style={({pressed}) => [styles.button, pressed && styles.pressed]}>

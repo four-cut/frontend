@@ -1,5 +1,6 @@
 import {PermissionsAndroid, Platform} from 'react-native';
 import {CameraRoll} from '@react-native-camera-roll/camera-roll';
+import {getStrings} from '../i18n';
 
 /** 저장물이 모이는 앨범 이름. */
 export const ALBUM_NAME = '찍고갈래';
@@ -35,11 +36,11 @@ export async function saveToAlbum(
   videoUri: string | null,
 ): Promise<{photo: boolean; video: boolean}> {
   if (!stripUri.startsWith('file://')) {
-    throw new Error('스트립이 파일로 만들어지지 않아 저장할 수 없습니다.');
+    throw new Error(getStrings().errors.noSaveTarget);
   }
 
   if (!(await ensureWritePermission())) {
-    throw new Error('저장 권한이 없습니다.');
+    throw new Error(getStrings().errors.noSavePermission);
   }
 
   await CameraRoll.saveAsset(stripUri, {type: 'photo', album: ALBUM_NAME});
@@ -47,7 +48,10 @@ export async function saveToAlbum(
   let video = false;
   if (videoUri) {
     try {
-      await CameraRoll.saveAsset(videoUri, {type: 'video', album: ALBUM_NAME});
+      await CameraRoll.saveAsset(videoUri, {
+        type: 'video',
+        album: ALBUM_NAME,
+      });
       video = true;
     } catch {
       // 사진은 이미 저장됐다. 영상 실패로 전체를 실패로 만들지 않는다.

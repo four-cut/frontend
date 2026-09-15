@@ -5,8 +5,12 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import BackButton from '../components/BackButton';
 import LayoutCard from '../components/LayoutCard';
+import {useT} from '../i18n';
 import type {CaptureNavigation} from '../navigation/types';
-import {useCaptureSession, type CaptureLayout} from '../state/CaptureSessionContext';
+import {
+  useCaptureSession,
+  type CaptureLayout,
+} from '../state/CaptureSessionContext';
 import {colors} from '../theme';
 
 /**
@@ -18,6 +22,7 @@ export default function LayoutSelectScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<CaptureNavigation>();
   const {selectLayout} = useCaptureSession();
+  const t = useT();
 
   // 가로형의 회전 안내는 이제 촬영 화면 안에서 기기 방향을 감지해 처리한다.
   // (세로로 들고 있으면 "돌려주세요"를 덮어 보여 주고, 가로로 돌리면 자동 촬영)
@@ -40,12 +45,12 @@ export default function LayoutSelectScreen() {
       <View style={styles.cards}>
         <LayoutCard
           layout="portrait"
-          label="세로형"
+          label={t.layoutSelect.portrait}
           onPress={() => choose('portrait')}
         />
         <LayoutCard
           layout="landscape"
-          label="가로형"
+          label={t.layoutSelect.landscape}
           onPress={() => choose('landscape')}
         />
       </View>

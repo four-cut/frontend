@@ -1,10 +1,19 @@
 import {useCallback, useState} from 'react';
 
 import {useAuth} from './AuthContext';
-import {getGoogleLoginRequest, googleSignOut, googleUnlink} from './providers/google';
-import {getKakaoLoginRequest, kakaoSignOut, kakaoUnlink} from './providers/kakao';
+import {
+  getGoogleLoginRequest,
+  googleSignOut,
+  googleUnlink,
+} from './providers/google';
+import {
+  getKakaoLoginRequest,
+  kakaoSignOut,
+  kakaoUnlink,
+} from './providers/kakao';
 import {SignInCancelled} from './providers/errors';
 import type {Provider} from './types';
+import {getStrings} from '../i18n';
 
 /**
  * provider SDK 로 소셜 토큰을 받아 우리 서버 로그인까지 이어 준다.
@@ -29,7 +38,9 @@ export function useSocialSignIn() {
         if (caught instanceof SignInCancelled) {
           return null;
         }
-        setError(caught instanceof Error ? caught.message : '로그인에 실패했다');
+        setError(
+          caught instanceof Error ? caught.message : getStrings().login.failed,
+        );
         return null;
       } finally {
         setPending(null);
@@ -77,6 +88,6 @@ function requestFor(provider: Provider) {
       return getGoogleLoginRequest();
     case 'apple':
       // Apple Developer Program 이 없어 보류 중이다. types.ts 참고.
-      return Promise.reject(new Error('애플 로그인은 아직 준비되지 않았다'));
+      return Promise.reject(new Error(getStrings().login.appleNotReady));
   }
 }

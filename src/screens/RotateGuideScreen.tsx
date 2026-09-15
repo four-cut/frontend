@@ -1,8 +1,10 @@
 import React from 'react';
-import {Image, Pressable, StyleSheet, Text} from 'react-native';
+import {Image, Pressable, StyleSheet} from 'react-native';
+import {Text} from '../components/AppText';
 import {useNavigation} from '@react-navigation/native';
 
 import {images} from '../assets';
+import {useT} from '../i18n';
 import type {CaptureNavigation} from '../navigation/types';
 import {colors, fonts, fontSize} from '../theme';
 
@@ -15,15 +17,16 @@ import {colors, fonts, fontSize} from '../theme';
  */
 export default function RotateGuideScreen() {
   const navigation = useNavigation<CaptureNavigation>();
+  const t = useT();
 
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel="기기를 돌려주세요. 눌러서 촬영으로 이동"
+      accessibilityLabel={t.rotate.a11y}
       onPress={() => navigation.navigate('Capture')}
       style={styles.container}>
       <Image source={images.refresh} style={styles.icon} resizeMode="contain" />
-      <Text style={styles.title}>기기를 돌려주세요!</Text>
+      <Text style={styles.title}>{t.rotate.title}</Text>
     </Pressable>
   );
 }

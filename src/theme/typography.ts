@@ -18,10 +18,31 @@
  */
 const TEMPORARY_FONT = 'Jua-Regular';
 
+/**
+ * 언어별 본문 서체.
+ *
+ * Jua 에는 가나·한자가 한 글자도 없다(코드포인트 2521개, 전부 한글·라틴).
+ * 일본어를 Jua 로 그리면 OS 가 글자마다 시스템 고딕으로 대체해서, 둥근
+ * 인상이 사라지고 화면마다 서체가 섞여 보인다. 인상이 가장 가까운
+ * Zen Maru Gothic(SIL OFL, 둥근 고딕)을 같이 번들해서 일본어일 때 쓴다.
+ *
+ * 워드마크("찍고갈래?")는 한국어 그대로 두기로 했으므로 언어와 무관하게
+ * 항상 Jua 다 — Zen Maru Gothic 에는 한글이 없다.
+ */
+export const LOCALE_FONT: Record<'ko' | 'ja', string> = {
+  ko: TEMPORARY_FONT,
+  ja: 'ZenMaruGothic-Regular',
+};
+
 export const fonts = {
   regular: TEMPORARY_FONT as string | undefined,
   bold: TEMPORARY_FONT as string | undefined,
-  /** 로고 워드마크("찍고갈래?")용 라운드 계열 폰트 */
+  /**
+   * 로고 워드마크("찍고갈래?")용. 언어를 바꿔도 이 값은 바뀌지 않는다 —
+   * 워드마크만은 항상 한글이라 Jua 로 그려야 한다. 이 폰트를 쓰는 Text 는
+   * components/AppText 가 아니라 react-native 의 Text 를 그대로 써서
+   * 언어별 서체 치환을 피한다.
+   */
   display: TEMPORARY_FONT as string | undefined,
 };
 

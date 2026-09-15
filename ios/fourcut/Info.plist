@@ -5,7 +5,7 @@
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>en</string>
+	<string>ko</string>
 	<key>CFBundleDisplayName</key>
 	<string>fourcut</string>
 	<key>CFBundleExecutable</key>
@@ -70,6 +70,7 @@
 	<key>UIAppFonts</key>
 	<array>
 		<string>Jua-Regular.ttf</string>
+		<string>ZenMaruGothic-Regular.ttf</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>

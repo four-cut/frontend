@@ -6,4 +6,5 @@ export const images = {
   refresh: require('./images/ic-refresh.png'),
   home: require('./images/ic-home.png'),
   chevronBack: require('./images/ic-chevron-back.png'),
+  settings: require('./images/ic-settings.png'),
 } as const;

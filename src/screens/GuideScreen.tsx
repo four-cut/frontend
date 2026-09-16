@@ -1,23 +1,21 @@
 import React from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
+import {Text} from '../components/AppText';
 import {useNavigation} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import BackButton from '../components/BackButton';
+import {useT} from '../i18n';
 import PrimaryButton from '../components/PrimaryButton';
 import type {RootNavigation} from '../navigation/types';
 import {colors, fonts, fontSize} from '../theme';
 
-/** 시안(Frame-14)의 번호 목록. 타이머 6초는 SR-05 카운트다운의 근거이기도 하다. */
-const NOTICES = [
-  '타이머는 6초',
-  '촬영하기 누르면 바로 촬영',
-  'QR로 사진, 영상 저장',
-];
-
 export default function GuideScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<RootNavigation>();
+  const t = useT();
+  /** 시안(Frame-14)의 번호 목록. 타이머 6초는 SR-05 카운트다운의 근거이기도 하다. */
+  const notices = t.guide.items;
 
   return (
     <View style={[styles.container, {paddingTop: insets.top}]}>
@@ -26,10 +24,10 @@ export default function GuideScreen() {
       </View>
 
       <View style={styles.body}>
-        <Text style={styles.title}>안내사항</Text>
+        <Text style={styles.title}>{t.guide.title}</Text>
 
         <View style={styles.notices}>
-          {NOTICES.map((notice, index) => (
+          {notices.map((notice, index) => (
             <View key={notice} style={styles.noticeRow}>
               <Text style={styles.noticeNumber}>{index + 1}.</Text>
               <Text style={styles.noticeText}>{notice}</Text>
@@ -40,7 +38,7 @@ export default function GuideScreen() {
 
       <View style={styles.actions}>
         <PrimaryButton
-          label="레이아웃 고르기"
+          label={t.guide.cta}
           onPress={() => navigation.navigate('CaptureFlow')}
         />
       </View>

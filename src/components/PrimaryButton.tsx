@@ -2,10 +2,10 @@ import React from 'react';
 import {
   Pressable,
   StyleSheet,
-  Text,
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
+import {Text} from './AppText';
 
 import {colors, fonts, fontSize} from '../theme';
 

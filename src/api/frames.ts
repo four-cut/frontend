@@ -1,7 +1,15 @@
 import {apiGet} from './client';
-import {computeSlotRects, EXPORT_WIDTH, stripGeometry} from '../capture/stripLayout';
-import {DEFAULT_STICKERS, resolveStickerUri} from '../frameBuilder/defaultStickers';
+import {
+  computeSlotRects,
+  EXPORT_WIDTH,
+  stripGeometry,
+} from '../capture/stripLayout';
+import {
+  DEFAULT_STICKERS,
+  resolveStickerUri,
+} from '../frameBuilder/defaultStickers';
 import type {FrameDesign, StickerElement} from '../frameBuilder/types';
+import {getStrings, type Strings} from '../i18n';
 
 /** 백엔드 FrameOrientation과 맞춘 값. */
 export type FrameOrientation = 'PORTRAIT' | 'LANDSCAPE';
@@ -46,10 +54,30 @@ export type FrameDetail = {
  */
 const USE_LOCAL_FRAMES = true;
 
+/**
+ * 씨앗 프레임(1, 2)의 이름은 읽을 때 번역한다.
+ *
+ * 이 배열은 모듈이 로드될 때 한 번만 만들어지고 addLocalFrame 이 뒤에 더
+ * 밀어 넣는다. 여기에 문구를 박아 두면 언어를 바꿔도 그대로 남고, 애초에
+ * 이 시점은 initLocale 이 끝나기도 전이라 저장해 둔 언어가 반영되지 않는다.
+ * 사용자가 만든 프레임은 붙인 이름을 그대로 둔다 — 파일 이름과 같은 성격이다.
+ */
+const SEED_FRAME_NAME_KEYS: {[frameId: number]: keyof Strings['frameNames']} = {
+  1: 'basicPortrait',
+  2: 'basicLandscape',
+};
+
+function withLocalizedName<T extends {frameId: number; name: string}>(
+  frame: T,
+): T {
+  const key = SEED_FRAME_NAME_KEYS[frame.frameId];
+  return key ? {...frame, name: getStrings().frameNames[key]} : frame;
+}
+
 const LOCAL_FRAMES: FrameSummary[] = [
   {
     frameId: 1,
-    name: '베이직 세로형',
+    name: '', // withLocalizedName 이 읽을 때 채운다
     orientation: 'PORTRAIT',
     requiredShotCount: 8,
     slotCount: 4,
@@ -57,7 +85,7 @@ const LOCAL_FRAMES: FrameSummary[] = [
   },
   {
     frameId: 2,
-    name: '베이직 가로형',
+    name: '', // withLocalizedName 이 읽을 때 채운다
     orientation: 'LANDSCAPE',
     requiredShotCount: 8,
     slotCount: 3,
@@ -76,7 +104,9 @@ const LOGO_STICKER = DEFAULT_STICKERS.find(sticker => sticker.id === 'logo');
  * 이름뿐이라 resolveStickerUri로 실제 file:// 경로로 바꾼 뒤에 써야 Skia가
  * 읽을 수 있다. 그래서 이 함수도, 이걸 부르는 쪽도 비동기다.
  */
-async function buildBasicFrameDesign(orientation: FrameOrientation): Promise<FrameDesign> {
+async function buildBasicFrameDesign(
+  orientation: FrameOrientation,
+): Promise<FrameDesign> {
   const layout = orientation === 'PORTRAIT' ? 'portrait' : 'landscape';
   const geometry = stripGeometry(layout, EXPORT_WIDTH);
   const stickerElements: StickerElement[] = [];
@@ -110,7 +140,9 @@ async function buildBasicFrameDesign(orientation: FrameOrientation): Promise<Fra
 
 const basicFrameDesignCache = new Map<FrameOrientation, Promise<FrameDesign>>();
 
-function getBasicFrameDesign(orientation: FrameOrientation): Promise<FrameDesign> {
+function getBasicFrameDesign(
+  orientation: FrameOrientation,
+): Promise<FrameDesign> {
   let cached = basicFrameDesignCache.get(orientation);
   if (!cached) {
     cached = buildBasicFrameDesign(orientation);
@@ -122,7 +154,7 @@ function getBasicFrameDesign(orientation: FrameOrientation): Promise<FrameDesign
 const LOCAL_FRAME_DETAILS: Record<number, FrameDetail> = {
   1: {
     frameId: 1,
-    name: '베이직 세로형',
+    name: '', // withLocalizedName 이 읽을 때 채운다
     orientation: 'PORTRAIT',
     canvasWidth: 1200,
     canvasHeight: 2176,
@@ -137,7 +169,7 @@ const LOCAL_FRAME_DETAILS: Record<number, FrameDetail> = {
   },
   2: {
     frameId: 2,
-    name: '베이직 가로형',
+    name: '', // withLocalizedName 이 읽을 때 채운다
     orientation: 'LANDSCAPE',
     canvasWidth: 1200,
     canvasHeight: 2176,
@@ -151,12 +183,14 @@ const LOCAL_FRAME_DETAILS: Record<number, FrameDetail> = {
   },
 };
 
-export function fetchFrames(orientation?: FrameOrientation): Promise<FrameSummary[]> {
+export function fetchFrames(
+  orientation?: FrameOrientation,
+): Promise<FrameSummary[]> {
   if (USE_LOCAL_FRAMES) {
     const frames = orientation
       ? LOCAL_FRAMES.filter(frame => frame.orientation === orientation)
       : LOCAL_FRAMES;
-    return Promise.resolve(frames);
+    return Promise.resolve(frames.map(withLocalizedName));
   }
 
   const query = orientation ? `?orientation=${orientation}` : '';
@@ -179,14 +213,14 @@ export async function fetchFrameDetail(frameId: number): Promise<FrameDetail> {
   if (USE_LOCAL_FRAMES) {
     const detail = LOCAL_FRAME_DETAILS[frameId];
     if (!detail) {
-      throw new Error(`프레임 ${frameId}을 찾을 수 없습니다.`);
+      throw new Error(getStrings().errors.frameNotFound(frameId));
     }
     // 베이직 프레임(1, 2)은 로고 스티커 uri를 비동기로 한 번 해석해야 해서
     // 모듈 로드 시점이 아니라 여기서 지연 생성한다.
     if (!detail.design && (frameId === 1 || frameId === 2)) {
       detail.design = await getBasicFrameDesign(detail.orientation);
     }
-    return detail;
+    return withLocalizedName(detail);
   }
 
   return apiGet<FrameDetail>(`/api/frames/${frameId}`);
@@ -208,8 +242,12 @@ function buildSlots(orientation: FrameOrientation): FrameSlot[] {
     const row = Math.floor(index / geometry.columns);
     return {
       slotIndex: index,
-      x: Math.round(geometry.padding + column * (geometry.slotWidth + geometry.gap)),
-      y: Math.round(geometry.padding + row * (geometry.slotHeight + geometry.gap)),
+      x: Math.round(
+        geometry.padding + column * (geometry.slotWidth + geometry.gap),
+      ),
+      y: Math.round(
+        geometry.padding + row * (geometry.slotHeight + geometry.gap),
+      ),
       width: Math.round(geometry.slotWidth),
       height: Math.round(geometry.slotHeight),
     };

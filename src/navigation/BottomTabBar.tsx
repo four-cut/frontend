@@ -1,8 +1,10 @@
 import React from 'react';
-import {Image, Pressable, StyleSheet, Text, View} from 'react-native';
+import {Image, Pressable, StyleSheet, View} from 'react-native';
+import {Text} from '../components/AppText';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import type {BottomTabBarProps} from '@react-navigation/bottom-tabs';
 
+import {useT} from '../i18n';
 import {colors, fonts, fontSize} from '../theme';
 import {TABS} from './tabs';
 import {useAuthGate} from './useAuthGate';
@@ -10,11 +12,12 @@ import {useAuthGate} from './useAuthGate';
 export default function BottomTabBar({state, navigation}: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const gate = useAuthGate();
+  const t = useT();
 
   return (
     <View style={[styles.container, {paddingBottom: insets.bottom || 12}]}>
       {state.routes.map((route, index) => {
-        const tab = TABS.find(t => t.name === route.name);
+        const tab = TABS.find(item => item.name === route.name);
         if (!tab) {
           return null;
         }
@@ -46,7 +49,7 @@ export default function BottomTabBar({state, navigation}: BottomTabBarProps) {
             key={route.key}
             accessibilityRole="tab"
             accessibilityState={{selected: focused}}
-            accessibilityLabel={tab.label}
+            accessibilityLabel={t.tab[tab.labelKey]}
             onPress={onPress}
             style={styles.item}>
             <Image
@@ -54,7 +57,9 @@ export default function BottomTabBar({state, navigation}: BottomTabBarProps) {
               style={[styles.icon, {tintColor: tint}]}
               resizeMode="contain"
             />
-            <Text style={[styles.label, {color: tint}]}>{tab.label}</Text>
+            <Text style={[styles.label, {color: tint}]}>
+              {t.tab[tab.labelKey]}
+            </Text>
           </Pressable>
         );
       })}

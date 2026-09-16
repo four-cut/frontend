@@ -1,6 +1,8 @@
 import React, {useState} from 'react';
-import {Image, Pressable, StyleSheet, Text, View} from 'react-native';
+import {Image, Pressable, StyleSheet, View} from 'react-native';
+import {Text} from './AppText';
 
+import {useT} from '../i18n';
 import {CUT_COUNT, type CaptureLayout} from '../state/CaptureSessionContext';
 import {colors, fonts, fontSize} from '../theme';
 
@@ -33,6 +35,7 @@ export default function LayoutCard({
   previewImageUrl,
   onPress,
 }: Props) {
+  const t = useT();
   const isPortrait = layout === 'portrait';
   const slots = Array.from({length: CUT_COUNT[layout]}, (_, index) => index);
   const [imageFailed, setImageFailed] = useState(false);
@@ -41,7 +44,7 @@ export default function LayoutCard({
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${label} 레이아웃`}
+      accessibilityLabel={t.layoutSelect.cardA11y(label)}
       onPress={onPress}
       style={({pressed}) => [styles.card, pressed && styles.pressed]}>
       <View style={styles.sheet}>
@@ -53,7 +56,8 @@ export default function LayoutCard({
             onError={() => setImageFailed(true)}
           />
         ) : (
-          <View style={isPortrait ? styles.portraitSlots : styles.landscapeSlots}>
+          <View
+            style={isPortrait ? styles.portraitSlots : styles.landscapeSlots}>
             {slots.map(index => (
               <View
                 key={index}

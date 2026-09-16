@@ -3,10 +3,10 @@ import {
   Image,
   Pressable,
   StyleSheet,
-  Text,
   useWindowDimensions,
   View,
 } from 'react-native';
+import {Text} from '../components/AppText';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {
@@ -20,13 +20,11 @@ import {
 } from 'react-native-vision-camera';
 
 import {images} from '../assets';
+import {useT} from '../i18n';
 import {SLOT_ASPECT} from '../capture/stripLayout';
 import {speedUpSessionVideo} from '../capture/videoSpeed';
 import type {CaptureNavigation} from '../navigation/types';
-import {
-  TIMER_SECONDS,
-  useCaptureSession,
-} from '../state/CaptureSessionContext';
+import {TIMER_SECONDS, useCaptureSession} from '../state/CaptureSessionContext';
 import {colors, fonts, fontSize} from '../theme';
 
 /**
@@ -54,6 +52,7 @@ export default function CaptureScreen() {
   const isFocused = useIsFocused();
   const {width, height} = useWindowDimensions();
   const {addShot, setVideo, shotCount, layout} = useCaptureSession();
+  const t = useT();
   const isLandscape = layout === 'landscape';
 
   // 물리적 기기 방향. 가로형은 기기를 눕혀야(left/right) 촬영할 수 있다.
@@ -181,7 +180,13 @@ export default function CaptureScreen() {
 
   useEffect(() => {
     // 기기를 아직 안 돌렸으면(needsRotate) 카운트다운을 시작하지 않는다.
-    if (!hasPermission || !device || !isFocused || taken >= shotCount || needsRotate) {
+    if (
+      !hasPermission ||
+      !device ||
+      !isFocused ||
+      taken >= shotCount ||
+      needsRotate
+    ) {
       return;
     }
     const timer = setTimeout(() => {
@@ -256,7 +261,7 @@ export default function CaptureScreen() {
     return (
       <View style={styles.fallback}>
         <Text style={styles.fallbackText}>
-          {hasPermission ? '사용할 수 있는 카메라가 없습니다' : '카메라 권한이 필요합니다'}
+          {hasPermission ? t.capture.noCamera : t.capture.needPermission}
         </Text>
       </View>
     );
@@ -266,11 +271,11 @@ export default function CaptureScreen() {
   if (!position) {
     return (
       <View style={styles.fallback}>
-        <Text style={styles.pickTitle}>어느 카메라로 찍을까요?</Text>
+        <Text style={styles.pickTitle}>{t.capture.pickTitle}</Text>
         <View style={styles.pickRow}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="전면 카메라로 촬영"
+            accessibilityLabel={t.capture.frontA11y}
             disabled={!canChooseFront}
             onPress={() => setPosition('front')}
             style={({pressed}) => [
@@ -278,11 +283,11 @@ export default function CaptureScreen() {
               !canChooseFront && styles.disabled,
               pressed && styles.pressed,
             ]}>
-            <Text style={styles.pickButtonLabel}>전면</Text>
+            <Text style={styles.pickButtonLabel}>{t.capture.front}</Text>
           </Pressable>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="후면 카메라로 촬영"
+            accessibilityLabel={t.capture.backA11y}
             disabled={!canChooseBack}
             onPress={() => setPosition('back')}
             style={({pressed}) => [
@@ -290,7 +295,7 @@ export default function CaptureScreen() {
               !canChooseBack && styles.disabled,
               pressed && styles.pressed,
             ]}>
-            <Text style={styles.pickButtonLabel}>후면</Text>
+            <Text style={styles.pickButtonLabel}>{t.capture.back}</Text>
           </Pressable>
         </View>
       </View>
@@ -300,13 +305,14 @@ export default function CaptureScreen() {
   if (!device) {
     return (
       <View style={styles.fallback}>
-        <Text style={styles.fallbackText}>사용할 수 있는 카메라가 없습니다</Text>
+        <Text style={styles.fallbackText}>{t.capture.noCamera}</Text>
       </View>
     );
   }
 
   return (
-    <View style={[styles.container, isLandscape && styles.containerLetterboxed]}>
+    <View
+      style={[styles.container, isLandscape && styles.containerLetterboxed]}>
       <View
         style={[
           styles.rotator,
@@ -349,9 +355,12 @@ export default function CaptureScreen() {
                 </Text>
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityLabel="바로 촬영"
+                  accessibilityLabel={t.capture.shootNow}
                   onPress={capture}
-                  style={({pressed}) => [styles.shoot, pressed && styles.pressed]}
+                  style={({pressed}) => [
+                    styles.shoot,
+                    pressed && styles.pressed,
+                  ]}
                 />
               </View>
             </View>
@@ -376,7 +385,7 @@ export default function CaptureScreen() {
 
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="바로 촬영"
+              accessibilityLabel={t.capture.shootNow}
               onPress={capture}
               style={({pressed}) => [styles.shoot, pressed && styles.pressed]}
             />
@@ -393,7 +402,7 @@ export default function CaptureScreen() {
             style={styles.rotateIcon}
             resizeMode="contain"
           />
-          <Text style={styles.rotateTitle}>기기를 돌려주세요!</Text>
+          <Text style={styles.rotateTitle}>{t.rotate.title}</Text>
         </View>
       )}
     </View>

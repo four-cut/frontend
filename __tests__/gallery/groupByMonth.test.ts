@@ -7,7 +7,12 @@
  */
 import {groupByMonth, type StripItem} from '../../src/gallery/useSavedStrips';
 
-/** 읽기 쉬우라고 날짜로 만든다. 로컬 시간 기준이어야 달 경계가 맞다. */
+/**
+ * 읽기 쉬우라고 날짜로 만든다. 로컬 시간 기준이어야 달 경계가 맞다.
+ *
+ * 머리말 문구("2026년 8월")는 화면이 언어에 맞춰 만든다. 여기서는 묶기가
+ * 맞는지만 본다 — 어느 달 것이 어느 덩어리에 들어갔는가.
+ */
 function item(id: string, iso: string): StripItem {
   return {id, uri: `file:///${id}.png`, takenAt: new Date(iso).getTime()};
 }
@@ -19,7 +24,7 @@ test('같은 달이면 한 덩어리로 묶인다', () => {
   ]);
 
   expect(sections).toHaveLength(1);
-  expect(sections[0].title).toBe('2026년 8월');
+  expect(sections[0]).toMatchObject({year: 2026, month: 8});
   expect(sections[0].data.map(s => s.id)).toEqual(['a', 'b']);
 });
 
@@ -30,7 +35,10 @@ test('달이 바뀌면 나뉘고, 최신 달이 먼저 온다', () => {
     item('c', '2026-07-01T10:00:00'),
   ]);
 
-  expect(sections.map(s => s.title)).toEqual(['2026년 8월', '2026년 7월']);
+  expect(sections.map(s => [s.year, s.month])).toEqual([
+    [2026, 8],
+    [2026, 7],
+  ]);
   expect(sections[1].data.map(s => s.id)).toEqual(['b', 'c']);
 });
 
@@ -41,7 +49,10 @@ test('해가 바뀌어도 같은 월끼리 잘못 합쳐지지 않는다', () =>
     item('b', '2025-01-10T10:00:00'),
   ]);
 
-  expect(sections.map(s => s.title)).toEqual(['2026년 1월', '2025년 1월']);
+  expect(sections.map(s => [s.year, s.month])).toEqual([
+    [2026, 1],
+    [2025, 1],
+  ]);
 });
 
 test('달을 건너뛰어도 그대로 이어진다', () => {
@@ -50,7 +61,10 @@ test('달을 건너뛰어도 그대로 이어진다', () => {
     item('b', '2026-06-01T10:00:00'),
   ]);
 
-  expect(sections.map(s => s.title)).toEqual(['2026년 9월', '2026년 6월']);
+  expect(sections.map(s => [s.year, s.month])).toEqual([
+    [2026, 9],
+    [2026, 6],
+  ]);
 });
 
 test('빈 목록이면 덩어리도 없다', () => {

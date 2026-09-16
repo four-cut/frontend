@@ -2,25 +2,54 @@ import {Image} from 'react-native';
 import {Skia, type SkCanvas, type SkTypeface} from '@shopify/react-native-skia';
 
 import {coverCrop, type SlotRect} from '../capture/stripLayout';
+import {getLocale} from '../i18n';
 import {colors} from '../theme';
 import type {StickerElement, TextElement} from './types';
 
 // Skia의 FontMgr.System()이 노출하는 시스템 폰트 목록(33개)엔 한글이 포함된
 // 패밀리가 하나도 없어서(sans-serif 등은 전부 라틴 전용) drawText가 두부(tofu)
-// 박스로만 그려진다. 앱에 이미 번들된 한글 폰트(Jua-Regular)를 직접 로드해서 쓴다.
-const JUA_FONT_ASSET = require('../../assets/fonts/Jua-Regular.ttf');
+// 박스로만 그려진다. 앱에 이미 번들된 폰트를 직접 로드해서 쓴다.
+//
+// 그리고 Skia의 drawText는 글리프가 없어도 다른 폰트로 대체해 주지 않는다.
+// RN의 Text는 OS가 글자마다 대체해 주지만 여기는 아니라서, Jua 하나로 그리면
+// 일본어를 입력한 프레임이 통째로 두부로 저장된다. 글자를 보고 맞는 폰트를
+// 고른다.
+const FONT_ASSETS: Record<TextScript, number> = {
+  ko: require('../../assets/fonts/Jua-Regular.ttf'),
+  ja: require('../../assets/fonts/ZenMaruGothic-Regular.ttf'),
+};
 
-let juaTypefacePromise: Promise<SkTypeface | null> | null = null;
+type TextScript = 'ko' | 'ja';
 
-function loadJuaTypeface(): Promise<SkTypeface | null> {
-  if (!juaTypefacePromise) {
-    juaTypefacePromise = (async () => {
-      const uri = Image.resolveAssetSource(JUA_FONT_ASSET)!.uri;
+const HANGUL = /[\uac00-\ud7a3\u1100-\u11ff\u3130-\u318f]/;
+// 가나와 CJK 한자. 한자는 한국어 한자와 겹치므로 한글을 먼저 본다.
+const JAPANESE = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uff66-\uff9f]/;
+
+/** 이 문자열을 어느 폰트로 그릴지. 라틴·숫자뿐이면 앱 언어를 따른다. */
+function scriptOf(text: string): TextScript {
+  if (HANGUL.test(text)) {
+    return 'ko';
+  }
+  if (JAPANESE.test(text)) {
+    return 'ja';
+  }
+  return getLocale();
+}
+
+const typefaceCache: Partial<Record<TextScript, Promise<SkTypeface | null>>> =
+  {};
+
+function loadTypeface(script: TextScript): Promise<SkTypeface | null> {
+  let cached = typefaceCache[script];
+  if (!cached) {
+    cached = (async () => {
+      const uri = Image.resolveAssetSource(FONT_ASSETS[script])!.uri;
       const data = await Skia.Data.fromURI(uri);
       return Skia.Typeface.MakeFreeTypeFaceFromData(data);
     })();
+    typefaceCache[script] = cached;
   }
-  return juaTypefacePromise;
+  return cached;
 }
 
 /**
@@ -38,7 +67,12 @@ export async function drawBackgroundImage(
   if (!image) {
     return;
   }
-  const crop = coverCrop(image.width(), image.height(), canvasWidth, canvasHeight);
+  const crop = coverCrop(
+    image.width(),
+    image.height(),
+    canvasWidth,
+    canvasHeight,
+  );
   canvas.drawImageRect(
     image,
     Skia.XYWHRect(crop.x, crop.y, crop.width, crop.height),
@@ -56,7 +90,10 @@ export function drawSlotMasks(canvas: SkCanvas, slots: SlotRect[]): void {
   const paint = Skia.Paint();
   paint.setColor(Skia.Color(colors.slot));
   for (const slot of slots) {
-    canvas.drawRect(Skia.XYWHRect(slot.x, slot.y, slot.width, slot.height), paint);
+    canvas.drawRect(
+      Skia.XYWHRect(slot.x, slot.y, slot.width, slot.height),
+      paint,
+    );
   }
 }
 
@@ -99,12 +136,27 @@ export async function drawTextElements(
   canvasHeight: number,
   textElements: TextElement[],
 ): Promise<void> {
-  const typeface = await loadJuaTypeface();
+  // 쓰이는 폰트만 미리 받아 둔다 — 한 글자도 안 쓰는 폰트를 3.8MB씩 읽을
+  // 이유가 없다.
+  const scripts = [...new Set(textElements.map(e => scriptOf(e.content)))];
+  const typefaces = new Map<TextScript, SkTypeface | null>(
+    await Promise.all(
+      scripts.map(
+        async script =>
+          [script, await loadTypeface(script)] as [
+            TextScript,
+            SkTypeface | null,
+          ],
+      ),
+    ),
+  );
+
   for (const element of textElements) {
     const paint = Skia.Paint();
     paint.setColor(Skia.Color(element.color));
     paint.setAntiAlias(true);
 
+    const typeface = typefaces.get(scriptOf(element.content));
     const font = Skia.Font(typeface ?? undefined, element.fontSize);
     canvas.drawText(
       element.content,

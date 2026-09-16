@@ -6,12 +6,16 @@ import {
   Modal,
   Pressable,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
-import {CameraRoll, type PhotoIdentifier} from '@react-native-camera-roll/camera-roll';
+import {Text} from '../components/AppText';
+import {
+  CameraRoll,
+  type PhotoIdentifier,
+} from '@react-native-camera-roll/camera-roll';
 
 import {ensurePhotoReadPermission} from '../gallery/photoPermission';
+import {useT} from '../i18n';
 import NativeMediaFile from '../specs/NativeMediaFile';
 import {colors, fonts} from '../theme';
 
@@ -34,13 +38,16 @@ export default function AlbumPickerSheet({
   insetBottom,
   onSelect,
   onClose,
-  title = '앨범에서 스티커 고르기',
+  title,
 }: Props) {
+  const t = useT();
   const [status, setStatus] = React.useState<
     'idle' | 'loading' | 'denied' | 'error' | 'ready'
   >('idle');
   const [photos, setPhotos] = React.useState<PhotoIdentifier[]>([]);
-  const [endCursor, setEndCursor] = React.useState<string | undefined>(undefined);
+  const [endCursor, setEndCursor] = React.useState<string | undefined>(
+    undefined,
+  );
   const [hasNextPage, setHasNextPage] = React.useState(false);
   const [loadingMore, setLoadingMore] = React.useState(false);
 
@@ -120,9 +127,11 @@ export default function AlbumPickerSheet({
           style={[styles.sheet, {paddingBottom: insetBottom + 20}]}
           onPress={() => {}}>
           <View style={styles.sheetHeader}>
-            <Text style={styles.sheetTitle}>{title}</Text>
+            <Text style={styles.sheetTitle}>
+              {title ?? t.albumPicker.stickerTitle}
+            </Text>
             <Pressable accessibilityRole="button" onPress={onClose}>
-              <Text style={styles.sheetDoneText}>완료</Text>
+              <Text style={styles.sheetDoneText}>{t.common.done}</Text>
             </Pressable>
           </View>
 
@@ -133,19 +142,16 @@ export default function AlbumPickerSheet({
           ) : status === 'denied' ? (
             <View style={styles.centerBox}>
               <Text style={styles.messageText}>
-                사진 접근 권한이 없어서 앨범을 불러올 수 없어요.{'\n'}
-                설정에서 권한을 허용해주세요.
+                {t.albumPicker.needPermission}
               </Text>
             </View>
           ) : status === 'error' ? (
             <View style={styles.centerBox}>
-              <Text style={styles.messageText}>
-                앨범을 불러오지 못했어요. 잠시 후 다시 시도해주세요.
-              </Text>
+              <Text style={styles.messageText}>{t.albumPicker.loadFailed}</Text>
             </View>
           ) : photos.length === 0 ? (
             <View style={styles.centerBox}>
-              <Text style={styles.messageText}>앨범에 사진이 없어요.</Text>
+              <Text style={styles.messageText}>{t.albumPicker.empty}</Text>
             </View>
           ) : (
             <FlatList
@@ -160,7 +166,9 @@ export default function AlbumPickerSheet({
                     // 읽으려 할 때(합성 시점) 조용히 멈춰버린다 — 지금
                     // file://로 복사해서 넘긴다.
                     const uri = NativeMediaFile
-                      ? await NativeMediaFile.copyToCacheFile(item.node.image.uri)
+                      ? await NativeMediaFile.copyToCacheFile(
+                          item.node.image.uri,
+                        )
                       : item.node.image.uri;
                     onSelect({
                       uri,

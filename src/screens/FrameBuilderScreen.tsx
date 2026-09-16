@@ -9,19 +9,21 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
-  TextInput,
   useWindowDimensions,
   View,
   type GestureResponderEvent,
   type PanResponderGestureState,
 } from 'react-native';
+import {Text, TextInput} from '../components/AppText';
 import {useNavigation} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {addLocalFrame} from '../api/frames';
-import AlbumPickerSheet, {type StickerPick} from '../frameBuilder/AlbumPickerSheet';
+import AlbumPickerSheet, {
+  type StickerPick,
+} from '../frameBuilder/AlbumPickerSheet';
 import BackButton from '../components/BackButton';
+import {useT} from '../i18n';
 import PrimaryButton from '../components/PrimaryButton';
 import {
   DEFAULT_STICKERS,
@@ -31,7 +33,11 @@ import {
 import {PALETTE} from '../frameBuilder/palette';
 import {renderFrameDesign} from '../frameBuilder/renderFrameDesign';
 import type {StickerElement, TextElement} from '../frameBuilder/types';
-import {computeSlotRects, STRIP_ASPECT, stripGeometry} from '../capture/stripLayout';
+import {
+  computeSlotRects,
+  STRIP_ASPECT,
+  stripGeometry,
+} from '../capture/stripLayout';
 import type {CaptureLayout} from '../state/CaptureSessionContext';
 import type {RootNavigation} from '../navigation/types';
 import {colors, fonts, fontSize} from '../theme';
@@ -50,18 +56,6 @@ const COLOR_SHEET_HEIGHT_RATIO = 1 / 3;
 const DRAG_OVERFLOW_PX = 24;
 
 const WEIGHT_OPTIONS: TextElement['fontWeight'][] = [400, 500, 600, 700];
-const WEIGHT_LABEL: Record<TextElement['fontWeight'], string> = {
-  400: '보통',
-  500: '중간',
-  600: '두껍게',
-  700: '아주 두껍게',
-};
-
-/** 슬롯 위치를 말로 알려주는 라벨 — 세로형 2×2, 가로형 3단. */
-const SLOT_LABELS: Record<CaptureLayout, string[]> = {
-  portrait: ['좌상', '우상', '좌하', '우하'],
-  landscape: ['상', '중', '하'],
-};
 
 function clamp(value: number, min: number, max: number) {
   'worklet';
@@ -78,8 +72,10 @@ function clamp(value: number, min: number, max: number) {
 function useKeyboardHeight(): number {
   const [height, setHeight] = React.useState(0);
   React.useEffect(() => {
-    const showEvent = Platform.OS === 'android' ? 'keyboardDidShow' : 'keyboardWillShow';
-    const hideEvent = Platform.OS === 'android' ? 'keyboardDidHide' : 'keyboardWillHide';
+    const showEvent =
+      Platform.OS === 'android' ? 'keyboardDidShow' : 'keyboardWillShow';
+    const hideEvent =
+      Platform.OS === 'android' ? 'keyboardDidHide' : 'keyboardWillHide';
     const showSub = Keyboard.addListener(showEvent, event =>
       setHeight(event.endCoordinates.height),
     );
@@ -140,7 +136,10 @@ function hexToRgb(hex: string): Rgb | null {
   const trimmed = hex.trim().replace(/^#/, '');
   const expanded =
     trimmed.length === 3
-      ? trimmed.split('').map(ch => ch + ch).join('')
+      ? trimmed
+          .split('')
+          .map(ch => ch + ch)
+          .join('')
       : trimmed;
   if (!/^[0-9a-fA-F]{6}$/.test(expanded)) {
     return null;
@@ -169,19 +168,25 @@ const CHANNEL_TINT: Record<keyof Rgb, string> = {
  * 스티커·사진 배치 편집은 여기 범위가 아니다.
  */
 export default function FrameBuilderScreen() {
+  const t = useT();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<RootNavigation>();
   const {width: windowWidth, height: windowHeight} = useWindowDimensions();
 
   const [layout, setLayout] = useState<CaptureLayout>('portrait');
   const [backgroundColor, setBackgroundColor] = useState<string>(colors.white);
-  const [backgroundImageUri, setBackgroundImageUri] = useState<string | null>(null);
+  const [backgroundImageUri, setBackgroundImageUri] = useState<string | null>(
+    null,
+  );
   const [textElements, setTextElements] = useState<TextElement[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [stickerElements, setStickerElements] = useState<StickerElement[]>([]);
-  const [selectedStickerId, setSelectedStickerId] = useState<string | null>(null);
+  const [selectedStickerId, setSelectedStickerId] = useState<string | null>(
+    null,
+  );
   const [backgroundPickerOpen, setBackgroundPickerOpen] = useState(false);
-  const [backgroundImagePickerOpen, setBackgroundImagePickerOpen] = useState(false);
+  const [backgroundImagePickerOpen, setBackgroundImagePickerOpen] =
+    useState(false);
   const [textColorPickerOpen, setTextColorPickerOpen] = useState(false);
   const [stickerSourceOpen, setStickerSourceOpen] = useState(false);
   const [stickerPickerOpen, setStickerPickerOpen] = useState(false);
@@ -198,7 +203,8 @@ export default function FrameBuilderScreen() {
   const colorSheetOpen = backgroundPickerOpen || textColorPickerOpen;
   const colorSheetHeight = windowHeight * COLOR_SHEET_HEIGHT_RATIO;
   const maxCanvasWidth = windowWidth * CANVAS_WIDTH_RATIO;
-  const availableWidth = canvasArea.width > 0 ? canvasArea.width * AREA_MARGIN : maxCanvasWidth;
+  const availableWidth =
+    canvasArea.width > 0 ? canvasArea.width * AREA_MARGIN : maxCanvasWidth;
   const rawAvailableHeight =
     canvasArea.height > 0 ? canvasArea.height * AREA_MARGIN : Infinity;
   const availableHeight = colorSheetOpen
@@ -210,7 +216,8 @@ export default function FrameBuilderScreen() {
     canvasHeight = availableHeight;
     canvasWidth = canvasHeight / STRIP_ASPECT;
   }
-  const selected = textElements.find(element => element.id === selectedId) ?? null;
+  const selected =
+    textElements.find(element => element.id === selectedId) ?? null;
   const selectedSticker =
     stickerElements.find(element => element.id === selectedStickerId) ?? null;
 
@@ -236,7 +243,7 @@ export default function FrameBuilderScreen() {
       ...prev,
       {
         id,
-        content: '텍스트',
+        content: t.frame.text,
         xRatio: 0.5,
         yRatio: 0.5,
         fontSize: 64,
@@ -324,10 +331,15 @@ export default function FrameBuilderScreen() {
         backgroundImageUri,
       );
       addLocalFrame({
-        name: layout === 'portrait' ? '내가 만든 세로형' : '내가 만든 가로형',
+        name: layout === 'portrait' ? t.frame.myPortrait : t.frame.myLandscape,
         orientation,
         previewImageUrl,
-        design: {backgroundColor, backgroundImageUri, textElements, stickerElements},
+        design: {
+          backgroundColor,
+          backgroundImageUri,
+          textElements,
+          stickerElements,
+        },
       });
       // navigate 로는 FrameBuilder 가 아래에 남아 계속 쌓인다. (LogoSelect 와 같은 이유)
       navigation.popTo('MainTabs', {
@@ -335,7 +347,7 @@ export default function FrameBuilderScreen() {
         params: {screen: 'Home'},
       });
     } catch {
-      Alert.alert('저장에 실패했습니다', '잠시 후 다시 시도해주세요.');
+      Alert.alert(t.frame.saveFailed, t.common.retry);
     } finally {
       setSaving(false);
     }
@@ -345,9 +357,9 @@ export default function FrameBuilderScreen() {
     <View style={[styles.container, {paddingTop: insets.top}]}>
       <View style={styles.header}>
         <BackButton onPress={() => navigation.goBack()} />
-        <Text style={styles.title}>프레임 만들기</Text>
+        <Text style={styles.title}>{t.frame.title}</Text>
         <PrimaryButton
-          label={saving ? '저장 중...' : '완료'}
+          label={saving ? t.frame.saving : t.common.done}
           onPress={handleComplete}
           disabled={saving}
           style={styles.completeButton}
@@ -359,7 +371,11 @@ export default function FrameBuilderScreen() {
           <Pressable
             key={option}
             accessibilityRole="button"
-            accessibilityLabel={option === 'portrait' ? '세로형' : '가로형'}
+            accessibilityLabel={
+              option === 'portrait'
+                ? t.layoutSelect.portrait
+                : t.layoutSelect.landscape
+            }
             onPress={() => setLayout(option)}
             style={[
               styles.layoutChip,
@@ -370,7 +386,9 @@ export default function FrameBuilderScreen() {
                 styles.layoutChipText,
                 layout === option && styles.layoutChipTextActive,
               ]}>
-              {option === 'portrait' ? '세로형' : '가로형'}
+              {option === 'portrait'
+                ? t.layoutSelect.portrait
+                : t.layoutSelect.landscape}
             </Text>
           </Pressable>
         ))}
@@ -471,9 +489,9 @@ export default function FrameBuilderScreen() {
             onPress={addText}
             style={styles.toolButton}>
             <View style={styles.textIconBadge}>
-              <Text style={styles.textIconGlyph}>가</Text>
+              <Text style={styles.textIconGlyph}>{t.frame.sampleGlyph}</Text>
             </View>
-            <Text style={styles.toolButtonCaption}>텍스트</Text>
+            <Text style={styles.toolButtonCaption}>{t.frame.text}</Text>
           </Pressable>
           <Pressable
             accessibilityRole="button"
@@ -482,23 +500,21 @@ export default function FrameBuilderScreen() {
             <View style={styles.textIconBadge}>
               <Text style={styles.textIconGlyph}>⭐</Text>
             </View>
-            <Text style={styles.toolButtonCaption}>스티커</Text>
+            <Text style={styles.toolButtonCaption}>{t.frame.sticker}</Text>
           </Pressable>
           <Pressable
             accessibilityRole="button"
             onPress={() => setBackgroundPickerOpen(true)}
             style={styles.toolButton}>
-            <View
-              style={[styles.backgroundDot, {backgroundColor}]}
-            />
-            <Text style={styles.toolButtonCaption}>배경</Text>
+            <View style={[styles.backgroundDot, {backgroundColor}]} />
+            <Text style={styles.toolButtonCaption}>{t.frame.background}</Text>
           </Pressable>
         </View>
       )}
 
       <ColorPickerSheet
         visible={backgroundPickerOpen}
-        title="배경"
+        title={t.frame.background}
         color={backgroundColor}
         insetBottom={insets.bottom}
         onChange={setBackgroundColor}
@@ -513,7 +529,7 @@ export default function FrameBuilderScreen() {
 
       <ColorPickerSheet
         visible={textColorPickerOpen}
-        title="글자색"
+        title={t.frame.textColor}
         color={selected?.color ?? colors.textPrimary}
         insetBottom={insets.bottom}
         onChange={color => updateSelected({color})}
@@ -543,7 +559,7 @@ export default function FrameBuilderScreen() {
         insetBottom={insets.bottom}
         onSelect={handlePickBackgroundImage}
         onClose={() => setBackgroundImagePickerOpen(false)}
-        title="앨범에서 배경 사진 고르기"
+        title={t.albumPicker.backgroundTitle}
       />
     </View>
   );
@@ -562,7 +578,9 @@ function SlotPlaceholders({
   layout: CaptureLayout;
   canvasWidth: number;
 }) {
-  const labels = SLOT_LABELS[layout];
+  const t = useT();
+  // 슬롯 위치를 말로 알려주는 라벨 — 세로형 2×2, 가로형 3단.
+  const labels = t.frame.slots[layout];
   const geometry = stripGeometry(layout, canvasWidth);
   const slots = computeSlotRects(layout, geometry);
 
@@ -792,36 +810,36 @@ function TextStyleToolbar({
   onDelete,
   onDone,
 }: ToolbarProps) {
+  const t = useT();
   return (
-    <View
-      style={[styles.styleToolbar, {paddingBottom: insetBottom + 20}]}>
+    <View style={[styles.styleToolbar, {paddingBottom: insetBottom + 20}]}>
       <View style={styles.styleRow}>
         <TextInput
           value={element.content}
           onChangeText={onChangeContent}
-          placeholder="텍스트 입력"
+          placeholder={t.frame.textPlaceholder}
           style={styles.contentInput}
         />
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="텍스트 삭제"
+          accessibilityLabel={t.frame.deleteText}
           onPress={onDelete}
           style={styles.deleteButton}>
-          <Text style={styles.deleteButtonText}>삭제</Text>
+          <Text style={styles.deleteButtonText}>{t.common.delete}</Text>
         </Pressable>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="편집 완료"
+          accessibilityLabel={t.frame.editDone}
           onPress={onDone}
           style={styles.doneButton}>
-          <Text style={styles.doneButtonText}>완료</Text>
+          <Text style={styles.doneButtonText}>{t.common.done}</Text>
         </Pressable>
       </View>
 
       <View style={styles.styleRow}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="글자 작게"
+          accessibilityLabel={t.frame.textSmaller}
           onPress={() => onChangeFontSize(Math.max(24, element.fontSize - 8))}
           style={styles.stepButton}>
           <Text style={styles.stepButtonText}>−</Text>
@@ -829,7 +847,7 @@ function TextStyleToolbar({
         <Text style={styles.stepValue}>{element.fontSize}</Text>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="글자 크게"
+          accessibilityLabel={t.frame.textBigger}
           onPress={() => onChangeFontSize(Math.min(160, element.fontSize + 8))}
           style={styles.stepButton}>
           <Text style={styles.stepButtonText}>+</Text>
@@ -843,7 +861,7 @@ function TextStyleToolbar({
             <Pressable
               key={weight}
               accessibilityRole="button"
-              accessibilityLabel={WEIGHT_LABEL[weight]}
+              accessibilityLabel={t.frame.weight[weight]}
               onPress={() => onChangeWeight(weight)}
               style={[
                 styles.weightChip,
@@ -855,7 +873,7 @@ function TextStyleToolbar({
                   {fontWeight: String(weight) as never},
                   weight === element.fontWeight && styles.weightChipTextActive,
                 ]}>
-                가
+                {t.frame.sampleGlyph}
               </Text>
             </Pressable>
           ))}
@@ -871,7 +889,7 @@ function TextStyleToolbar({
           <Pressable
             key={hex}
             accessibilityRole="button"
-            accessibilityLabel={`글자색 ${hex}`}
+            accessibilityLabel={t.frame.textColorA11y(hex)}
             onPress={() => onChangeColor(hex)}
             style={[
               styles.swatchSmall,
@@ -882,7 +900,7 @@ function TextStyleToolbar({
         ))}
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="색상 직접 선택"
+          accessibilityLabel={t.frame.pickColorDirect}
           onPress={onOpenColorPicker}
           style={styles.customSwatchTrigger}>
           <Text style={styles.customSwatchTriggerText}>+</Text>
@@ -911,31 +929,32 @@ function StickerStyleToolbar({
   onDelete,
   onDone,
 }: StickerToolbarProps) {
+  const t = useT();
   return (
     <View style={[styles.styleToolbar, {paddingBottom: insetBottom + 20}]}>
       <View style={styles.styleRow}>
-        <Text style={styles.stickerToolbarTitle}>스티커</Text>
+        <Text style={styles.stickerToolbarTitle}>{t.frame.sticker}</Text>
         <View style={styles.styleRowSpacer} />
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="스티커 삭제"
+          accessibilityLabel={t.frame.deleteSticker}
           onPress={onDelete}
           style={styles.deleteButton}>
-          <Text style={styles.deleteButtonText}>삭제</Text>
+          <Text style={styles.deleteButtonText}>{t.common.delete}</Text>
         </Pressable>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="편집 완료"
+          accessibilityLabel={t.frame.editDone}
           onPress={onDone}
           style={styles.doneButton}>
-          <Text style={styles.doneButtonText}>완료</Text>
+          <Text style={styles.doneButtonText}>{t.common.done}</Text>
         </Pressable>
       </View>
 
       <View style={styles.styleRow}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="스티커 작게"
+          accessibilityLabel={t.frame.stickerSmaller}
           onPress={() =>
             onChangeWidthRatio(
               Math.max(
@@ -947,10 +966,12 @@ function StickerStyleToolbar({
           style={styles.stepButton}>
           <Text style={styles.stepButtonText}>−</Text>
         </Pressable>
-        <Text style={styles.stepValue}>{Math.round(element.widthRatio * 100)}%</Text>
+        <Text style={styles.stepValue}>
+          {Math.round(element.widthRatio * 100)}%
+        </Text>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="스티커 크게"
+          accessibilityLabel={t.frame.stickerBigger}
           onPress={() =>
             onChangeWidthRatio(
               Math.min(
@@ -1071,6 +1092,7 @@ type RgbHexEditorProps = {
 };
 
 function RgbHexEditor({color, onChange}: RgbHexEditorProps) {
+  const t = useT();
   const [hexInput, setHexInput] = React.useState(color);
   const [hexError, setHexError] = React.useState(false);
   const hexInputRef = React.useRef<React.ElementRef<typeof TextInput>>(null);
@@ -1100,9 +1122,21 @@ function RgbHexEditor({color, onChange}: RgbHexEditorProps) {
   return (
     <View style={styles.rgbEditor}>
       <View style={[styles.colorPreviewLarge, {backgroundColor: color}]} />
-      <RgbSlider channel="r" value={rgb.r} onChange={v => updateChannel('r', v)} />
-      <RgbSlider channel="g" value={rgb.g} onChange={v => updateChannel('g', v)} />
-      <RgbSlider channel="b" value={rgb.b} onChange={v => updateChannel('b', v)} />
+      <RgbSlider
+        channel="r"
+        value={rgb.r}
+        onChange={v => updateChannel('r', v)}
+      />
+      <RgbSlider
+        channel="g"
+        value={rgb.g}
+        onChange={v => updateChannel('g', v)}
+      />
+      <RgbSlider
+        channel="b"
+        value={rgb.b}
+        onChange={v => updateChannel('b', v)}
+      />
 
       <View style={styles.hexRow}>
         <TapToFocusInput
@@ -1122,13 +1156,11 @@ function RgbHexEditor({color, onChange}: RgbHexEditorProps) {
           accessibilityRole="button"
           onPress={applyHex}
           style={styles.hexApplyButton}>
-          <Text style={styles.hexApplyButtonText}>적용</Text>
+          <Text style={styles.hexApplyButtonText}>{t.common.apply}</Text>
         </Pressable>
       </View>
       {hexError ? (
-        <Text style={styles.hexErrorText}>
-          올바른 색상 코드가 아니에요 (예: #FF8800)
-        </Text>
+        <Text style={styles.hexErrorText}>{t.frame.badHex}</Text>
       ) : null}
     </View>
   );
@@ -1158,6 +1190,7 @@ function ColorPickerSheet({
   hasImage,
   onClearImage,
 }: ColorPickerSheetProps) {
+  const t = useT();
   const {height: windowHeight} = useWindowDimensions();
   const sheetMaxHeight = windowHeight * COLOR_SHEET_HEIGHT_RATIO;
   const keyboardHeight = useKeyboardHeight();
@@ -1193,17 +1226,17 @@ function ColorPickerSheet({
           <View style={styles.sheetHeader}>
             <Text style={styles.sheetTitle}>{title}</Text>
             <Pressable accessibilityRole="button" onPress={onClose}>
-              <Text style={styles.sheetDoneText}>완료</Text>
+              <Text style={styles.sheetDoneText}>{t.common.done}</Text>
             </Pressable>
           </View>
-          <Text style={styles.sheetSubtitle}>색상을 선택하세요</Text>
+          <Text style={styles.sheetSubtitle}>{t.frame.pickColor}</Text>
           <ScrollView showsVerticalScrollIndicator={false}>
             <View style={styles.swatchGrid}>
               {PALETTE.map(hex => (
                 <Pressable
                   key={hex}
                   accessibilityRole="button"
-                  accessibilityLabel={`색상 ${hex}`}
+                  accessibilityLabel={t.frame.colorA11y(hex)}
                   onPress={() => onChange(hex)}
                   style={[
                     styles.swatch,
@@ -1221,7 +1254,7 @@ function ColorPickerSheet({
                   onPress={onPickImage}
                   style={styles.bgImageButton}>
                   <Text style={styles.bgImageButtonText}>
-                    사진으로 배경 만들기
+                    {t.frame.bgFromPhoto}
                   </Text>
                 </Pressable>
                 {hasImage ? (
@@ -1230,7 +1263,7 @@ function ColorPickerSheet({
                     onPress={onClearImage}
                     style={styles.bgImageClearButton}>
                     <Text style={styles.bgImageClearButtonText}>
-                      사진 배경 지우기
+                      {t.frame.bgClearPhoto}
                     </Text>
                   </Pressable>
                 ) : null}
@@ -1263,6 +1296,7 @@ function StickerSourceSheet({
   onPickDefault,
   onClose,
 }: StickerSourceSheetProps) {
+  const t = useT();
   return (
     <Modal
       visible={visible}
@@ -1274,9 +1308,9 @@ function StickerSourceSheet({
           style={[styles.sheet, {paddingBottom: insetBottom + 20}]}
           onPress={() => {}}>
           <View style={styles.sheetHeader}>
-            <Text style={styles.sheetTitle}>스티커</Text>
+            <Text style={styles.sheetTitle}>{t.frame.sticker}</Text>
             <Pressable accessibilityRole="button" onPress={onClose}>
-              <Text style={styles.sheetDoneText}>완료</Text>
+              <Text style={styles.sheetDoneText}>{t.common.done}</Text>
             </Pressable>
           </View>
 
@@ -1288,9 +1322,11 @@ function StickerSourceSheet({
               <Text style={styles.galleryRowIconText}>🖼️</Text>
             </View>
             <View style={styles.galleryRowTextGroup}>
-              <Text style={styles.galleryRowTitle}>갤러리에서 선택</Text>
+              <Text style={styles.galleryRowTitle}>
+                {t.frame.pickFromGallery}
+              </Text>
               <Text style={styles.galleryRowSubtitle}>
-                나만의 이미지를 스티커로 사용하세요
+                {t.frame.pickFromGalleryHint}
               </Text>
             </View>
             <Text style={styles.galleryRowChevron}>›</Text>
@@ -1298,13 +1334,15 @@ function StickerSourceSheet({
 
           {DEFAULT_STICKERS.length > 0 ? (
             <>
-              <Text style={styles.defaultStickerLabel}>기본 스티커</Text>
+              <Text style={styles.defaultStickerLabel}>
+                {t.frame.defaultStickers}
+              </Text>
               <View style={styles.defaultStickerGrid}>
                 {DEFAULT_STICKERS.map(sticker => (
                   <Pressable
                     key={sticker.id}
                     accessibilityRole="button"
-                    accessibilityLabel={sticker.label}
+                    accessibilityLabel={t.stickers[sticker.labelKey]}
                     onPress={() => onPickDefault(sticker)}
                     style={styles.defaultStickerItem}>
                     <Image

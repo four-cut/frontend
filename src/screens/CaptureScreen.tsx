@@ -30,6 +30,18 @@ import {
 import {colors, fonts, fontSize} from '../theme';
 
 /**
+ * 가로형에서 카운트다운을 사용자의 위 가장자리에서 띄우는 거리.
+ * 그 가장자리는 화면의 좌우 변이라 가리는 게 없다.
+ */
+const LS_TOP_GAP = 44;
+
+/**
+ * 가로형에서 촬영 버튼 묶음을 사용자의 오른쪽 가장자리에서 띄우는 거리.
+ * 여기에 그 가장자리의 inset 이 더해진다. 세로형 푸터가 쓰는 값과 맞췄다.
+ */
+const LS_SIDE_GAP = 16;
+
+/**
  * SR-05 촬영.
  *
  * 컷마다 6초를 세고 자동으로 찍는다. 「바로촬영」은 기다리지 않고 즉시 찍는다.
@@ -75,8 +87,20 @@ export default function CaptureScreen() {
   //   'right' (rotation -90) → 사용자 위 = 화면 왼쪽,   사용자 오른쪽 = 화면 위
   //
   // 카운트다운은 사용자의 위, 촬영 버튼은 사용자의 오른쪽에 둔다.
-  const userTop = rotation === 90 ? styles.lsRight : styles.lsLeft;
-  const userRight = rotation === 90 ? styles.lsBottom : styles.lsTop;
+  //
+  // 가장자리 여백에는 그 가장자리의 inset 을 더한다. 화면이 세로로 고정돼
+  // 있어 insets 도 세로 기준으로 오는데, 눕힌 방향에 따라 촬영 버튼이 놓이는
+  // 가장자리가 홈 인디케이터 쪽이 되기도 하고('left' → 화면 아래) 다이나믹
+  // 아일랜드 쪽이 되기도 한다('right' → 화면 위). 사용자의 위가 되는 좌우
+  // 가장자리는 가리는 게 없어 inset 이 0 이다.
+  const userTop =
+    rotation === 90
+      ? [styles.lsVertical, {right: insets.right + LS_TOP_GAP}]
+      : [styles.lsVertical, {left: insets.left + LS_TOP_GAP}];
+  const userRight =
+    rotation === 90
+      ? [styles.lsHorizontal, {bottom: insets.bottom + LS_SIDE_GAP}]
+      : [styles.lsHorizontal, {top: insets.top + LS_SIDE_GAP}];
 
   // 가로형: 화면은 세로로 고정돼 있으니(Info.plist) 촬영 UI 를 통째로 90도
   // 돌려 기기를 눕힌 사용자에게 똑바로 보이게 한다. 이때 프리뷰가 실제 사진
@@ -415,39 +439,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  // 가로형 오버레이 위치 — 이름은 "화면의 어느 가장자리"를 뜻한다.
-  // 그게 사용자의 위인지 오른쪽인지는 눕힌 방향이 정한다(userTop/userRight).
-  lsLeft: {
+  // 가로형 오버레이의 뼈대. 어느 가장자리에 붙일지와 얼마나 띄울지는
+  // 눕힌 방향을 아는 호출부가 정한다(userTop/userRight).
+  //
+  // 화면의 긴 변을 따라 붙는 쪽 — 카운트다운.
+  lsVertical: {
     position: 'absolute',
     top: 0,
     bottom: 0,
-    left: 12,
-    alignItems: 'flex-start',
     justifyContent: 'center',
   },
-  lsRight: {
+  // 화면의 짧은 변을 따라 붙는 쪽 — 촬영 버튼.
+  lsHorizontal: {
     position: 'absolute',
-    top: 0,
-    bottom: 0,
-    right: 12,
-    alignItems: 'flex-end',
-    justifyContent: 'center',
-  },
-  lsTop: {
-    position: 'absolute',
-    top: 12,
     left: 0,
     right: 0,
     alignItems: 'center',
-    justifyContent: 'flex-start',
-  },
-  lsBottom: {
-    position: 'absolute',
-    bottom: 12,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-    justifyContent: 'flex-end',
   },
   countdown: {
     fontSize: fontSize.countdown,

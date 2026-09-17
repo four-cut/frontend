@@ -56,7 +56,7 @@ export default function LogoSelectScreen() {
   const t = useT();
   const navigation = useNavigation<CaptureNavigation>();
   const {width} = useWindowDimensions();
-  const {layout, shots, selection, video, frame, selectFrame} =
+  const {layout, shots, selection, video, frame, selectFrame, trackTempFile} =
     useCaptureSession();
 
   // composeStrip이 네이티브 모듈로 이미 file:// 경로까지 떨궈서 돌려준다.
@@ -117,6 +117,11 @@ export default function LogoSelectScreen() {
 
     composeStrip(layout, photos, design)
       .then(uri => {
+        // 프레임을 바꿀 때마다 새 파일이 생긴다. 중간에 취소된 합성도
+        // 파일은 이미 써졌으니 화면에 쓰든 안 쓰든 정리 대상에 올린다.
+        if (uri.startsWith('file://')) {
+          trackTempFile(uri);
+        }
         if (!cancelled) {
           setStrip(uri);
         }
@@ -130,7 +135,7 @@ export default function LogoSelectScreen() {
     return () => {
       cancelled = true;
     };
-  }, [layout, selection, shots, design]);
+  }, [layout, selection, shots, design, trackTempFile]);
 
   // 프린터/매수/용지 크기 선택은 OS 인쇄 시트가 담당한다 (EXT-01).
   const handlePrint = async () => {

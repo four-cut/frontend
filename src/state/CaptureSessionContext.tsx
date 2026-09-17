@@ -47,6 +47,11 @@ type CaptureSession = {
   selectFrame: (frame: FrameSummary | null) => void;
   addShot: (path: string) => void;
   setVideo: (path: string) => void;
+  /**
+   * 플로우가 끝나면 지울 파일을 알려 둔다. 합성 결과나 배속 전 원본 영상처럼
+   * 세션 state 에 남지 않는 것들이다.
+   */
+  trackTempFile: (uri: string) => void;
   /** 이미 고른 사진이면 빼고, 아니면 컷 수까지만 더한다. */
   toggleSelection: (shotIndex: number) => void;
 };
@@ -70,23 +75,33 @@ export function CaptureSessionProvider({children}: Props) {
   const cutCount = layout ? CUT_COUNT[layout] : 0;
 
   // 언마운트 시점에는 state 가 이미 닫혀 있어서 최신 값을 따로 들고 있어야 한다.
-  const latest = useRef({shots, selection});
+  const latest = useRef({shots, video});
   useEffect(() => {
-    latest.current = {shots, selection};
-  }, [shots, selection]);
+    latest.current = {shots, video};
+  }, [shots, video]);
 
-  // 플로우를 벗어날 때 안 고른 촬영본을 지운다. 8장을 찍고 4장(가로형은 3장)만
-  // 쓰는데 나머지가 캐시에 계속 쌓인다. (NFR-04)
+  const tempFiles = useRef(new Set<string>());
+  const trackTempFile = useCallback((uri: string) => {
+    tempFiles.current.add(uri);
+  }, []);
+
+  // 플로우를 벗어나면 이 세션이 만든 파일을 모두 지운다. (NFR-04)
+  //
+  // 고른 촬영본도 지운다. 남겨 둘 결과물은 앨범에 복사돼 있고, 갤러리도
+  // 앨범에서 읽는다. 캐시에 둔 원본은 플로우 밖에서 쓰는 곳이 없다.
+  // 안드로이드는 저장 공간이 빠듯할 때나 캐시를 비우므로 그냥 두면 계속 쌓인다.
   useEffect(
     () => () => {
-      const {shots: taken, selection: picked} = latest.current;
-      const unused = taken.filter((_, index) => !picked.includes(index));
-      if (unused.length === 0 || !MediaFile) {
+      const {shots: taken, video: clip} = latest.current;
+      const targets = new Set([...taken, ...tempFiles.current]);
+      if (clip) {
+        targets.add(clip);
+      }
+      if (targets.size === 0 || !MediaFile) {
         return;
       }
-      // 화면은 이미 사라진 뒤라 실패를 알릴 곳이 없다. 다음 정리나
-      // 시스템 캐시 비우기에 맡긴다.
-      MediaFile.deleteFiles(unused).catch(() => {});
+      // 화면은 이미 사라진 뒤라 실패를 알릴 곳이 없다. 시스템 캐시 비우기에 맡긴다.
+      MediaFile.deleteFiles([...targets]).catch(() => {});
     },
     [],
   );
@@ -131,6 +146,7 @@ export function CaptureSessionProvider({children}: Props) {
       selectFrame,
       addShot,
       setVideo,
+      trackTempFile,
       toggleSelection,
     }),
     [
@@ -144,6 +160,7 @@ export function CaptureSessionProvider({children}: Props) {
       selectLayout,
       selectFrame,
       addShot,
+      trackTempFile,
       toggleSelection,
     ],
   );

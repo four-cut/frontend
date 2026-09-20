@@ -15,9 +15,13 @@
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		8DDDA43216A0E542FC30D19F /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 3CDAE8A8F910ED0C426FC66C /* InfoPlist.strings */; };
 		925CB92544F569CDCC8AE951 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
-		A02E16DA61E84226B2F15DD2 /* ZenMaruGothic-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F0557364AA4B45359D220451 /* ZenMaruGothic-Regular.ttf */; };
 		C6671FD615FBA0A1D9A1267B /* PrintModule.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7CED7071CBF5A4AF3C10C225 /* PrintModule.mm */; };
-		E16D5D0EF9AE4B84B818B2D1 /* Jua-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E0D552586CE14AD38D85FC8B /* Jua-Regular.ttf */; };
+		6182E55AB9A64DD7B4C587E9 /* Jua-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3DC7D731BE284044B1F28C3C /* Jua-Regular.ttf */; };
+		29E2C01ACC02493FB6DFE9D4 /* Pretendard-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 73EA5D726E56409091308EA3 /* Pretendard-Bold.ttf */; };
+		D138E7F0AF7D4DFC84CD44A5 /* Pretendard-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50FC1815ACBE466B94D58E59 /* Pretendard-Regular.ttf */; };
+		8E63F59E39334CCFB2F5831F /* Pretendard-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B568A51CDFFC4C7E8C60F73E /* Pretendard-SemiBold.ttf */; };
+		1244A425B54346AA850874E6 /* ZenMaruGothic-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 67C4A23335574915ACA604C0 /* ZenMaruGothic-Regular.ttf */; };
+		E25B75DC81FA439E83A154CB /* Pretendard-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 963BBEA9D0E44A4AAC794A7B /* Pretendard-LICENSE.txt */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,10 +41,14 @@
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = fourcut/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		8890745167A25D164381F1A2 /* MediaFileModule.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = MediaFileModule.h; path = fourcut/MediaFileModule.h; sourceTree = "<group>"; };
 		B7FA73AEC216AB3BAD856286 /* ko */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = ko; path = fourcut/ko.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		E0D552586CE14AD38D85FC8B /* Jua-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Jua-Regular.ttf"; path = "../assets/fonts/Jua-Regular.ttf"; sourceTree = "<group>"; };
 		EB7668C72C34DD2C56E6DC9F /* VideoSpeedModule.mm */ = {isa = PBXFileReference; includeInIndex = 1; name = VideoSpeedModule.mm; path = fourcut/VideoSpeedModule.mm; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		F0557364AA4B45359D220451 /* ZenMaruGothic-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "ZenMaruGothic-Regular.ttf"; path = "../assets/fonts/ZenMaruGothic-Regular.ttf"; sourceTree = "<group>"; };
+		3DC7D731BE284044B1F28C3C /* Jua-Regular.ttf */ = {isa = PBXFileReference; name = "Jua-Regular.ttf"; path = "../assets/fonts/Jua-Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		73EA5D726E56409091308EA3 /* Pretendard-Bold.ttf */ = {isa = PBXFileReference; name = "Pretendard-Bold.ttf"; path = "../assets/fonts/Pretendard-Bold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		50FC1815ACBE466B94D58E59 /* Pretendard-Regular.ttf */ = {isa = PBXFileReference; name = "Pretendard-Regular.ttf"; path = "../assets/fonts/Pretendard-Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		B568A51CDFFC4C7E8C60F73E /* Pretendard-SemiBold.ttf */ = {isa = PBXFileReference; name = "Pretendard-SemiBold.ttf"; path = "../assets/fonts/Pretendard-SemiBold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		67C4A23335574915ACA604C0 /* ZenMaruGothic-Regular.ttf */ = {isa = PBXFileReference; name = "ZenMaruGothic-Regular.ttf"; path = "../assets/fonts/ZenMaruGothic-Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		963BBEA9D0E44A4AAC794A7B /* Pretendard-LICENSE.txt */ = {isa = PBXFileReference; name = "Pretendard-LICENSE.txt"; path = "../assets/fonts/Pretendard-LICENSE.txt"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -125,8 +133,12 @@
 		BF3E8EBD2EED43A3B382FC31 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				E0D552586CE14AD38D85FC8B /* Jua-Regular.ttf */,
-				F0557364AA4B45359D220451 /* ZenMaruGothic-Regular.ttf */,
+				3DC7D731BE284044B1F28C3C /* Jua-Regular.ttf */,
+				73EA5D726E56409091308EA3 /* Pretendard-Bold.ttf */,
+				50FC1815ACBE466B94D58E59 /* Pretendard-Regular.ttf */,
+				B568A51CDFFC4C7E8C60F73E /* Pretendard-SemiBold.ttf */,
+				67C4A23335574915ACA604C0 /* ZenMaruGothic-Regular.ttf */,
+				963BBEA9D0E44A4AAC794A7B /* Pretendard-LICENSE.txt */,
 			);
 			name = Resources;
 			path = "";
@@ -197,9 +209,13 @@
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				925CB92544F569CDCC8AE951 /* PrivacyInfo.xcprivacy in Resources */,
-				E16D5D0EF9AE4B84B818B2D1 /* Jua-Regular.ttf in Resources */,
-				A02E16DA61E84226B2F15DD2 /* ZenMaruGothic-Regular.ttf in Resources */,
 				8DDDA43216A0E542FC30D19F /* InfoPlist.strings in Resources */,
+				6182E55AB9A64DD7B4C587E9 /* Jua-Regular.ttf in Resources */,
+				29E2C01ACC02493FB6DFE9D4 /* Pretendard-Bold.ttf in Resources */,
+				D138E7F0AF7D4DFC84CD44A5 /* Pretendard-Regular.ttf in Resources */,
+				8E63F59E39334CCFB2F5831F /* Pretendard-SemiBold.ttf in Resources */,
+				1244A425B54346AA850874E6 /* ZenMaruGothic-Regular.ttf in Resources */,
+				E25B75DC81FA439E83A154CB /* Pretendard-LICENSE.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

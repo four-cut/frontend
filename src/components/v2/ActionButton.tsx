@@ -9,8 +9,14 @@ import React from 'react';
 import {ActivityIndicator, Pressable, StyleSheet} from 'react-native';
 
 import {Text} from '../AppText';
-import {fonts} from '../../theme';
-import {colorsV2, radiusV2, sizeV2, spaceV2, touchV2} from '../../theme/uiV2';
+import {
+  colorsV2,
+  fontsV2,
+  radiusV2,
+  sizeV2,
+  spaceV2,
+  touchV2,
+} from '../../theme/uiV2';
 
 type Variant = 'filled' | 'tonal' | 'text';
 
@@ -90,7 +96,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: sizeV2.button,
-    fontFamily: fonts.bold,
+    fontFamily: fontsV2.semibold,
     includeFontPadding: false,
   },
   labelOnDark: {

@@ -25,9 +25,9 @@ import {
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {Text} from '../AppText';
-import {fonts} from '../../theme';
 import {
   colorsV2,
+  fontsV2,
   lineV2,
   radiusV2,
   sizeV2,
@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: sizeV2.sectionTitle,
     lineHeight: lineV2.sectionTitle,
-    fontFamily: fonts.bold,
+    fontFamily: fontsV2.bold,
     color: colorsV2.textPrimary,
     includeFontPadding: false,
   },
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
   empty: {
     fontSize: sizeV2.body,
     lineHeight: lineV2.body,
-    fontFamily: fonts.regular,
+    fontFamily: fontsV2.regular,
     color: colorsV2.textMuted,
     textAlign: 'center',
     marginVertical: spaceV2.xxl,
@@ -302,12 +302,12 @@ const styles = StyleSheet.create({
     marginTop: spaceV2.sm,
     fontSize: sizeV2.caption,
     lineHeight: lineV2.caption,
-    fontFamily: fonts.regular,
+    fontFamily: fontsV2.regular,
     color: colorsV2.textMuted,
     includeFontPadding: false,
   },
   labelSelected: {
-    fontFamily: fonts.bold,
+    fontFamily: fontsV2.semibold,
     color: colorsV2.textPrimary,
   },
 });

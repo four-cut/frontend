@@ -12,6 +12,32 @@
  */
 import {colors} from './colors';
 
+/**
+ * UI 서체. (UI-V2)
+ *
+ * 공용 `fonts` 는 Jua 하나뿐이고 굵기도 하나다. 두 가이드라인 모두 위계를
+ * 굵기 + 크기로 만드는데 굵기 축이 없어서, 크기만으로 버티다 제목이 34까지
+ * 커졌다 — 화면이 어색했던 가장 큰 원인이다.
+ *
+ * Pretendard(SIL OFL) 세 굵기를 넣어 굵기 축을 만든다. 워드마크("찍고갈래?")는
+ * 브랜드라 Jua 그대로 둔다.
+ *
+ * 일본어는 AppText 가 Zen Maru Gothic 으로 갈아 끼우므로 여기 굵기가 적용되지
+ * 않는다. Pretendard 에는 가나·한자가 없어서 섞어 쓰면 글자마다 서체가 바뀐다.
+ * 일본어까지 굵기를 주려면 PretendardJP 가 필요한데 한자 때문에 파일이
+ * 한 벌에 수십 MB라 지금은 미룬다.
+ *
+ * ⚠️ typography.ts 의 경고는 여기에도 그대로다 — fontFamily 와 fontWeight 를
+ * 같이 주면 안 된다. 굵기는 파일로 고른다.
+ */
+export const fontsV2 = {
+  regular: 'Pretendard-Regular',
+  /** 버튼 라벨, 카드 제목 */
+  semibold: 'Pretendard-SemiBold',
+  /** 화면·구역 제목 */
+  bold: 'Pretendard-Bold',
+} as const;
+
 export const sizeV2 = {
   /** 화면 제목 */
   title: 26,

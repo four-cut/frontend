@@ -38,7 +38,7 @@ import ActionButton from '../components/v2/ActionButton';
 import FrameSheet from '../components/v2/FrameSheet';
 import IconButton from '../components/v2/IconButton';
 import Snackbar from '../components/v2/Snackbar';
-import {colorsV2, lineV2, sizeV2, spaceV2} from '../theme/uiV2';
+import {colorsV2, fontsV2, lineV2, sizeV2, spaceV2} from '../theme/uiV2';
 import type {CaptureNavigation, RootNavigation} from '../navigation/types';
 import {useCaptureSession} from '../state/CaptureSessionContext';
 import {colors, fonts} from '../theme';
@@ -482,8 +482,10 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   status: {
-    fontSize: 14,
-    fontFamily: fonts.bold,
+    // UI-V2
+    fontSize: sizeV2.caption,
+    lineHeight: lineV2.caption,
+    fontFamily: fontsV2.regular,
     color: colors.textMuted,
     includeFontPadding: false,
   },
@@ -568,8 +570,10 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   qrTitle: {
-    fontSize: 20,
-    fontFamily: fonts.display,
+    // UI-V2
+    fontSize: sizeV2.sectionTitle,
+    lineHeight: lineV2.sectionTitle,
+    fontFamily: fontsV2.bold,
     color: colors.textPrimary,
     includeFontPadding: false,
   },
@@ -578,15 +582,19 @@ const styles = StyleSheet.create({
     height: 220,
   },
   qrWarn: {
-    fontSize: 13,
-    fontFamily: fonts.bold,
+    // UI-V2
+    fontSize: sizeV2.footnote,
+    lineHeight: lineV2.footnote,
+    fontFamily: fontsV2.semibold,
     color: '#D8342B',
     textAlign: 'center',
     includeFontPadding: false,
   },
   qrHint: {
-    fontSize: 13,
-    fontFamily: fonts.bold,
+    // UI-V2
+    fontSize: sizeV2.footnote,
+    lineHeight: lineV2.footnote,
+    fontFamily: fontsV2.regular,
     color: colors.textMuted,
     textAlign: 'center',
     includeFontPadding: false,
@@ -603,8 +611,10 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   saveError: {
-    fontSize: 13,
-    fontFamily: fonts.bold,
+    // UI-V2
+    fontSize: sizeV2.footnote,
+    lineHeight: lineV2.footnote,
+    fontFamily: fontsV2.semibold,
     color: '#D8342B',
     includeFontPadding: false,
   },
@@ -637,7 +647,7 @@ const stylesV2 = StyleSheet.create({
   pending: {
     fontSize: sizeV2.footnote,
     lineHeight: lineV2.footnote,
-    fontFamily: fonts.regular,
+    fontFamily: fontsV2.regular,
     color: colorsV2.textMuted,
     textAlign: 'center',
     includeFontPadding: false,
@@ -646,7 +656,7 @@ const stylesV2 = StyleSheet.create({
     marginTop: spaceV2.md,
     fontSize: sizeV2.footnote,
     lineHeight: lineV2.footnote,
-    fontFamily: fonts.bold,
+    fontFamily: fontsV2.semibold,
     color: colorsV2.danger,
     textAlign: 'center',
     includeFontPadding: false,

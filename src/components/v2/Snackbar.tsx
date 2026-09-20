@@ -12,8 +12,14 @@ import React, {useEffect, useRef} from 'react';
 import {Animated, Pressable, StyleSheet} from 'react-native';
 
 import {Text} from '../AppText';
-import {fonts} from '../../theme';
-import {colorsV2, lineV2, radiusV2, sizeV2, spaceV2} from '../../theme/uiV2';
+import {
+  colorsV2,
+  fontsV2,
+  lineV2,
+  radiusV2,
+  sizeV2,
+  spaceV2,
+} from '../../theme/uiV2';
 
 /** 읽고 사라지기까지. Material 이 권하는 4초. */
 const VISIBLE_MS = 4000;
@@ -81,7 +87,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: sizeV2.footnote,
     lineHeight: lineV2.footnote,
-    fontFamily: fonts.regular,
+    fontFamily: fontsV2.regular,
     color: colorsV2.onInverseSurface,
     includeFontPadding: false,
   },
@@ -92,7 +98,7 @@ const styles = StyleSheet.create({
   actionLabel: {
     fontSize: sizeV2.footnote,
     lineHeight: lineV2.footnote,
-    fontFamily: fonts.bold,
+    fontFamily: fontsV2.semibold,
     color: colorsV2.accent,
     includeFontPadding: false,
   },

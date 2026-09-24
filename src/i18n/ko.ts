@@ -90,6 +90,10 @@ const ko = {
   },
 
   result: {
+    /** UI-V2: 프레임 바텀시트 */
+    changeFrame: '프레임 바꾸기',
+    frameSheetTitle: '프레임 고르기',
+    frameNone: '기본',
     myFrames: '내 프레임 고르기',
     noFrames: '고를 수 있는 프레임이 없습니다',
     framesLoadFailed: '프레임을 불러오지 못했습니다. 다시 시도해주세요.',

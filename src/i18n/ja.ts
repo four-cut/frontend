@@ -89,6 +89,10 @@ const ja: Strings = {
   },
 
   result: {
+    /** UI-V2: フレームのボトムシート */
+    changeFrame: 'フレームを変える',
+    frameSheetTitle: 'フレームを選ぶ',
+    frameNone: '標準',
     myFrames: 'マイフレームを選ぶ',
     noFrames: '選べるフレームがありません',
     framesLoadFailed:

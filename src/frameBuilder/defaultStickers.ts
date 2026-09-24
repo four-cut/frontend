@@ -45,7 +45,16 @@ export const DEFAULT_STICKERS: DefaultSticker[] = [
 const resolvedUriCache = new Map<string, Promise<string>>();
 
 export function resolveStickerUri(uri: string): Promise<string> {
-  if (uri.startsWith('file://') || !MediaFile) {
+  // 개발 모드에서는 Metro 가 http:// 로 내려준다. 주석대로 Skia 가 그대로 읽을
+  // 수 있는데, 여기서 걸러내지 않으면 copyToCacheFile 로 넘어간다. 네이티브는
+  // ContentResolver 로 여는지라 http 를 못 열고 예외가 난다. 그 예외가
+  // getBasicFrameDesign 까지 올라가서 "프레임을 불러오지 못했습니다" 로 끝난다
+  // — 디버그 빌드에서 베이직 프레임이 아예 적용되지 않던 원인이다.
+  const passthrough =
+    uri.startsWith('file://') ||
+    uri.startsWith('http://') ||
+    uri.startsWith('https://');
+  if (passthrough || !MediaFile) {
     return Promise.resolve(uri);
   }
   let cached = resolvedUriCache.get(uri);

@@ -5,7 +5,6 @@ import {
   Linking,
   Modal,
   Pressable,
-  ScrollView,
   StyleSheet,
   useWindowDimensions,
   Vibration,
@@ -34,7 +33,12 @@ import NativeMediaFile from '../specs/NativeMediaFile';
 import NativePrint from '../specs/NativePrint';
 import {STRIP_ASPECT} from '../capture/stripLayout';
 import HomeButton from '../components/HomeButton';
-import PrimaryButton from '../components/PrimaryButton';
+// UI-V2: 결과 화면 개편용 컴포넌트. 공용 PrimaryButton 은 다른 화면이 쓰므로 그대로 둔다.
+import ActionButton from '../components/v2/ActionButton';
+import FrameSheet from '../components/v2/FrameSheet';
+import IconButton from '../components/v2/IconButton';
+import Snackbar from '../components/v2/Snackbar';
+import {colorsV2, fontsV2, lineV2, sizeV2, spaceV2} from '../theme/uiV2';
 import type {CaptureNavigation, RootNavigation} from '../navigation/types';
 import {useCaptureSession} from '../state/CaptureSessionContext';
 import {colors, fonts} from '../theme';
@@ -42,8 +46,13 @@ import {colors, fonts} from '../theme';
 type SaveState = 'idle' | 'saving' | 'saved' | 'failed';
 type QrState = 'idle' | 'preparing' | 'ready' | 'failed';
 
-/** 시안(Frame-3)에서 시트가 화면 폭을 차지하는 비율 */
-const SHEET_WIDTH_RATIO = 0.52;
+/**
+ * 시트가 화면 폭을 차지하는 비율.
+ *
+ * UI-V2: 0.52 → 0.62. 결과물이 이 화면의 주인공인데 버튼 더미에 눌려
+ * 작게 보였다. 인쇄·공유를 상단 아이콘으로 올리고 남은 자리를 여기에 준다.
+ */
+const SHEET_WIDTH_RATIO = 0.62;
 
 /**
  * SR-07 로고 선택 · 출력.
@@ -71,6 +80,14 @@ export default function LogoSelectScreen() {
   );
   const [saveError, setSaveError] = useState<string | null>(null);
   const [zoomed, setZoomed] = useState(false);
+  // UI-V2: 프레임 목록을 바텀시트로 옮겼다.
+  const [sheetOpen, setSheetOpen] = useState(false);
+  // UI-V2: 결과 알림을 화면 안 글이 아니라 스낵바로 띄운다. 글이 나타날 때마다
+  // 아래 버튼이 밀려서 누르려던 곳이 안 눌리던 문제가 있었다.
+  const [snack, setSnack] = useState<{
+    message: string;
+    action?: {label: string; onPress: () => void};
+  } | null>(null);
 
   const [qrState, setQrState] = useState<QrState>('idle');
   const [qrUrl, setQrUrl] = useState<string | null>(null);
@@ -174,6 +191,39 @@ export default function LogoSelectScreen() {
 
   const saveLabel = t.result.save[saveState];
 
+  // UI-V2: 저장 결과를 스낵바로 알린다. 권한 때문에 막힌 거라면 설정으로
+  // 갈 길을 같이 준다 — 어디서 푸는지 모르면 안내가 없는 것과 같다.
+  useEffect(() => {
+    if (saveState === 'saved' && saved) {
+      setSnack({
+        message:
+          t.result.savedTo(ALBUM_NAME) +
+          (saved.video ? '' : t.result.videoNotSaved),
+      });
+    } else if (saveState === 'failed' && saveError) {
+      setSnack({
+        message: saveError,
+        action:
+          saveError === t.errors.noSavePermission
+            ? {
+                label: t.result.openSettings,
+                onPress: () => {
+                  setSnack(null);
+                  Linking.openSettings();
+                },
+              }
+            : undefined,
+      });
+    }
+  }, [saveState, saved, saveError, t]);
+
+  // UI-V2: QR 실패도 같은 자리에서 알린다.
+  useEffect(() => {
+    if (qrState === 'failed' && qrError) {
+      setSnack({message: qrError});
+    }
+  }, [qrState, qrError]);
+
   const handleShare = () => {
     if (!strip) {
       return;
@@ -246,10 +296,33 @@ export default function LogoSelectScreen() {
 
   const sheetWidth = width * SHEET_WIDTH_RATIO;
 
+  // UI-V2: 프레임을 고르면 시트를 닫는다. 결과가 바로 보여야 고른 보람이 있다.
+  const pickFrame = (summary: FrameSummary) => {
+    setSheetOpen(false);
+    chooseFrame(summary);
+  };
+
   return (
     <View style={[styles.container, {paddingTop: insets.top}]}>
-      <View style={styles.header}>
+      {/* UI-V2: 인쇄·공유를 상단 바 아이콘으로 옮겼다. 늘 필요한 동작이 아닌데
+          풀폭 버튼으로 아래에 쌓여 있어서 주된 행동이 무엇인지 알 수 없었다. */}
+      <View style={stylesV2.appBar}>
         <HomeButton onPress={goHome} />
+        <View style={stylesV2.appBarActions}>
+          <IconButton
+            name="print"
+            accessibilityLabel={t.result.print}
+            onPress={handlePrint}
+            disabled={!strip}
+            busy={printing}
+          />
+          <IconButton
+            name="share"
+            accessibilityLabel={t.common.share}
+            onPress={handleShare}
+            disabled={!strip}
+          />
+        </View>
       </View>
 
       <View style={styles.previewArea}>
@@ -274,116 +347,63 @@ export default function LogoSelectScreen() {
             <ActivityIndicator color={colors.textPrimary} />
           )}
         </Pressable>
+
+        {/* UI-V2: 프레임 바꾸기는 꾸미기 동작이라 결과물 바로 아래에 둔다.
+            지금 무엇이 적용돼 있는지도 같이 보여 준다. */}
+        <View style={stylesV2.frameRow}>
+          <ActionButton
+            variant="tonal"
+            label={`${t.result.changeFrame} · ${frame?.name ?? t.result.frameNone}`}
+            onPress={() => setSheetOpen(true)}
+          />
+        </View>
+        {frameLoadFailedId !== null ? (
+          <Text style={stylesV2.inlineError}>{t.result.framesLoadFailed}</Text>
+        ) : null}
       </View>
 
-      <View style={[styles.actions, {paddingBottom: insets.bottom + 16}]}>
-        <Text style={styles.sectionLabel}>{t.result.myFrames}</Text>
-        {frames === null ? (
-          <ActivityIndicator
-            color={colors.textPrimary}
-            style={styles.frameListLoading}
+      {/* UI-V2: 하단은 주 동작 하나(QR)와 보조 하나(저장)만 남긴다. */}
+      <View style={[stylesV2.bottomBar, {paddingBottom: insets.bottom + spaceV2.lg}]}>
+        {snack ? (
+          <Snackbar
+            message={snack.message}
+            action={snack.action}
+            onDismiss={() => setSnack(null)}
           />
-        ) : frames.length === 0 ? (
-          <Text style={styles.pending}>{t.result.noFrames}</Text>
-        ) : (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.frameList}>
-            {frames.map(item => (
-              <Pressable
-                key={item.frameId}
-                accessibilityRole="button"
-                accessibilityLabel={t.result.applyFrameA11y(item.name)}
-                onPress={() => chooseFrame(item)}
-                style={styles.frameThumbWrap}>
-                {item.previewImageUrl ? (
-                  <Image
-                    source={{uri: item.previewImageUrl}}
-                    style={[
-                      styles.frameThumb,
-                      frame?.frameId === item.frameId &&
-                        styles.frameThumbSelected,
-                    ]}
-                    resizeMode="cover"
-                  />
-                ) : (
-                  <View
-                    style={[
-                      styles.frameThumb,
-                      styles.frameThumbBlank,
-                      frame?.frameId === item.frameId &&
-                        styles.frameThumbSelected,
-                    ]}
-                  />
-                )}
-                <Text style={styles.frameThumbLabel} numberOfLines={1}>
-                  {item.name}
-                </Text>
-              </Pressable>
-            ))}
-          </ScrollView>
-        )}
-        {frameLoadFailedId !== null ? (
-          <Text style={styles.saveError}>{t.result.framesLoadFailed}</Text>
-        ) : null}
-        <PrimaryButton
-          label={printing ? t.result.printing : t.result.print}
-          disabled={!strip || printing}
-          onPress={handlePrint}
-        />
-        <PrimaryButton
-          label={saveLabel}
-          disabled={!strip || saveState === 'saving' || saveState === 'saved'}
-          onPress={handleSave}
-          style={styles.secondAction}
-        />
-
-        {/* 무엇이 어디에 저장됐는지 말해 준다. 조용히 끝내면 됐는지 알 수 없다. */}
-        {saveState === 'saved' && saved ? (
-          <Text style={styles.saveNote}>
-            {t.result.savedTo(ALBUM_NAME)}
-            {saved.video ? '' : t.result.videoNotSaved}
-          </Text>
         ) : null}
 
-        {saveState === 'saved' ? (
-          <PrimaryButton label={t.common.share} onPress={handleShare} />
+        {!video ? (
+          <Text style={stylesV2.pending}>{t.result.videoPending}</Text>
         ) : null}
 
-        {saveState === 'failed' && saveError ? (
-          <>
-            <Text style={styles.saveError}>{saveError}</Text>
-            {/* 권한이 막힌 거라면 어디서 풀어야 하는지 알려 준다.
-                문구에 "권한"이 들었는지 보던 것을 사전 문구와 그대로 맞춘다 —
-                일본어에는 그 글자가 없어서 안내가 통째로 안 뜬다. */}
-            {saveError === t.errors.noSavePermission ? (
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => Linking.openSettings()}
-                style={styles.settingsLink}>
-                <Text style={styles.settingsLinkText}>
-                  {t.result.openSettings}
-                </Text>
-              </Pressable>
-            ) : null}
-          </>
-        ) : null}
-
-        <PrimaryButton
+        <ActionButton
+          variant="filled"
           label={qrState === 'preparing' ? t.result.qrPreparing : t.result.qr}
-          disabled={!video || qrState === 'preparing'}
+          disabled={!video}
+          busy={qrState === 'preparing'}
           onPress={qrState === 'ready' ? () => setQrState('ready') : handleQr}
         />
-
-        {qrState === 'failed' && qrError ? (
-          <Text style={styles.saveError}>{qrError}</Text>
-        ) : null}
-
-        {saveState === 'idle' && !video ? (
-          <Text style={styles.saveNote}>{t.result.videoPending}</Text>
-        ) : null}
+        <ActionButton
+          variant="tonal"
+          label={saveLabel}
+          disabled={!strip || saveState === 'saved'}
+          busy={saveState === 'saving'}
+          onPress={handleSave}
+        />
       </View>
+
+      <FrameSheet
+        visible={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        frames={frames}
+        selectedId={frame?.frameId ?? null}
+        onSelect={pickFrame}
+        layout={layout ?? 'portrait'}
+        title={t.result.frameSheetTitle}
+        emptyLabel={t.result.noFrames}
+        closeLabel={t.common.close}
+        itemA11yLabel={t.result.applyFrameA11y}
+      />
 
       {/* 저장 전에 결과물을 크게 확인하고 싶은 건 자연스러운 요구다. */}
       <Modal
@@ -462,8 +482,10 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   status: {
-    fontSize: 14,
-    fontFamily: fonts.bold,
+    // UI-V2
+    fontSize: sizeV2.caption,
+    lineHeight: lineV2.caption,
+    fontFamily: fontsV2.regular,
     color: colors.textMuted,
     includeFontPadding: false,
   },
@@ -548,8 +570,10 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   qrTitle: {
-    fontSize: 20,
-    fontFamily: fonts.display,
+    // UI-V2
+    fontSize: sizeV2.sectionTitle,
+    lineHeight: lineV2.sectionTitle,
+    fontFamily: fontsV2.bold,
     color: colors.textPrimary,
     includeFontPadding: false,
   },
@@ -558,15 +582,19 @@ const styles = StyleSheet.create({
     height: 220,
   },
   qrWarn: {
-    fontSize: 13,
-    fontFamily: fonts.bold,
+    // UI-V2
+    fontSize: sizeV2.footnote,
+    lineHeight: lineV2.footnote,
+    fontFamily: fontsV2.semibold,
     color: '#D8342B',
     textAlign: 'center',
     includeFontPadding: false,
   },
   qrHint: {
-    fontSize: 13,
-    fontFamily: fonts.bold,
+    // UI-V2
+    fontSize: sizeV2.footnote,
+    lineHeight: lineV2.footnote,
+    fontFamily: fontsV2.regular,
     color: colors.textMuted,
     textAlign: 'center',
     includeFontPadding: false,
@@ -583,9 +611,54 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   saveError: {
-    fontSize: 13,
-    fontFamily: fonts.bold,
+    // UI-V2
+    fontSize: sizeV2.footnote,
+    lineHeight: lineV2.footnote,
+    fontFamily: fontsV2.semibold,
     color: '#D8342B',
+    includeFontPadding: false,
+  },
+});
+
+/**
+ * UI-V2 전용 스타일.
+ *
+ * 되돌릴 때 헷갈리지 않게 기존 `styles` 와 섞지 않고 따로 둔다.
+ * 값은 `theme/uiV2` 토큰만 쓴다.
+ */
+const stylesV2 = StyleSheet.create({
+  appBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spaceV2.lg,
+  },
+  appBarActions: {
+    flexDirection: 'row',
+    gap: spaceV2.xs,
+  },
+  frameRow: {
+    marginTop: spaceV2.lg,
+  },
+  bottomBar: {
+    paddingHorizontal: spaceV2.lg,
+    gap: spaceV2.md,
+  },
+  pending: {
+    fontSize: sizeV2.footnote,
+    lineHeight: lineV2.footnote,
+    fontFamily: fontsV2.regular,
+    color: colorsV2.textMuted,
+    textAlign: 'center',
+    includeFontPadding: false,
+  },
+  inlineError: {
+    marginTop: spaceV2.md,
+    fontSize: sizeV2.footnote,
+    lineHeight: lineV2.footnote,
+    fontFamily: fontsV2.semibold,
+    color: colorsV2.danger,
+    textAlign: 'center',
     includeFontPadding: false,
   },
 });

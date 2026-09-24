@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -86,14 +86,33 @@ export default function LogoSelectScreen() {
     null,
   );
 
+  // 목록을 받아 오는 사이에 사용자가 먼저 골랐을 수도 있다. 그 순간의 값을
+  // 보려고 ref 로 따라 둔다 — 의존성에 frame 을 넣으면 고를 때마다 목록을
+  // 다시 불러오게 된다.
+  const frameRef = useRef(frame);
+  frameRef.current = frame;
+
   useEffect(() => {
     if (!layout) {
       return;
     }
     const orientation = layout === 'portrait' ? 'PORTRAIT' : 'LANDSCAPE';
     fetchFrames(orientation)
-      .then(setFrames)
+      .then(list => {
+        setFrames(list);
+        // 들어오자마자 기본 프레임이 씌워져 있어야 한다. 전에는 목록에서 한 번
+        // 눌러야 적용돼서, 아무것도 안 고르면 맨 프레임으로 저장·인쇄됐다.
+        //
+        // 이미 고른 게 있으면 건드리지 않는다 — 프레임을 고르고 뒤로 갔다
+        // 돌아오면 고른 것이 그대로 남아야 한다.
+        if (!frameRef.current && list.length > 0) {
+          chooseFrame(list[0]);
+        }
+      })
       .catch(() => setFrames([]));
+    // chooseFrame 은 매 렌더 새로 만들어지고, frame 은 ref 로 읽는다 —
+    // 둘을 의존성에 넣으면 목록을 계속 다시 불러온다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [layout]);
 
   const chooseFrame = async (summary: FrameSummary) => {

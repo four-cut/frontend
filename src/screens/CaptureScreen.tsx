@@ -60,7 +60,8 @@ export default function CaptureScreen() {
   const navigation = useNavigation<CaptureNavigation>();
   const isFocused = useIsFocused();
   const {width, height} = useWindowDimensions();
-  const {addShot, setVideo, shotCount, layout} = useCaptureSession();
+  const {addShot, setVideo, trackTempFile, shotCount, layout} =
+    useCaptureSession();
   const t = useT();
   const isLandscape = layout === 'landscape';
 
@@ -223,7 +224,10 @@ export default function CaptureScreen() {
       recorder.current = created;
       await created.startRecording(
         filePath => {
-          // 녹화가 끝나면 배속본으로 바꿔 세션에 넣는다.
+          // 녹화가 끝나면 배속본으로 바꿔 세션에 넣는다. 원본은 배속본이
+          // 만들어지면 쓸 데가 없지만, 배속이 실패하면 원본이 그대로 쓰인다.
+          // 어느 쪽이든 플로우가 끝나면 지운다.
+          trackTempFile(filePath);
           speedUpSessionVideo(filePath).then(setVideo);
         },
         () => {
@@ -233,7 +237,7 @@ export default function CaptureScreen() {
     } catch {
       // 위와 같다.
     }
-  }, [setVideo, videoOutput]);
+  }, [setVideo, trackTempFile, videoOutput]);
 
   useEffect(() => {
     if (taken < shotCount) {

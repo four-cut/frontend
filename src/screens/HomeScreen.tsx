@@ -3,7 +3,7 @@ import {Image, Pressable, StyleSheet, View, Text as RNText} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {images} from '../assets';
-import LanguageSheet from '../components/LanguageSheet';
+import LanguageDialog from '../components/LanguageDialog';
 import PrimaryButton from '../components/PrimaryButton';
 import type {RootNavigation, ShootNavigation} from '../navigation/types';
 import {useT} from '../i18n';
@@ -57,7 +57,7 @@ export default function HomeScreen() {
         />
       </View>
 
-      <LanguageSheet
+      <LanguageDialog
         visible={languageOpen}
         onClose={() => setLanguageOpen(false)}
       />

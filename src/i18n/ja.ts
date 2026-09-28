@@ -183,10 +183,8 @@ const ja: Strings = {
       600: '太字',
       700: '極太',
     },
-    slots: {
-      portrait: ['左上', '右上', '左下', '右下'],
-      landscape: ['上', '中', '下'],
-    },
+    sizeLabel: 'サイズ',
+    weightLabel: '太さ',
   },
 
   stickers: {

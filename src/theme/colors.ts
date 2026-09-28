@@ -18,4 +18,9 @@ export const colors = {
   imageBorder: '#C9CDD3',
   /** 아직 사진이 안 들어간 빈 슬롯 — 레이아웃 미리보기, 사진 선택 화면 */
   slot: '#D9D9D9',
+  /**
+   * 프레임 만들기 화면 바탕, 흰 패널 위의 입력칸·아이콘 타일.
+   * 바탕을 slot 과 같은 색으로 두면 캔버스 밖과 빈 슬롯의 경계가 사라진다.
+   */
+  surfaceMuted: '#F2F3F5',
 } as const;

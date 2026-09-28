@@ -3,6 +3,7 @@ import {
   Pressable,
   StyleSheet,
   type StyleProp,
+  type TextStyle,
   type ViewStyle,
 } from 'react-native';
 import {Text} from './AppText';
@@ -14,6 +15,7 @@ type Props = {
   onPress?: () => void;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
+  labelStyle?: StyleProp<TextStyle>;
 };
 
 export default function PrimaryButton({
@@ -21,6 +23,7 @@ export default function PrimaryButton({
   onPress,
   disabled,
   style,
+  labelStyle,
 }: Props) {
   return (
     <Pressable
@@ -34,7 +37,7 @@ export default function PrimaryButton({
         pressed && !disabled && styles.pressed,
         style,
       ]}>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={[styles.label, labelStyle]}>{label}</Text>
     </Pressable>
   );
 }

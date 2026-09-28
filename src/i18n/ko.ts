@@ -17,6 +17,7 @@ const ko = {
     delete: '삭제',
     apply: '적용',
     share: '공유하기',
+    cancel: '취소',
     retry: '다시 시도해주세요.',
   },
 
@@ -133,6 +134,11 @@ const ko = {
     empty: '아직 저장한 네컷이 없어요',
     emptyHint: '촬영을 마치고 저장하면 여기에 모여요',
     zoomA11y: '크게 보기',
+    deleteA11y: '이 네컷 삭제',
+    deleteTitle: '이 네컷을 삭제할까요?',
+    /** 되돌릴 수 있다는 걸 알려 준다 — 지우기 전에 알아야 하는 사실이다. */
+    deleteBody: '사진 앱의 "최근 삭제된 항목"으로 옮겨져요. 거기서 되돌릴 수 있어요.',
+    deleteFailed: '삭제하지 못했어요',
     /** 달 구분 머리말 — "2026년 8월" */
     monthTitle: (year: number, month: number) => `${year}년 ${month}월`,
   },

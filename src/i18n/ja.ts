@@ -19,6 +19,7 @@ const ja: Strings = {
     delete: '削除',
     apply: '適用',
     share: '共有する',
+    cancel: 'キャンセル',
     retry: 'もう一度お試しください。',
   },
 
@@ -130,6 +131,10 @@ const ja: Strings = {
     empty: '保存した4カット写真はまだありません',
     emptyHint: '撮影して保存すると、ここに集まります',
     zoomA11y: '拡大する',
+    deleteA11y: 'この4カットを削除',
+    deleteTitle: 'この4カットを削除しますか？',
+    deleteBody: '写真アプリの「最近削除した項目」に移動します。そこから元に戻せます。',
+    deleteFailed: '削除できませんでした',
     monthTitle: (year: number, month: number) => `${year}年${month}月`,
   },
 

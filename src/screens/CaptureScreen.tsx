@@ -28,6 +28,15 @@ import {TIMER_SECONDS, useCaptureSession} from '../state/CaptureSessionContext';
 import {colors, fonts, fontSize} from '../theme';
 
 /**
+ * 가로형에서 카메라 프리뷰에 적용할 회전각.
+ *
+ * vision-camera 가 프리뷰를 이미 기기 방향에 맞춰 돌려 주므로 0 이 맞다.
+ * 오버레이와 달리 프리뷰는 우리가 돌리면 안 된다. 기기에서 0/90/180/270 을
+ * 실제로 돌려 보고 0 을 확인했다.
+ */
+const PREVIEW_ROTATION = 0;
+
+/**
  * 가로형에서 카운트다운을 사용자의 위 가장자리에서 띄우는 거리.
  * 그 가장자리는 화면의 좌우 변이라 가리는 게 없다.
  */
@@ -101,28 +110,24 @@ export default function CaptureScreen() {
       ? [styles.lsHorizontal, {bottom: insets.bottom + LS_SIDE_GAP}]
       : [styles.lsHorizontal, {top: insets.top + LS_SIDE_GAP}];
 
-  // 가로형: 화면은 세로로 고정돼 있으니(Info.plist) 촬영 UI 를 통째로 90도
-  // 돌려 기기를 눕힌 사용자에게 똑바로 보이게 한다. 이때 프리뷰가 실제 사진
-  // 비율(SLOT_ASPECT.landscape)로 보이도록 상자 크기를 잡는다.
+  // 가로형 프리뷰.
   //
-  // 상자를 90도 돌리면 화면 좌표계에서 가로·세로가 뒤바뀐다. 그래서 상자의
-  // CSS width 는 눕혔을 때 보이는 "가로"가 되고(=화면의 긴 변 height 를 따라간다),
-  // CSS height 는 보이는 "세로"가 된다(=화면의 짧은 변 width 를 따라간다).
-  // 긴 변(height) × 짧은 변(width) 공간 안에 2.25 비율을 꽉 차게 맞춘다.
+  // 오버레이(카운트다운·촬영 버튼)와 달리 프리뷰는 우리가 돌리지 않는다.
+  // vision-camera 가 프리뷰를 이미 기기 방향에 맞춰 돌려 주기 때문에, 여기서
+  // 한 번 더 돌리면 풍경이 90도 더 돌아간다.
+  //
+  // 돌리지 않아도 가로로 보이는 이유는, 세로로 고정된 화면을 눕히면 그 자체가
+  // 사용자에게는 가로 창이기 때문이다 — 사용자가 보는 가로 길이는 화면의 긴
+  // 변(height), 세로 길이는 짧은 변(width) 이다. 그 공간 안에 실제 사진 비율
+  // (SLOT_ASPECT.landscape)을 꽉 차게 맞춘 뒤, 화면 좌표로 옮기며 가로·세로를
+  // 바꿔 준다.
   const landscapeAspect = SLOT_ASPECT.landscape;
-  let rotatedWidth = height;
-  let rotatedHeight = width;
-  if (isLandscape) {
-    if (height / width >= landscapeAspect) {
-      // 화면이 비율보다 더 길다 — 짧은 변(width)에 세로를 맞춘다.
-      rotatedHeight = width;
-      rotatedWidth = width * landscapeAspect;
-    } else {
-      // 흔한 경우 — 긴 변(height)에 가로를 맞추고 위아래로 레터박스.
-      rotatedWidth = height;
-      rotatedHeight = height / landscapeAspect;
-    }
-  }
+  const viewWidth = Math.min(height, width * landscapeAspect);
+  const viewHeight = viewWidth / landscapeAspect;
+  // 프리뷰를 돌리지 않으므로 화면 좌표에서는 가로·세로가 뒤바뀐다.
+  const previewRotated = PREVIEW_ROTATION % 180 !== 0;
+  const previewWidth = previewRotated ? viewWidth : viewHeight;
+  const previewHeight = previewRotated ? viewHeight : viewWidth;
 
   const {hasPermission, requestPermission} = useCameraPermission();
   // containerFormat 기본값 'native' 는 iOS 에서 HEIC 를 뜻한다. Skia 가
@@ -317,11 +322,11 @@ export default function CaptureScreen() {
         style={[
           styles.rotator,
           isLandscape && {
-            width: rotatedWidth,
-            height: rotatedHeight,
-            top: (height - rotatedHeight) / 2,
-            left: (width - rotatedWidth) / 2,
-            transform: [{rotate: `${rotation}deg`}],
+            width: previewWidth,
+            height: previewHeight,
+            top: (height - previewHeight) / 2,
+            left: (width - previewWidth) / 2,
+            transform: [{rotate: `${PREVIEW_ROTATION}deg`}],
           },
         ]}>
         <Camera

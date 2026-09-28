@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.util.Base64
 import androidx.core.content.FileProvider
+import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableArray
@@ -124,9 +125,64 @@ class MediaFileModule(reactContext: ReactApplicationContext) :
     promise.resolve(removed)
   }
 
+  override fun getDocumentDirectory(promise: Promise) {
+    promise.resolve("file://" + reactApplicationContext.filesDir.absolutePath)
+  }
+
+  override fun copyFile(fromUri: String, toPath: String, promise: Promise) {
+    try {
+      val source = toFile(fromUri)
+      if (!source.exists()) {
+        promise.reject(ERROR_CODE, "복사할 파일을 찾을 수 없습니다: $fromUri")
+        return
+      }
+      val target = toFile(toPath)
+      target.parentFile?.mkdirs()
+      source.copyTo(target, overwrite = true)
+      promise.resolve("file://" + target.absolutePath)
+    } catch (error: Exception) {
+      promise.reject(ERROR_CODE, error.message, error)
+    }
+  }
+
+  override fun writeTextFile(path: String, content: String, promise: Promise) {
+    try {
+      val target = toFile(path)
+      target.parentFile?.mkdirs()
+      // 쓰는 도중 앱이 꺼져도 반쯤 쓴 파일이 남지 않게 임시 파일에 쓰고 바꿔 끼운다.
+      val temp = File(target.path + ".tmp")
+      temp.writeText(content, Charsets.UTF_8)
+      if (!temp.renameTo(target)) {
+        temp.copyTo(target, overwrite = true)
+        temp.delete()
+      }
+      promise.resolve(null)
+    } catch (error: Exception) {
+      promise.reject(ERROR_CODE, error.message, error)
+    }
+  }
+
+  override fun readTextFile(path: String, promise: Promise) {
+    try {
+      promise.resolve(toFile(path).readText(Charsets.UTF_8))
+    } catch (error: Exception) {
+      promise.reject(READ_ERROR_CODE, error.message, error)
+    }
+  }
+
+  override fun listDirectory(path: String, promise: Promise) {
+    val names = Arguments.createArray()
+    toFile(path).list()?.sorted()?.forEach { names.pushString(it) }
+    promise.resolve(names)
+  }
+
+  private fun toFile(pathOrUri: String): File =
+      File(if (pathOrUri.startsWith("file://")) Uri.parse(pathOrUri).path ?: "" else pathOrUri)
+
   companion object {
     const val NAME = "MediaFile"
     private const val ERROR_CODE = "MEDIA_FILE_WRITE_FAILED"
     private const val SHARE_ERROR_CODE = "MEDIA_FILE_SHARE_FAILED"
+    private const val READ_ERROR_CODE = "MEDIA_FILE_READ_FAILED"
   }
 }

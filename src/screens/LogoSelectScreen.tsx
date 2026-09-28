@@ -35,6 +35,7 @@ import NativePrint from '../specs/NativePrint';
 import {STRIP_ASPECT} from '../capture/stripLayout';
 import HomeButton from '../components/HomeButton';
 import PrimaryButton from '../components/PrimaryButton';
+import StripPreview from '../components/StripPreview';
 import type {CaptureNavigation, RootNavigation} from '../navigation/types';
 import {useCaptureSession} from '../state/CaptureSessionContext';
 import {colors, fonts} from '../theme';
@@ -44,6 +45,11 @@ type QrState = 'idle' | 'preparing' | 'ready' | 'failed';
 
 /** 시안(Frame-3)에서 시트가 화면 폭을 차지하는 비율 */
 const SHEET_WIDTH_RATIO = 0.52;
+
+/** "내 프레임 고르기" 카드 폭. 높이는 인쇄 시트 비율(STRIP_ASPECT)로 정한다. */
+const FRAME_CARD_WIDTH = 72;
+const FRAME_CARD_BORDER = 2;
+const FRAME_CARD_INNER_WIDTH = FRAME_CARD_WIDTH - FRAME_CARD_BORDER * 2;
 
 /**
  * SR-07 로고 선택 · 출력.
@@ -56,6 +62,7 @@ export default function LogoSelectScreen() {
   const t = useT();
   const navigation = useNavigation<CaptureNavigation>();
   const {width} = useWindowDimensions();
+  const [previewAreaHeight, setPreviewAreaHeight] = useState(0);
   const {layout, shots, selection, video, frame, selectFrame} =
     useCaptureSession();
 
@@ -63,6 +70,8 @@ export default function LogoSelectScreen() {
   // (네이티브 모듈이 없는 환경에서만 예외적으로 data URI로 돌아온다.)
   const [strip, setStrip] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
+  /** 프레임을 바꿔 다시 합성하는 중인지. 배경 사진이 크면 몇 초 걸린다. */
+  const [composing, setComposing] = useState(false);
   const [printing, setPrinting] = useState(false);
 
   const [saveState, setSaveState] = useState<SaveState>('idle');
@@ -134,6 +143,7 @@ export default function LogoSelectScreen() {
     let cancelled = false;
     const photos = selection.map(index => shots[index]);
 
+    setComposing(true);
     composeStrip(layout, photos, design)
       .then(uri => {
         if (!cancelled) {
@@ -143,6 +153,11 @@ export default function LogoSelectScreen() {
       .catch(() => {
         if (!cancelled) {
           setFailed(true);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setComposing(false);
         }
       });
 
@@ -263,7 +278,13 @@ export default function LogoSelectScreen() {
     });
   };
 
-  const sheetWidth = width * SHEET_WIDTH_RATIO;
+  // 폭 기준으로만 잡으면 아래 버튼·프레임 목록이 커졌을 때 남은 높이를
+  // 넘어서 목록 제목을 덮는다. 실측한 영역 높이 안에 들어오게 줄인다.
+  let sheetWidth = width * SHEET_WIDTH_RATIO;
+  const maxSheetHeight = previewAreaHeight * 0.96;
+  if (maxSheetHeight > 0 && sheetWidth * STRIP_ASPECT > maxSheetHeight) {
+    sheetWidth = maxSheetHeight / STRIP_ASPECT;
+  }
 
   return (
     <View style={[styles.container, {paddingTop: insets.top}]}>
@@ -271,7 +292,11 @@ export default function LogoSelectScreen() {
         <HomeButton onPress={goHome} />
       </View>
 
-      <View style={styles.previewArea}>
+      <View
+        style={styles.previewArea}
+        onLayout={event =>
+          setPreviewAreaHeight(event.nativeEvent.layout.height)
+        }>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t.result.zoomA11y}
@@ -292,6 +317,13 @@ export default function LogoSelectScreen() {
           ) : (
             <ActivityIndicator color={colors.textPrimary} />
           )}
+          {/* 프레임을 바꾸면 새 합성이 끝날 때까지 이전 결과가 남아 있어서,
+              눌렀는데 안 바뀐 것처럼 보이지 않게 덮어서 알린다. */}
+          {strip && composing ? (
+            <View style={styles.sheetBusy}>
+              <ActivityIndicator color={colors.textPrimary} />
+            </View>
+          ) : null}
         </Pressable>
       </View>
 
@@ -309,38 +341,51 @@ export default function LogoSelectScreen() {
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.frameList}>
-            {frames.map(item => (
-              <Pressable
-                key={item.frameId}
-                accessibilityRole="button"
-                accessibilityLabel={t.result.applyFrameA11y(item.name)}
-                onPress={() => chooseFrame(item)}
-                style={styles.frameThumbWrap}>
-                {item.previewImageUrl ? (
-                  <Image
-                    source={{uri: item.previewImageUrl}}
-                    style={[
-                      styles.frameThumb,
-                      frame?.frameId === item.frameId &&
-                        styles.frameThumbSelected,
-                    ]}
-                    resizeMode="cover"
-                  />
-                ) : (
+            {frames.map(item => {
+              const selected = frame?.frameId === item.frameId;
+              return (
+                <Pressable
+                  key={item.frameId}
+                  accessibilityRole="button"
+                  accessibilityState={{selected}}
+                  accessibilityLabel={t.result.applyFrameA11y(item.name)}
+                  onPress={() => chooseFrame(item)}
+                  style={styles.frameCard}>
                   <View
                     style={[
                       styles.frameThumb,
-                      styles.frameThumbBlank,
-                      frame?.frameId === item.frameId &&
-                        styles.frameThumbSelected,
+                      selected && styles.frameThumbSelected,
+                    ]}>
+                    {item.previewImageUrl ? (
+                      <Image
+                        source={{uri: item.previewImageUrl}}
+                        style={styles.frameThumbImage}
+                        resizeMode="contain"
+                      />
+                    ) : (
+                      // 썸네일을 못 그렸을 때는 빈 슬롯 배치라도 보여준다.
+                      <StripPreview
+                        layout={
+                          item.orientation === 'PORTRAIT'
+                            ? 'portrait'
+                            : 'landscape'
+                        }
+                        photos={[]}
+                        width={FRAME_CARD_INNER_WIDTH}
+                      />
+                    )}
+                  </View>
+                  <Text
+                    style={[
+                      styles.frameThumbLabel,
+                      selected && styles.frameThumbLabelSelected,
                     ]}
-                  />
-                )}
-                <Text style={styles.frameThumbLabel} numberOfLines={1}>
-                  {item.name}
-                </Text>
-              </Pressable>
-            ))}
+                    numberOfLines={1}>
+                    {item.name}
+                  </Text>
+                </Pressable>
+              );
+            })}
           </ScrollView>
         )}
         {frameLoadFailedId !== null ? (
@@ -480,6 +525,12 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  sheetBusy: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   status: {
     fontSize: 14,
     fontFamily: fonts.bold,
@@ -509,28 +560,39 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingRight: 16,
   },
-  frameThumbWrap: {
-    width: 64,
+  frameCard: {
+    width: FRAME_CARD_WIDTH,
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
   },
+  // 인쇄 시트와 같은 비율로 전체를 보여준다. 정사각형으로 자르면 프레임의
+  // 위아래 장식이 잘려서 어떤 프레임인지 알아보기 어렵다.
   frameThumb: {
-    width: 56,
-    height: 56,
-    borderRadius: 10,
-    borderWidth: 2,
+    width: FRAME_CARD_WIDTH,
+    height: FRAME_CARD_INNER_WIDTH * STRIP_ASPECT + FRAME_CARD_BORDER * 2,
+    borderRadius: 8,
+    borderWidth: FRAME_CARD_BORDER,
     borderColor: colors.divider,
+    backgroundColor: colors.white,
+    overflow: 'hidden',
   },
   frameThumbSelected: {
     borderColor: colors.black,
   },
-  frameThumbBlank: {
-    backgroundColor: colors.slot,
+  frameThumbImage: {
+    width: '100%',
+    height: '100%',
   },
   frameThumbLabel: {
-    fontSize: 11,
+    width: FRAME_CARD_WIDTH,
+    textAlign: 'center',
+    fontSize: 12,
+    fontFamily: fonts.bold,
     color: colors.textMuted,
     includeFontPadding: false,
+  },
+  frameThumbLabelSelected: {
+    color: colors.textPrimary,
   },
   secondAction: {
     marginTop: 0,

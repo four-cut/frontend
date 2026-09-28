@@ -299,6 +299,105 @@ static NSString *WriteToCache(NSData *data, NSString *uti, NSError **error) {
   resolve(@(removed));
 }
 
+/** `file://` 로 오든 그냥 경로로 오든 파일 시스템 경로로 바꾼다. */
+static NSString *PathFromUriOrPath(NSString *value) {
+  if ([value hasPrefix:@"file://"]) {
+    return [NSURL URLWithString:value].path;
+  }
+  return value;
+}
+
+static BOOL EnsureParentDirectory(NSString *path, NSError **error) {
+  return [NSFileManager.defaultManager
+            createDirectoryAtPath:path.stringByDeletingLastPathComponent
+      withIntermediateDirectories:YES
+                       attributes:nil
+                            error:error];
+}
+
+- (void)getDocumentDirectory:(RCTPromiseResolveBlock)resolve
+                      reject:(RCTPromiseRejectBlock)reject {
+  NSURL *url = [NSFileManager.defaultManager
+                   URLsForDirectory:NSDocumentDirectory
+                          inDomains:NSUserDomainMask]
+                   .firstObject;
+  if (url == nil) {
+    reject(@"E_DIR", @"앱 저장 폴더를 찾지 못했습니다", nil);
+    return;
+  }
+  resolve(url.absoluteString);
+}
+
+- (void)copyFile:(NSString *)fromUri
+          toPath:(NSString *)toPath
+         resolve:(RCTPromiseResolveBlock)resolve
+          reject:(RCTPromiseRejectBlock)reject {
+  NSFileManager *manager = NSFileManager.defaultManager;
+  NSString *source = PathFromUriOrPath(fromUri);
+  NSString *target = PathFromUriOrPath(toPath);
+  if (source == nil || ![manager fileExistsAtPath:source]) {
+    reject(@"E_READ", @"복사할 파일을 찾을 수 없습니다", nil);
+    return;
+  }
+
+  NSError *error = nil;
+  if (!EnsureParentDirectory(target, &error)) {
+    reject(@"E_WRITE", error.localizedDescription, error);
+    return;
+  }
+  // copyItemAtPath 는 대상이 이미 있으면 실패한다. 덮어쓰기로 맞춘다.
+  [manager removeItemAtPath:target error:nil];
+  if (![manager copyItemAtPath:source toPath:target error:&error]) {
+    reject(@"E_WRITE", error.localizedDescription ?: @"파일을 복사하지 못했습니다",
+           error);
+    return;
+  }
+  resolve([NSURL fileURLWithPath:target].absoluteString);
+}
+
+- (void)writeTextFile:(NSString *)path
+              content:(NSString *)content
+              resolve:(RCTPromiseResolveBlock)resolve
+               reject:(RCTPromiseRejectBlock)reject {
+  NSString *target = PathFromUriOrPath(path);
+  NSError *error = nil;
+  if (!EnsureParentDirectory(target, &error) ||
+      ![content writeToFile:target
+                 atomically:YES
+                   encoding:NSUTF8StringEncoding
+                      error:&error]) {
+    reject(@"E_WRITE", error.localizedDescription ?: @"파일을 쓰지 못했습니다",
+           error);
+    return;
+  }
+  resolve(nil);
+}
+
+- (void)readTextFile:(NSString *)path
+             resolve:(RCTPromiseResolveBlock)resolve
+              reject:(RCTPromiseRejectBlock)reject {
+  NSError *error = nil;
+  NSString *content = [NSString stringWithContentsOfFile:PathFromUriOrPath(path)
+                                                encoding:NSUTF8StringEncoding
+                                                   error:&error];
+  if (content == nil) {
+    reject(@"E_READ", error.localizedDescription ?: @"파일을 읽지 못했습니다",
+           error);
+    return;
+  }
+  resolve(content);
+}
+
+- (void)listDirectory:(NSString *)path
+              resolve:(RCTPromiseResolveBlock)resolve
+               reject:(RCTPromiseRejectBlock)reject {
+  NSArray<NSString *> *names = [NSFileManager.defaultManager
+      contentsOfDirectoryAtPath:PathFromUriOrPath(path)
+                          error:nil];
+  // 폴더가 아직 없으면 nil 이 온다. 저장된 게 없는 것과 같다.
+  resolve([names ?: @[] sortedArrayUsingSelector:@selector(compare:)]);
+}
+
 - (std::shared_ptr<facebook::react::TurboModule>)
     getTurboModule:(const facebook::react::ObjCTurboModule::InitParams &)params {
   return std::make_shared<facebook::react::NativeMediaFileSpecJSI>(params);

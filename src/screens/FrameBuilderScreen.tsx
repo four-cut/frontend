@@ -17,8 +17,9 @@ import {
 import {Text, TextInput} from '../components/AppText';
 import {useNavigation} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {Canvas, Path} from '@shopify/react-native-skia';
 
-import {addLocalFrame} from '../api/frames';
+import {saveLocalFrame} from '../api/frames';
 import AlbumPickerSheet, {
   type StickerPick,
 } from '../frameBuilder/AlbumPickerSheet';
@@ -40,7 +41,7 @@ import {
 } from '../capture/stripLayout';
 import type {CaptureLayout} from '../state/CaptureSessionContext';
 import type {RootNavigation} from '../navigation/types';
-import {colors, fonts, fontSize} from '../theme';
+import {colors, fonts} from '../theme';
 
 /** 화면에 그리는 캔버스 폭. 실제 인쇄 해상도는 renderFrameDesign이 따로 맞춘다. */
 const CANVAS_WIDTH_RATIO = 0.82;
@@ -56,6 +57,45 @@ const COLOR_SHEET_HEIGHT_RATIO = 1 / 3;
 const DRAG_OVERFLOW_PX = 24;
 
 const WEIGHT_OPTIONS: TextElement['fontWeight'][] = [400, 500, 600, 700];
+
+/** 24×24 기준 선 아이콘 경로. 아이콘 라이브러리 없이 Skia로 그린다. */
+const ICON_PATHS = {
+  text: 'M5 6h14M12 6v13',
+  sticker:
+    'M4 7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v6l-7 7H7a3 3 0 0 1-3-3zM13 20v-4a3 3 0 0 1 3-3h4',
+  trash: 'M4 7h16M10 11v6M14 11v6M6 7l1 12h10l1-12M9 7V4h6v3',
+};
+
+const DANGER = '#D8342B';
+
+/** 세로형·가로형 세그먼트의 바탕. 화면 바탕(surfaceMuted)보다 한 단계 진하다. */
+const SEGMENT_TRACK = '#E4E6EA';
+
+function LineIcon({
+  path,
+  size = 22,
+  color = colors.textPrimary,
+}: {
+  path: string;
+  size?: number;
+  color?: string;
+}) {
+  return (
+    <View pointerEvents="none">
+      <Canvas style={{width: size, height: size}}>
+        <Path
+          path={path}
+          style="stroke"
+          strokeWidth={2}
+          strokeCap="round"
+          strokeJoin="round"
+          color={color}
+          transform={[{scale: size / 24}]}
+        />
+      </Canvas>
+    </View>
+  );
+}
 
 function clamp(value: number, min: number, max: number) {
   'worklet';
@@ -330,7 +370,7 @@ export default function FrameBuilderScreen() {
         stickerElements,
         backgroundImageUri,
       );
-      addLocalFrame({
+      await saveLocalFrame({
         name: layout === 'portrait' ? t.frame.myPortrait : t.frame.myLandscape,
         orientation,
         previewImageUrl,
@@ -356,42 +396,49 @@ export default function FrameBuilderScreen() {
   return (
     <View style={[styles.container, {paddingTop: insets.top}]}>
       <View style={styles.header}>
+        {/* 양옆(뒤로·완료) 폭이 달라서 흐름 안에 두면 제목이 한쪽으로 쏠린다 */}
+        <Text style={styles.title} pointerEvents="none">
+          {t.frame.title}
+        </Text>
         <BackButton onPress={() => navigation.goBack()} />
-        <Text style={styles.title}>{t.frame.title}</Text>
         <PrimaryButton
           label={saving ? t.frame.saving : t.common.done}
           onPress={handleComplete}
           disabled={saving}
           style={styles.completeButton}
+          labelStyle={styles.completeButtonLabel}
         />
       </View>
 
-      <View style={styles.layoutToggle}>
-        {(['portrait', 'landscape'] as const).map(option => (
-          <Pressable
-            key={option}
-            accessibilityRole="button"
-            accessibilityLabel={
-              option === 'portrait'
-                ? t.layoutSelect.portrait
-                : t.layoutSelect.landscape
-            }
-            onPress={() => setLayout(option)}
-            style={[
-              styles.layoutChip,
-              layout === option && styles.layoutChipActive,
-            ]}>
-            <Text
+      <View style={styles.layoutToggleRow}>
+        <View style={styles.layoutToggle}>
+          {(['portrait', 'landscape'] as const).map(option => (
+            <Pressable
+              key={option}
+              accessibilityRole="button"
+              accessibilityState={{selected: layout === option}}
+              accessibilityLabel={
+                option === 'portrait'
+                  ? t.layoutSelect.portrait
+                  : t.layoutSelect.landscape
+              }
+              onPress={() => setLayout(option)}
               style={[
-                styles.layoutChipText,
-                layout === option && styles.layoutChipTextActive,
+                styles.layoutSegment,
+                layout === option && styles.layoutSegmentActive,
               ]}>
-              {option === 'portrait'
-                ? t.layoutSelect.portrait
-                : t.layoutSelect.landscape}
-            </Text>
-          </Pressable>
-        ))}
+              <Text
+                style={[
+                  styles.layoutSegmentText,
+                  layout === option && styles.layoutSegmentTextActive,
+                ]}>
+                {option === 'portrait'
+                  ? t.layoutSelect.portrait
+                  : t.layoutSelect.landscape}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
       </View>
 
       <View
@@ -483,30 +530,35 @@ export default function FrameBuilderScreen() {
           onDone={() => setSelectedStickerId(null)}
         />
       ) : (
-        <View style={[styles.toolbar, {paddingBottom: insets.bottom + 16}]}>
+        <View style={[styles.toolbar, {paddingBottom: insets.bottom + 12}]}>
           <Pressable
             accessibilityRole="button"
+            accessibilityLabel={t.frame.text}
             onPress={addText}
-            style={styles.toolButton}>
-            <View style={styles.textIconBadge}>
-              <Text style={styles.textIconGlyph}>{t.frame.sampleGlyph}</Text>
+            style={({pressed}) => [styles.toolButton, pressed && styles.pressed]}>
+            <View style={styles.toolTile}>
+              <LineIcon path={ICON_PATHS.text} />
             </View>
             <Text style={styles.toolButtonCaption}>{t.frame.text}</Text>
           </Pressable>
           <Pressable
             accessibilityRole="button"
+            accessibilityLabel={t.frame.sticker}
             onPress={() => setStickerSourceOpen(true)}
-            style={styles.toolButton}>
-            <View style={styles.textIconBadge}>
-              <Text style={styles.textIconGlyph}>⭐</Text>
+            style={({pressed}) => [styles.toolButton, pressed && styles.pressed]}>
+            <View style={styles.toolTile}>
+              <LineIcon path={ICON_PATHS.sticker} />
             </View>
             <Text style={styles.toolButtonCaption}>{t.frame.sticker}</Text>
           </Pressable>
           <Pressable
             accessibilityRole="button"
+            accessibilityLabel={t.frame.background}
             onPress={() => setBackgroundPickerOpen(true)}
-            style={styles.toolButton}>
-            <View style={[styles.backgroundDot, {backgroundColor}]} />
+            style={({pressed}) => [styles.toolButton, pressed && styles.pressed]}>
+            <View style={styles.toolTile}>
+              <View style={[styles.backgroundDot, {backgroundColor}]} />
+            </View>
             <Text style={styles.toolButtonCaption}>{t.frame.background}</Text>
           </Pressable>
         </View>
@@ -578,17 +630,16 @@ function SlotPlaceholders({
   layout: CaptureLayout;
   canvasWidth: number;
 }) {
-  const t = useT();
-  // 슬롯 위치를 말로 알려주는 라벨 — 세로형 2×2, 가로형 3단.
-  const labels = t.frame.slots[layout];
   const geometry = stripGeometry(layout, canvasWidth);
   const slots = computeSlotRects(layout, geometry);
 
+  // 고른 사진이 이 순서(computeSlotRects의 행 우선 순서)대로 들어가므로
+  // 위치 이름 대신 번호를 보여준다.
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="none">
       {slots.map((slot, index) => (
         <View
-          key={labels[index]}
+          key={index}
           style={[
             styles.slot,
             {
@@ -598,7 +649,7 @@ function SlotPlaceholders({
               height: slot.height,
             },
           ]}>
-          <Text style={styles.slotLabel}>{labels[index]}</Text>
+          <Text style={styles.slotLabel}>{index + 1}</Text>
         </View>
       ))}
     </View>
@@ -820,64 +871,48 @@ function TextStyleToolbar({
           placeholder={t.frame.textPlaceholder}
           style={styles.contentInput}
         />
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t.frame.deleteText}
-          onPress={onDelete}
-          style={styles.deleteButton}>
-          <Text style={styles.deleteButtonText}>{t.common.delete}</Text>
-        </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t.frame.editDone}
-          onPress={onDone}
-          style={styles.doneButton}>
-          <Text style={styles.doneButtonText}>{t.common.done}</Text>
-        </Pressable>
+        <DeleteButton label={t.frame.deleteText} onPress={onDelete} />
+        <DonePill label={t.common.done} a11yLabel={t.frame.editDone} onPress={onDone} />
       </View>
 
-      <View style={styles.styleRow}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t.frame.textSmaller}
-          onPress={() => onChangeFontSize(Math.max(24, element.fontSize - 8))}
-          style={styles.stepButton}>
-          <Text style={styles.stepButtonText}>−</Text>
-        </Pressable>
-        <Text style={styles.stepValue}>{element.fontSize}</Text>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t.frame.textBigger}
-          onPress={() => onChangeFontSize(Math.min(160, element.fontSize + 8))}
-          style={styles.stepButton}>
-          <Text style={styles.stepButtonText}>+</Text>
-        </Pressable>
+      <View style={[styles.styleRow, styles.controlRow]}>
+        <View style={styles.controlGroup}>
+          <Text style={styles.controlLabel}>{t.frame.sizeLabel}</Text>
+          <Stepper
+            value={String(element.fontSize)}
+            smallerLabel={t.frame.textSmaller}
+            biggerLabel={t.frame.textBigger}
+            onSmaller={() => onChangeFontSize(Math.max(24, element.fontSize - 8))}
+            onBigger={() => onChangeFontSize(Math.min(160, element.fontSize + 8))}
+          />
+        </View>
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.weightScroll}>
-          {WEIGHT_OPTIONS.map(weight => (
-            <Pressable
-              key={weight}
-              accessibilityRole="button"
-              accessibilityLabel={t.frame.weight[weight]}
-              onPress={() => onChangeWeight(weight)}
-              style={[
-                styles.weightChip,
-                weight === element.fontWeight && styles.weightChipActive,
-              ]}>
-              <Text
+        <View style={styles.controlGroup}>
+          <Text style={styles.controlLabel}>{t.frame.weightLabel}</Text>
+          <View style={styles.weightChips}>
+            {WEIGHT_OPTIONS.map(weight => (
+              <Pressable
+                key={weight}
+                accessibilityRole="button"
+                accessibilityState={{selected: weight === element.fontWeight}}
+                accessibilityLabel={t.frame.weight[weight]}
+                onPress={() => onChangeWeight(weight)}
                 style={[
-                  styles.weightChipText,
-                  {fontWeight: String(weight) as never},
-                  weight === element.fontWeight && styles.weightChipTextActive,
+                  styles.weightChip,
+                  weight === element.fontWeight && styles.weightChipActive,
                 ]}>
-                {t.frame.sampleGlyph}
-              </Text>
-            </Pressable>
-          ))}
-        </ScrollView>
+                <Text
+                  style={[
+                    styles.weightChipText,
+                    {fontWeight: String(weight) as never},
+                    weight === element.fontWeight && styles.weightChipTextActive,
+                  ]}>
+                  {t.frame.sampleGlyph}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
       </View>
 
       <ScrollView
@@ -935,27 +970,18 @@ function StickerStyleToolbar({
       <View style={styles.styleRow}>
         <Text style={styles.stickerToolbarTitle}>{t.frame.sticker}</Text>
         <View style={styles.styleRowSpacer} />
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t.frame.deleteSticker}
-          onPress={onDelete}
-          style={styles.deleteButton}>
-          <Text style={styles.deleteButtonText}>{t.common.delete}</Text>
-        </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t.frame.editDone}
-          onPress={onDone}
-          style={styles.doneButton}>
-          <Text style={styles.doneButtonText}>{t.common.done}</Text>
-        </Pressable>
+        <DeleteButton label={t.frame.deleteSticker} onPress={onDelete} />
+        <DonePill label={t.common.done} a11yLabel={t.frame.editDone} onPress={onDone} />
       </View>
 
-      <View style={styles.styleRow}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t.frame.stickerSmaller}
-          onPress={() =>
+      <View style={styles.controlGroup}>
+        <Text style={styles.controlLabel}>{t.frame.sizeLabel}</Text>
+        <Stepper
+          value={`${Math.round(element.widthRatio * 100)}%`}
+          valueWidth={52}
+          smallerLabel={t.frame.stickerSmaller}
+          biggerLabel={t.frame.stickerBigger}
+          onSmaller={() =>
             onChangeWidthRatio(
               Math.max(
                 STICKER_WIDTH_RATIO_MIN,
@@ -963,16 +989,7 @@ function StickerStyleToolbar({
               ),
             )
           }
-          style={styles.stepButton}>
-          <Text style={styles.stepButtonText}>−</Text>
-        </Pressable>
-        <Text style={styles.stepValue}>
-          {Math.round(element.widthRatio * 100)}%
-        </Text>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t.frame.stickerBigger}
-          onPress={() =>
+          onBigger={() =>
             onChangeWidthRatio(
               Math.min(
                 STICKER_WIDTH_RATIO_MAX,
@@ -980,10 +997,76 @@ function StickerStyleToolbar({
               ),
             )
           }
-          style={styles.stepButton}>
-          <Text style={styles.stepButtonText}>+</Text>
-        </Pressable>
+        />
       </View>
+    </View>
+  );
+}
+
+function DeleteButton({label, onPress}: {label: string; onPress: () => void}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPress}
+      style={({pressed}) => [styles.iconButton, pressed && styles.pressed]}>
+      <LineIcon path={ICON_PATHS.trash} size={20} color={DANGER} />
+    </Pressable>
+  );
+}
+
+function DonePill({
+  label,
+  a11yLabel,
+  onPress,
+}: {
+  label: string;
+  a11yLabel: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={a11yLabel}
+      onPress={onPress}
+      style={({pressed}) => [styles.donePill, pressed && styles.pressed]}>
+      <Text style={styles.donePillText}>{label}</Text>
+    </Pressable>
+  );
+}
+
+function Stepper({
+  value,
+  valueWidth = 36,
+  smallerLabel,
+  biggerLabel,
+  onSmaller,
+  onBigger,
+}: {
+  value: string;
+  valueWidth?: number;
+  smallerLabel: string;
+  biggerLabel: string;
+  onSmaller: () => void;
+  onBigger: () => void;
+}) {
+  return (
+    <View style={styles.stepper}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={smallerLabel}
+        onPress={onSmaller}
+        style={({pressed}) => [styles.stepButton, pressed && styles.pressed]}>
+        <Text style={styles.stepButtonText}>−</Text>
+      </Pressable>
+      <Text style={[styles.stepValue, {width: valueWidth}]}>{value}</Text>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={biggerLabel}
+        onPress={onBigger}
+        style={({pressed}) => [styles.stepButton, pressed && styles.pressed]}>
+        <Text style={styles.stepButtonText}>+</Text>
+      </Pressable>
     </View>
   );
 }
@@ -1364,48 +1447,68 @@ function StickerSourceSheet({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.slot,
+    backgroundColor: colors.surfaceMuted,
   },
   header: {
+    minHeight: 56,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
   },
   title: {
-    fontSize: fontSize.calloutTitle,
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    textAlign: 'center',
+    fontSize: 20,
     fontFamily: fonts.bold,
     color: colors.textPrimary,
     includeFontPadding: false,
   },
   completeButton: {
-    height: 40,
-    paddingHorizontal: 18,
+    height: 36,
+    paddingHorizontal: 16,
+    borderRadius: 18,
     width: undefined,
+  },
+  completeButtonLabel: {
+    fontSize: 15,
+  },
+  layoutToggleRow: {
+    alignItems: 'center',
+    paddingTop: 6,
   },
   layoutToggle: {
     flexDirection: 'row',
-    gap: 8,
-    paddingHorizontal: 16,
-    paddingTop: 12,
+    gap: 2,
+    padding: 3,
+    borderRadius: 12,
+    backgroundColor: SEGMENT_TRACK,
   },
-  layoutChip: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 999,
-    backgroundColor: colors.divider,
+  layoutSegment: {
+    width: 96,
+    height: 32,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  layoutChipActive: {
-    backgroundColor: colors.black,
+  layoutSegmentActive: {
+    backgroundColor: colors.white,
+    elevation: 1,
+    shadowColor: colors.black,
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    shadowOffset: {width: 0, height: 1},
   },
-  layoutChipText: {
-    fontSize: 14,
+  layoutSegmentText: {
+    fontSize: 15,
     fontFamily: fonts.bold,
     color: colors.textMuted,
     includeFontPadding: false,
   },
-  layoutChipTextActive: {
-    color: colors.white,
+  layoutSegmentTextActive: {
+    color: colors.textPrimary,
   },
   canvasArea: {
     flex: 1,
@@ -1413,8 +1516,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   canvas: {
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.divider,
+    elevation: 3,
+    shadowColor: colors.black,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    shadowOffset: {width: 0, height: 2},
   },
   backgroundImage: {
     position: 'absolute',
@@ -1426,15 +1532,15 @@ const styles = StyleSheet.create({
   slot: {
     position: 'absolute',
     backgroundColor: colors.slot,
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    borderColor: colors.textMuted,
+    borderRadius: 3,
     alignItems: 'center',
     justifyContent: 'center',
   },
   slotLabel: {
-    fontSize: 12,
+    fontSize: 16,
+    fontFamily: fonts.bold,
     color: colors.textMuted,
+    includeFontPadding: false,
   },
   draggable: {
     position: 'absolute',
@@ -1449,127 +1555,148 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  pressed: {
+    opacity: 0.6,
+  },
   toolbar: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 32,
-    paddingTop: 16,
+    paddingTop: 10,
+    paddingHorizontal: 12,
+    backgroundColor: colors.white,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.divider,
   },
   toolButton: {
+    flex: 1,
     alignItems: 'center',
     gap: 6,
   },
-  toolButtonCaption: {
-    fontSize: 12,
-    color: colors.textPrimary,
-  },
-  backgroundDot: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.divider,
-  },
-  textIconBadge: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.divider,
+  toolTile: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: colors.surfaceMuted,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  textIconGlyph: {
+  toolButtonCaption: {
     fontSize: 13,
     fontFamily: fonts.bold,
     color: colors.textPrimary,
     includeFontPadding: false,
   },
+  backgroundDot: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 1.5,
+    borderColor: colors.imageBorder,
+  },
   styleToolbar: {
     paddingHorizontal: 16,
-    paddingTop: 12,
-    gap: 12,
+    paddingTop: 14,
+    gap: 14,
+    backgroundColor: colors.white,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.divider,
   },
   styleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
+  },
+  controlRow: {
+    alignItems: 'flex-end',
+    gap: 16,
   },
   styleRowSpacer: {
     flex: 1,
   },
   stickerToolbarTitle: {
-    fontSize: 15,
+    fontSize: 17,
     fontFamily: fonts.bold,
     color: colors.textPrimary,
+    includeFontPadding: false,
   },
   contentInput: {
     flex: 1,
-    height: 40,
-    borderRadius: 8,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.divider,
-    paddingHorizontal: 12,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: colors.surfaceMuted,
+    paddingHorizontal: 14,
+    fontSize: 16,
     color: colors.textPrimary,
   },
-  deleteButton: {
-    paddingHorizontal: 12,
-    height: 40,
+  iconButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: colors.surfaceMuted,
+    alignItems: 'center',
     justifyContent: 'center',
   },
-  deleteButtonText: {
-    color: '#D8342B',
-    fontFamily: fonts.bold,
-    fontSize: 13,
-  },
-  doneButton: {
-    paddingHorizontal: 12,
-    height: 40,
+  donePill: {
+    height: 44,
+    paddingHorizontal: 18,
+    borderRadius: 22,
+    backgroundColor: colors.black,
+    alignItems: 'center',
     justifyContent: 'center',
   },
-  doneButtonText: {
-    color: colors.textPrimary,
+  donePillText: {
+    color: colors.white,
     fontFamily: fonts.bold,
-    fontSize: 13,
+    fontSize: 15,
+    includeFontPadding: false,
+  },
+  controlGroup: {
+    gap: 6,
+  },
+  controlLabel: {
+    fontSize: 12,
+    fontFamily: fonts.bold,
+    color: colors.textMuted,
+    includeFontPadding: false,
+  },
+  stepper: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   stepButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.divider,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.surfaceMuted,
     alignItems: 'center',
     justifyContent: 'center',
   },
   stepButtonText: {
-    fontSize: 18,
+    fontSize: 20,
     color: colors.textPrimary,
   },
   stepValue: {
-    width: 32,
     textAlign: 'center',
+    fontSize: 16,
     color: colors.textPrimary,
+    fontVariant: ['tabular-nums'],
   },
-  weightScroll: {
-    flex: 1,
+  weightChips: {
+    flexDirection: 'row',
+    gap: 6,
   },
   weightChip: {
     width: 36,
-    height: 32,
-    borderRadius: 8,
-    marginLeft: 8,
+    height: 36,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.divider,
+    backgroundColor: colors.surfaceMuted,
   },
   weightChipActive: {
     backgroundColor: colors.black,
   },
   weightChipText: {
-    fontSize: 16,
+    fontSize: 18,
     color: colors.textPrimary,
   },
   weightChipTextActive: {
@@ -1583,16 +1710,16 @@ const styles = StyleSheet.create({
     paddingRight: 16,
   },
   swatchSmall: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.divider,
   },
   customSwatchTrigger: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     borderWidth: 1,
     borderStyle: 'dashed',
     borderColor: colors.textMuted,

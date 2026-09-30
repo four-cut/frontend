@@ -42,6 +42,15 @@ export type CompositeImage = {
   imageUrl: string;
 };
 
+/**
+ * 앱이 만든 스트립을 올린 결과. qrCodeUrl 은 다운로드 페이지 QR 이다.
+ * 이 필드가 생기기 전 서버는 imageUrl 만 주므로 없을 수 있다.
+ */
+export type CompositeUploaded = CompositeImage & {
+  qrCodeUrl?: string;
+  downloadUrl?: string;
+};
+
 export type VideoUploaded = {
   videoUrl: string;
   qrCodeUrl: string;

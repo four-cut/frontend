@@ -30,6 +30,7 @@ const ja: Strings = {
 
   home: {
     shoot: '撮影する',
+    fromAlbum: 'アルバムから選ぶ',
     makeFrame: 'フレームを作る',
   },
 
@@ -78,6 +79,17 @@ const ja: Strings = {
     frontA11y: 'インカメラで撮影',
     backA11y: 'アウトカメラで撮影',
     shootNow: 'すぐに撮影',
+    cameraFailed: 'カメラを起動できませんでした',
+    pickAgain: 'カメラを選び直す',
+  },
+
+  albumPick: {
+    title: 'アルバムから写真を選んでください',
+    count: (picked: number, total: number) => `${picked}/${total}枚選択`,
+    photoA11y: (order: number | null) =>
+      order === null ? 'アルバムの写真' : `アルバムの写真、${order}番目に選択中`,
+    preparing: '写真を準備中...',
+    prepareFailed: '写真を読み込めませんでした。もう一度お試しください。',
   },
 
   photoSelect: {
@@ -99,10 +111,10 @@ const ja: Strings = {
     zoomA11y: '完成した写真を拡大',
 
     save: {
-      idle: '写真・動画を保存',
-      saving: '保存中...',
-      saved: '保存しました',
-      failed: 'もう一度保存',
+      idle: '保存',
+      saving: '保存中',
+      saved: '保存済み',
+      failed: '再保存',
     },
     saveFailed: '保存に失敗しました',
     savedTo: (album: string) => `写真アプリ > ${album} アルバムに保存しました`,
@@ -110,15 +122,16 @@ const ja: Strings = {
     videoPending: '動画はまだ準備中です',
     openSettings: '設定で許可する',
 
-    print: '印刷する',
-    printing: '印刷の準備中...',
+    print: '印刷',
+    printing: '印刷中',
     printJob: '찍고갈래 4カット',
 
-    qr: 'QRで受け取る',
-    qrPreparing: 'QRを作成中...',
+    qr: 'QR',
+    qrPreparing: 'QR作成中',
     qrTitle: 'QRを読み取って受け取ってください',
     qrHint: 'スマホのカメラで読み取るとダウンロード画面が開きます',
     qrVideoOnly: '写真をアップロードできず、動画のみ受け取れます',
+    qrPhotoOnly: '動画は準備中のため、今は写真のみ受け取れます',
     qrVideoNotReady: '動画はまだ準備ができていません',
     qrNoFrame: 'サーバーに登録されたフレームがありません',
     qrFailed: 'QRを作成できませんでした',

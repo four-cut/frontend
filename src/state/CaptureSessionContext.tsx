@@ -43,12 +43,22 @@ type CaptureSession = {
    * 배경·텍스트·스티커를 최종 합성에 입힐 때만 쓰인다. 안 고르면 null(무배경).
    */
   frame: FrameSummary | null;
+  /**
+   * 촬영 대신 앨범 사진으로 만든 세션인지. 이때는 찍는 과정이 없으니 영상도
+   * 없어서, 영상이 있어야 하는 QR 같은 기능을 감춰야 한다.
+   */
+  fromAlbum: boolean;
   selectLayout: (layout: CaptureLayout) => void;
   selectFrame: (frame: FrameSummary | null) => void;
   addShot: (path: string) => void;
   setVideo: (path: string) => void;
   /** 이미 고른 사진이면 빼고, 아니면 컷 수까지만 더한다. */
   toggleSelection: (shotIndex: number) => void;
+  /**
+   * 앨범에서 고른 사진(file://)을 고른 순서대로 세션에 넣는다. 전부 쓰이는
+   * 사진이라 선택도 그 순서 그대로 채운다.
+   */
+  setAlbumShots: (paths: string[]) => void;
 };
 
 const CaptureSessionContext = createContext<CaptureSession | null>(null);
@@ -65,6 +75,7 @@ export function CaptureSessionProvider({children}: Props) {
   const [shots, setShots] = useState<string[]>([]);
   const [selection, setSelection] = useState<number[]>([]);
   const [video, setVideo] = useState<string | null>(null);
+  const [fromAlbum, setFromAlbum] = useState(false);
 
   const shotCount = SHOT_COUNT;
   const cutCount = layout ? CUT_COUNT[layout] : 0;
@@ -118,6 +129,12 @@ export function CaptureSessionProvider({children}: Props) {
     [cutCount],
   );
 
+  const setAlbumShots = useCallback((paths: string[]) => {
+    setFromAlbum(true);
+    setShots(paths);
+    setSelection(paths.map((_, index) => index));
+  }, []);
+
   const value = useMemo<CaptureSession>(
     () => ({
       layout,
@@ -127,11 +144,13 @@ export function CaptureSessionProvider({children}: Props) {
       selection,
       video,
       frame,
+      fromAlbum,
       selectLayout,
       selectFrame,
       addShot,
       setVideo,
       toggleSelection,
+      setAlbumShots,
     }),
     [
       layout,
@@ -141,10 +160,12 @@ export function CaptureSessionProvider({children}: Props) {
       selection,
       video,
       frame,
+      fromAlbum,
       selectLayout,
       selectFrame,
       addShot,
       toggleSelection,
+      setAlbumShots,
     ],
   );
 

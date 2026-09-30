@@ -1,6 +1,7 @@
 import React from 'react';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 
+import AlbumPickScreen from '../screens/AlbumPickScreen';
 import CaptureScreen from '../screens/CaptureScreen';
 import LayoutSelectScreen from '../screens/LayoutSelectScreen';
 import LogoSelectScreen from '../screens/LogoSelectScreen';
@@ -22,6 +23,7 @@ export default function CaptureNavigator() {
         <Stack.Screen name="LayoutSelect" component={LayoutSelectScreen} />
         <Stack.Screen name="RotateGuide" component={RotateGuideScreen} />
         <Stack.Screen name="Capture" component={CaptureScreen} />
+        <Stack.Screen name="AlbumPick" component={AlbumPickScreen} />
         <Stack.Screen name="PhotoSelect" component={PhotoSelectScreen} />
         <Stack.Screen name="LogoSelect" component={LogoSelectScreen} />
       </Stack.Navigator>

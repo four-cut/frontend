@@ -38,7 +38,9 @@ import PrimaryButton from '../components/PrimaryButton';
 import StripPreview from '../components/StripPreview';
 import type {CaptureNavigation, RootNavigation} from '../navigation/types';
 import {useCaptureSession} from '../state/CaptureSessionContext';
-import {colors, fonts} from '../theme';
+import {colors} from '../theme';
+// UI-V2: 결과 화면에서만 쓰는 타이포그래피. 공용 theme 은 그대로 둔다.
+import {fontsV2, lineV2, sizeV2} from '../theme/typographyV2';
 
 type SaveState = 'idle' | 'saving' | 'saved' | 'failed';
 type QrState = 'idle' | 'preparing' | 'ready' | 'failed';
@@ -392,11 +394,13 @@ export default function LogoSelectScreen() {
           <Text style={styles.saveError}>{t.result.framesLoadFailed}</Text>
         ) : null}
         <PrimaryButton
+          labelStyle={styles.buttonLabel}
           label={printing ? t.result.printing : t.result.print}
           disabled={!strip || printing}
           onPress={handlePrint}
         />
         <PrimaryButton
+          labelStyle={styles.buttonLabel}
           label={saveLabel}
           disabled={!strip || saveState === 'saving' || saveState === 'saved'}
           onPress={handleSave}
@@ -412,7 +416,11 @@ export default function LogoSelectScreen() {
         ) : null}
 
         {saveState === 'saved' ? (
-          <PrimaryButton label={t.common.share} onPress={handleShare} />
+          <PrimaryButton
+            labelStyle={styles.buttonLabel}
+            label={t.common.share}
+            onPress={handleShare}
+          />
         ) : null}
 
         {saveState === 'failed' && saveError ? (
@@ -435,6 +443,7 @@ export default function LogoSelectScreen() {
         ) : null}
 
         <PrimaryButton
+          labelStyle={styles.buttonLabel}
           label={qrState === 'preparing' ? t.result.qrPreparing : t.result.qr}
           disabled={!video || qrState === 'preparing'}
           onPress={qrState === 'ready' ? () => setQrState('ready') : handleQr}
@@ -532,8 +541,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   status: {
-    fontSize: 14,
-    fontFamily: fonts.bold,
+    // UI-V2
+    fontSize: sizeV2.caption,
+    lineHeight: lineV2.caption,
+    fontFamily: fontsV2.regular,
     color: colors.textMuted,
     includeFontPadding: false,
   },
@@ -542,14 +553,18 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   sectionLabel: {
-    fontSize: 15,
-    fontFamily: fonts.bold,
+    // UI-V2
+    fontSize: sizeV2.caption,
+    lineHeight: lineV2.caption,
+    fontFamily: fontsV2.semibold,
     color: colors.textPrimary,
     includeFontPadding: false,
   },
   pending: {
-    fontSize: 13,
-    fontFamily: fonts.bold,
+    // UI-V2
+    fontSize: sizeV2.footnote,
+    lineHeight: lineV2.footnote,
+    fontFamily: fontsV2.regular,
     color: colors.textMuted,
     includeFontPadding: false,
   },
@@ -586,8 +601,10 @@ const styles = StyleSheet.create({
   frameThumbLabel: {
     width: FRAME_CARD_WIDTH,
     textAlign: 'center',
-    fontSize: 12,
-    fontFamily: fonts.bold,
+    // UI-V2
+    fontSize: sizeV2.footnote,
+    lineHeight: lineV2.footnote,
+    fontFamily: fontsV2.regular,
     color: colors.textMuted,
     includeFontPadding: false,
   },
@@ -598,8 +615,10 @@ const styles = StyleSheet.create({
     marginTop: 0,
   },
   saveNote: {
-    fontSize: 13,
-    fontFamily: fonts.bold,
+    // UI-V2
+    fontSize: sizeV2.footnote,
+    lineHeight: lineV2.footnote,
+    fontFamily: fontsV2.regular,
     color: colors.textMuted,
     includeFontPadding: false,
   },
@@ -608,8 +627,10 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   settingsLinkText: {
-    fontSize: 13,
-    fontFamily: fonts.bold,
+    // UI-V2
+    fontSize: sizeV2.footnote,
+    lineHeight: lineV2.footnote,
+    fontFamily: fontsV2.semibold,
     color: colors.textPrimary,
     textDecorationLine: 'underline',
     includeFontPadding: false,
@@ -629,8 +650,10 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   qrTitle: {
-    fontSize: 20,
-    fontFamily: fonts.display,
+    // UI-V2
+    fontSize: sizeV2.sectionTitle,
+    lineHeight: lineV2.sectionTitle,
+    fontFamily: fontsV2.bold,
     color: colors.textPrimary,
     includeFontPadding: false,
   },
@@ -639,15 +662,19 @@ const styles = StyleSheet.create({
     height: 220,
   },
   qrWarn: {
-    fontSize: 13,
-    fontFamily: fonts.bold,
+    // UI-V2
+    fontSize: sizeV2.footnote,
+    lineHeight: lineV2.footnote,
+    fontFamily: fontsV2.regular,
     color: '#D8342B',
     textAlign: 'center',
     includeFontPadding: false,
   },
   qrHint: {
-    fontSize: 13,
-    fontFamily: fonts.bold,
+    // UI-V2
+    fontSize: sizeV2.footnote,
+    lineHeight: lineV2.footnote,
+    fontFamily: fontsV2.regular,
     color: colors.textMuted,
     textAlign: 'center',
     includeFontPadding: false,
@@ -664,9 +691,17 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   saveError: {
-    fontSize: 13,
-    fontFamily: fonts.bold,
+    // UI-V2
+    fontSize: sizeV2.footnote,
+    lineHeight: lineV2.footnote,
+    fontFamily: fontsV2.regular,
     color: '#D8342B',
     includeFontPadding: false,
+  },
+  /** UI-V2: PrimaryButton 라벨에 끼워 넣는다. */
+  buttonLabel: {
+    fontSize: sizeV2.button,
+    lineHeight: lineV2.button,
+    fontFamily: fontsV2.semibold,
   },
 });

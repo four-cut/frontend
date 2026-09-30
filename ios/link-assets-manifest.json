@@ -6,6 +6,22 @@
       "sha1": "0059e52db6ed95edb14d63b57973bcc7fb0d71a8"
     },
     {
+      "path": "assets/fonts/Pretendard-Bold.ttf",
+      "sha1": "5014ee949529efb25dc8d2555fb8d4586f43e058"
+    },
+    {
+      "path": "assets/fonts/Pretendard-LICENSE.txt",
+      "sha1": "63394962f8cb269b678bb30c8eea4855a87c3f56"
+    },
+    {
+      "path": "assets/fonts/Pretendard-Regular.ttf",
+      "sha1": "f5e25d12ff08ff058acd8a64d5f9b5f9c92b9d17"
+    },
+    {
+      "path": "assets/fonts/Pretendard-SemiBold.ttf",
+      "sha1": "e247ab351a1797b1a81f7a5e945c416de9f7fd91"
+    },
+    {
       "path": "assets/fonts/ZenMaruGothic-Regular.ttf",
       "sha1": "271eaadc50f7e1d2fbab90141f65cdd13c59546a"
     }

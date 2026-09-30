@@ -1,6 +1,7 @@
 import React, {useCallback, useMemo, useState} from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Image,
   Modal,
   Pressable,
@@ -9,6 +10,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
+import {CameraRoll} from '@react-native-camera-roll/camera-roll';
 import {Text} from '../components/AppText';
 import {useFocusEffect} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -56,6 +58,39 @@ export default function GalleryScreen() {
   );
 
   const thumbWidth = (width - EDGE * 2 - GAP * (COLUMNS - 1)) / COLUMNS;
+
+  /**
+   * 사진 앱에서 지운다. 앨범에서만 빼는 게 아니라 자산을 지우는 것이라,
+   * 묻지 않고 지우면 안 된다.
+   *
+   * iOS 는 여기에 더해 시스템 확인창을 한 번 더 띄운다. 거기서 취소하면
+   * deletePhotos 가 reject 되므로, 실패를 "못 지웠다"로 뭉뚱그리지 않고
+   * 조용히 넘어간다 — 취소한 사람에게 오류를 띄울 이유가 없다.
+   */
+  const confirmDelete = useCallback(
+    (item: StripItem) => {
+      Alert.alert(t.gallery.deleteTitle, t.gallery.deleteBody, [
+        {text: t.common.cancel, style: 'cancel'},
+        {
+          text: t.common.delete,
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await CameraRoll.deletePhotos([item.uri]);
+            } catch {
+              // 시스템 확인창에서 취소한 경우도 여기로 온다. 목록을 다시
+              // 읽어 보면 지워졌는지 아닌지가 그대로 드러난다.
+              reload();
+              return;
+            }
+            setZoomed(null);
+            reload();
+          },
+        },
+      ]);
+    },
+    [t, reload],
+  );
 
   const rowSections = useMemo(
     () =>
@@ -168,6 +203,22 @@ export default function GalleryScreen() {
             />
           ) : null}
         </Pressable>
+
+        {/* 배경을 누르면 닫히므로 삭제 버튼은 그 밖에 형제로 둔다 — 안에 두면
+            버튼을 누른 손가락이 배경까지 닿아 모달이 먼저 닫힌다. */}
+        {zoomed ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t.gallery.deleteA11y}
+            onPress={() => confirmDelete(zoomed)}
+            style={({pressed}) => [
+              styles.zoomDelete,
+              {bottom: insets.bottom + 24},
+              pressed && styles.zoomDeletePressed,
+            ]}>
+            <Text style={styles.zoomDeleteText}>{t.common.delete}</Text>
+          </Pressable>
+        ) : null}
       </Modal>
     </View>
   );
@@ -244,6 +295,25 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.9)',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  zoomDelete: {
+    position: 'absolute',
+    alignSelf: 'center',
+    paddingHorizontal: 28,
+    paddingVertical: 12,
+    borderRadius: 999,
+    backgroundColor: 'rgba(0, 0, 0, 0.55)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.35)',
+  },
+  zoomDeletePressed: {
+    opacity: 0.6,
+  },
+  zoomDeleteText: {
+    fontSize: 16,
+    fontFamily: fonts.bold,
+    color: '#FF6B6B',
+    includeFontPadding: false,
   },
   zoomImage: {
     width: '92%',

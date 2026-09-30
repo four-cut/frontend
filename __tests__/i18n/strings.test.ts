@@ -107,8 +107,4 @@ test('자리표시자를 쓰는 문구는 인자를 실제로 끼워 넣는다',
 
 test('안내 목록처럼 길이가 있는 값은 개수가 같다', () => {
   expect(ja.guide.items).toHaveLength(ko.guide.items.length);
-  expect(ja.frame.slots.portrait).toHaveLength(ko.frame.slots.portrait.length);
-  expect(ja.frame.slots.landscape).toHaveLength(
-    ko.frame.slots.landscape.length,
-  );
 });

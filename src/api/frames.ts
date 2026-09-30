@@ -8,6 +8,13 @@ import {
   DEFAULT_STICKERS,
   resolveStickerUri,
 } from '../frameBuilder/defaultStickers';
+import {
+  loadFrame,
+  loadFrames,
+  saveFrame,
+  type StoredFrame,
+} from '../frameBuilder/frameStorage';
+import {renderFrameDesign} from '../frameBuilder/renderFrameDesign';
 import type {FrameDesign, StickerElement} from '../frameBuilder/types';
 import {getStrings, type Strings} from '../i18n';
 
@@ -57,8 +64,8 @@ const USE_LOCAL_FRAMES = true;
 /**
  * 씨앗 프레임(1, 2)의 이름은 읽을 때 번역한다.
  *
- * 이 배열은 모듈이 로드될 때 한 번만 만들어지고 addLocalFrame 이 뒤에 더
- * 밀어 넣는다. 여기에 문구를 박아 두면 언어를 바꿔도 그대로 남고, 애초에
+ * 이 배열은 모듈이 로드될 때 한 번만 만들어진다. 여기에 문구를 박아 두면
+ * 언어를 바꿔도 그대로 남고, 애초에
  * 이 시점은 initLocale 이 끝나기도 전이라 저장해 둔 언어가 반영되지 않는다.
  * 사용자가 만든 프레임은 붙인 이름을 그대로 둔다 — 파일 이름과 같은 성격이다.
  */
@@ -151,6 +158,32 @@ function getBasicFrameDesign(
   return cached;
 }
 
+const basicFramePreviewCache = new Map<FrameOrientation, Promise<string>>();
+
+/**
+ * 베이직 프레임의 목록 썸네일. 이미지 파일이 따로 없어서, 프레임 만들기가
+ * 저장할 때 쓰는 렌더러로 한 번 그려 둔다 — 로고 위치까지 실제 결과물과 같다.
+ */
+function getBasicFramePreview(orientation: FrameOrientation): Promise<string> {
+  let cached = basicFramePreviewCache.get(orientation);
+  if (!cached) {
+    const layout = orientation === 'PORTRAIT' ? 'portrait' : 'landscape';
+    cached = getBasicFrameDesign(orientation).then(design =>
+      renderFrameDesign(
+        layout,
+        design.backgroundColor,
+        design.textElements,
+        design.stickerElements,
+        design.backgroundImageUri,
+      ),
+    );
+    // 실패한 결과를 붙잡고 있으면 다음에 열 때도 계속 빈 칸이 된다.
+    cached.catch(() => basicFramePreviewCache.delete(orientation));
+    basicFramePreviewCache.set(orientation, cached);
+  }
+  return cached;
+}
+
 const LOCAL_FRAME_DETAILS: Record<number, FrameDetail> = {
   1: {
     frameId: 1,
@@ -183,14 +216,26 @@ const LOCAL_FRAME_DETAILS: Record<number, FrameDetail> = {
   },
 };
 
-export function fetchFrames(
+export async function fetchFrames(
   orientation?: FrameOrientation,
 ): Promise<FrameSummary[]> {
   if (USE_LOCAL_FRAMES) {
-    const frames = orientation
-      ? LOCAL_FRAMES.filter(frame => frame.orientation === orientation)
-      : LOCAL_FRAMES;
-    return Promise.resolve(frames.map(withLocalizedName));
+    // 앱에 들어 있는 베이직 프레임 + 기기 frame 폴더에 저장된 내 프레임.
+    // 폴더를 못 읽거나 썸네일을 못 그려도 목록 자체는 보여준다.
+    const matches = (frame: {orientation: FrameOrientation}) =>
+      !orientation || frame.orientation === orientation;
+    const [seeds, saved] = await Promise.all([
+      Promise.all(
+        LOCAL_FRAMES.filter(matches).map(async frame => ({
+          ...withLocalizedName(frame),
+          previewImageUrl: await getBasicFramePreview(frame.orientation).catch(
+            () => '',
+          ),
+        })),
+      ),
+      loadFrames().catch(() => []),
+    ]);
+    return [...seeds, ...saved.map(toSummary).filter(matches)];
   }
 
   const query = orientation ? `?orientation=${orientation}` : '';
@@ -201,7 +246,7 @@ export function fetchFrames(
  * USE_LOCAL_FRAMES 와 무관하게 항상 서버 목록을 가져온다.
  *
  * 세션은 서버에 실제로 존재하는 frameId 에만 붙일 수 있다. 화면에서 고른
- * 프레임은 지금 목이거나(id 2) 사용자가 방금 만든 것(id 3+)이라 서버에는 없어서
+ * 프레임은 지금 목이거나(id 1, 2) 사용자가 기기에 저장한 것이라 서버에는 없어서
  * 그대로 넘기면 404 가 난다. QR 은 영상만 담고 프레임 장식과는 무관하므로
  * 서버에 있는 아무 프레임에나 세션을 걸면 된다.
  */
@@ -212,15 +257,19 @@ export function fetchRemoteFrames(): Promise<FrameSummary[]> {
 export async function fetchFrameDetail(frameId: number): Promise<FrameDetail> {
   if (USE_LOCAL_FRAMES) {
     const detail = LOCAL_FRAME_DETAILS[frameId];
-    if (!detail) {
+    if (detail) {
+      // 베이직 프레임(1, 2)은 로고 스티커 uri를 비동기로 한 번 해석해야 해서
+      // 모듈 로드 시점이 아니라 여기서 지연 생성한다.
+      if (!detail.design) {
+        detail.design = await getBasicFrameDesign(detail.orientation);
+      }
+      return withLocalizedName(detail);
+    }
+    const saved = await loadFrame(frameId);
+    if (!saved) {
       throw new Error(getStrings().errors.frameNotFound(frameId));
     }
-    // 베이직 프레임(1, 2)은 로고 스티커 uri를 비동기로 한 번 해석해야 해서
-    // 모듈 로드 시점이 아니라 여기서 지연 생성한다.
-    if (!detail.design && (frameId === 1 || frameId === 2)) {
-      detail.design = await getBasicFrameDesign(detail.orientation);
-    }
-    return withLocalizedName(detail);
+    return toDetail(saved);
   }
 
   return apiGet<FrameDetail>(`/api/frames/${frameId}`);
@@ -254,48 +303,49 @@ function buildSlots(orientation: FrameOrientation): FrameSlot[] {
   });
 }
 
-let nextLocalFrameId = LOCAL_FRAMES.length + 1;
+function toSummary(frame: StoredFrame): FrameSummary {
+  return {
+    frameId: frame.frameId,
+    name: frame.name,
+    orientation: frame.orientation,
+    requiredShotCount: 8,
+    slotCount: SLOT_COUNT_BY_ORIENTATION[frame.orientation],
+    previewImageUrl: frame.previewImageUrl,
+  };
+}
+
+function toDetail(frame: StoredFrame): FrameDetail {
+  return {
+    frameId: frame.frameId,
+    name: frame.name,
+    orientation: frame.orientation,
+    canvasWidth: EXPORT_WIDTH,
+    canvasHeight: stripGeometry(
+      frame.orientation === 'PORTRAIT' ? 'portrait' : 'landscape',
+      EXPORT_WIDTH,
+    ).height,
+    requiredShotCount: 8,
+    previewImageUrl: frame.previewImageUrl,
+    slots: buildSlots(frame.orientation),
+    design: frame.design,
+  };
+}
 
 /**
- * 프레임 만들기에서 완성한 디자인을 로컬 프레임 목록에 추가한다.
+ * 프레임 만들기에서 완성한 디자인을 기기의 frame 폴더에 저장한다.
+ * 앱을 다시 켜도 "내 프레임" 목록에 그대로 나온다.
  *
- * 지금은 세션이 살아있는 동안만 유지된다 — 앱을 다시 켜면 사라진다.
- * S3 연동이 붙으면 이 함수 대신 업로드 API를 호출하고, 서버가 내려주는
+ * 서버 연동이 붙으면 이 함수 대신 업로드 API를 호출하고, 서버가 내려주는
  * 목록을 그대로 쓰면 된다 (USE_LOCAL_FRAMES를 false로 바꾸는 시점).
  */
-export function addLocalFrame(input: {
+export async function saveLocalFrame(input: {
   name: string;
   orientation: FrameOrientation;
   previewImageUrl: string;
   design: FrameDesign;
-}): FrameSummary {
-  const frameId = nextLocalFrameId++;
-  const slots = buildSlots(input.orientation);
-
-  const summary: FrameSummary = {
-    frameId,
-    name: input.name,
-    orientation: input.orientation,
-    requiredShotCount: 8,
-    slotCount: slots.length,
-    previewImageUrl: input.previewImageUrl,
-  };
-
-  LOCAL_FRAMES.push(summary);
-  LOCAL_FRAME_DETAILS[frameId] = {
-    frameId,
-    name: input.name,
-    orientation: input.orientation,
-    canvasWidth: EXPORT_WIDTH,
-    canvasHeight: stripGeometry(
-      input.orientation === 'PORTRAIT' ? 'portrait' : 'landscape',
-      EXPORT_WIDTH,
-    ).height,
-    requiredShotCount: 8,
-    previewImageUrl: input.previewImageUrl,
-    slots,
-    design: input.design,
-  };
-
-  return summary;
+}): Promise<FrameSummary> {
+  // 폴더 이름으로도 쓰는 ID. 베이직 프레임(1, 2)과 겹치지 않고, 앱을
+  // 다시 켜도 이어서 겹치지 않도록 만든 시각을 쓴다.
+  const saved = await saveFrame({frameId: Date.now(), ...input});
+  return toSummary(saved);
 }

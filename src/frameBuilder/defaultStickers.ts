@@ -45,7 +45,9 @@ export const DEFAULT_STICKERS: DefaultSticker[] = [
 const resolvedUriCache = new Map<string, Promise<string>>();
 
 export function resolveStickerUri(uri: string): Promise<string> {
-  if (uri.startsWith('file://') || !MediaFile) {
+  // 개발 모드의 Metro http:// 주소는 Skia가 바로 읽는다. 네이티브 복사는
+  // ContentResolver라 http를 못 열고 FileNotFoundException이 난다.
+  if (/^(file|https?):\/\//.test(uri) || !MediaFile) {
     return Promise.resolve(uri);
   }
   let cached = resolvedUriCache.get(uri);

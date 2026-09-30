@@ -51,6 +51,33 @@ export interface Spec extends TurboModule {
    * @param uris `file://` 로 시작해도 되고 그냥 경로여도 된다.
    */
   deleteFiles(uris: Array<string>): Promise<number>;
+
+  /**
+   * 앱 전용 저장 폴더의 `file://` 경로. 안드로이드는 filesDir, iOS 는 Documents.
+   *
+   * 캐시와 달리 OS 가 임의로 비우지 않는다. 앱을 지우면 같이 지워진다.
+   * iOS 는 앱이 업데이트되면 이 경로 자체가 바뀌므로 절대 경로를 저장해 두지
+   * 말고 매번 여기서 받아서 조립해야 한다.
+   */
+  getDocumentDirectory(): Promise<string>;
+
+  /**
+   * 파일을 toPath 로 복사한다. toPath 에 이미 파일이 있으면 덮어쓰고,
+   * 상위 폴더가 없으면 만든다.
+   *
+   * @param fromUri `file://` 경로 또는 그냥 경로.
+   * @param toPath `file://` 로 시작해도 되고 그냥 경로여도 된다.
+   * @returns 복사된 파일의 `file://` 경로
+   */
+  copyFile(fromUri: string, toPath: string): Promise<string>;
+
+  /** 문자열을 UTF-8 파일로 쓴다. 상위 폴더가 없으면 만든다. */
+  writeTextFile(path: string, content: string): Promise<void>;
+
+  readTextFile(path: string): Promise<string>;
+
+  /** 폴더 안 항목 이름들. 폴더가 없으면 빈 배열이다. */
+  listDirectory(path: string): Promise<Array<string>>;
 }
 
 // getEnforcing 이 아니라 get 이다. 모듈이 없는 환경(iOS·jest)에서도

@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {
   Image,
   Pressable,
@@ -138,7 +138,22 @@ export default function CaptureScreen() {
   // 찍는 과정을 통째로 녹화한다. (OQ-01)
   // 소리는 담지 않아서 녹음 권한이 필요 없다.
   const videoOutput = useVideoOutput({enableAudio: false});
+  // 카운트다운이 매초 다시 그려도 Camera 에 같은 배열이 가도록 고정한다.
+  const outputs = useMemo(
+    () => [photoOutput, videoOutput],
+    [photoOutput, videoOutput],
+  );
   const recorder = useRef<Recorder | null>(null);
+
+  // 고른 카메라로 세션을 못 여는 경우가 있다(iOS 에서 제보됨). vision-camera 는
+  // 기본으로 console.error 만 찍어서, 화면은 멈춘 것처럼 보이고 사용자는 왜
+  // 안 되는지 알 수 없다. 에러를 잡아 알리고 카메라를 다시 고르게 한다.
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const handleCameraError = useCallback((error: unknown) => {
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn('[CaptureScreen] camera error:', message);
+    setCameraError(message);
+  }, []);
 
   // Camera 에 'front' 같은 문자열을 그대로 넘기면 해당 카메라가 없을 때 예외를 던진다.
   // 기기를 직접 조회해서 없으면 반대쪽으로 넘긴다. (에뮬레이터는 전면이 없는 경우가 있다)
@@ -191,7 +206,8 @@ export default function CaptureScreen() {
       !device ||
       !isFocused ||
       taken >= shotCount ||
-      needsRotate
+      needsRotate ||
+      cameraError
     ) {
       return;
     }
@@ -205,6 +221,7 @@ export default function CaptureScreen() {
     return () => clearTimeout(timer);
   }, [
     capture,
+    cameraError,
     device,
     hasPermission,
     isFocused,
@@ -319,6 +336,28 @@ export default function CaptureScreen() {
     );
   }
 
+  if (cameraError) {
+    return (
+      <View style={styles.fallback}>
+        <Text style={styles.fallbackText}>{t.capture.cameraFailed}</Text>
+        {/* 원인을 제보받을 수 있게 원문 메시지도 작게 보여 준다. */}
+        <Text style={styles.errorDetail}>{cameraError}</Text>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => {
+            // 망가진 세션에 붙어 있던 녹화는 버리고 새 세션에서 다시 시작한다.
+            recorder.current?.stopRecording().catch(() => {});
+            recorder.current = null;
+            setCameraError(null);
+            setPosition(null);
+          }}
+          style={({pressed}) => [styles.retryButton, pressed && styles.pressed]}>
+          <Text style={styles.pickButtonLabel}>{t.capture.pickAgain}</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
   return (
     <View
       style={[styles.container, isLandscape && styles.containerLetterboxed]}>
@@ -340,8 +379,9 @@ export default function CaptureScreen() {
           style={StyleSheet.absoluteFill}
           isActive={isFocused}
           device={device}
-          outputs={[photoOutput, videoOutput]}
+          outputs={outputs}
           onStarted={startRecording}
+          onError={handleCameraError}
         />
       </View>
 
@@ -542,5 +582,19 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bold,
     color: colors.textMuted,
     includeFontPadding: false,
+  },
+  errorDetail: {
+    paddingHorizontal: 32,
+    fontSize: 12,
+    color: colors.textMuted,
+    textAlign: 'center',
+  },
+  retryButton: {
+    height: 52,
+    paddingHorizontal: 28,
+    borderRadius: 12,
+    backgroundColor: colors.black,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

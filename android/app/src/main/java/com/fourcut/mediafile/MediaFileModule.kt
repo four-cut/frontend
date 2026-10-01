@@ -110,12 +110,20 @@ class MediaFileModule(reactContext: ReactApplicationContext) :
   }
 
   override fun deleteFiles(uris: ReadableArray, promise: Promise) {
+    // 앱 캐시 폴더 밖은 절대 지우지 않는다. copyToCacheFile 은 이미 file:// 인
+    // 입력을 복사 없이 그대로 돌려주는데, 그런 경로가 세션에 섞이면 사용자의
+    // 원본 사진을 지우게 된다. 이 함수가 지울 수 있는 건 앱이 만든 임시 파일뿐이다.
+    val cacheRoot = reactApplicationContext.cacheDir.canonicalPath + File.separator
     var removed = 0
     for (index in 0 until uris.size()) {
       val raw = uris.getString(index) ?: continue
       try {
-        val path = if (raw.startsWith("file://")) Uri.parse(raw).path else raw
-        if (path != null && File(path).delete()) {
+        val path = (if (raw.startsWith("file://")) Uri.parse(raw).path else raw) ?: continue
+        val file = File(path)
+        if (!file.canonicalPath.startsWith(cacheRoot)) {
+          continue
+        }
+        if (file.delete()) {
           removed++
         }
       } catch (error: Exception) {

@@ -2,6 +2,7 @@ import {apiGet, apiSend, apiUpload} from './client';
 import type {
   CapturedPhoto,
   CompositeImage,
+  CompositeUploaded,
   SessionCreated,
   SessionStatus,
   SlotAssignment,
@@ -66,7 +67,7 @@ export function composeSession(sessionId: string) {
  * 보여 준 그림을 그대로 올리므로 서버가 다시 합성할 필요가 없다.
  */
 export function uploadCompositeImage(sessionId: string, fileUri: string) {
-  return apiUpload<CompositeImage>(
+  return apiUpload<CompositeUploaded>(
     `/api/sessions/${sessionId}/composite/image`,
     {uri: fileUri, name: 'strip.png', type: 'image/png'},
   );

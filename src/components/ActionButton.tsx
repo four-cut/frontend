@@ -1,5 +1,11 @@
 import React, {useEffect, useRef} from 'react';
-import {Animated, Pressable, StyleSheet} from 'react-native';
+import {
+  Animated,
+  Pressable,
+  StyleSheet,
+  type StyleProp,
+  type TextStyle,
+} from 'react-native';
 import {Text} from './AppText';
 
 import type {IconName} from '../assets/icons';
@@ -13,6 +19,13 @@ type Props = {
   variant?: 'filled' | 'outline';
   onPress?: () => void;
   disabled?: boolean;
+  /**
+   * 라벨 글꼴만 바꿔 끼울 자리. (UI-V2)
+   *
+   * 결과 화면에서 Pretendard 를 시험하는데 라벨이 이 컴포넌트 안에 갇혀
+   * 있었다. 안 넘기면 지금까지와 똑같이 그린다.
+   */
+  labelStyle?: StyleProp<TextStyle>;
 };
 
 const ICON_SIZE = 20;
@@ -29,6 +42,7 @@ export default function ActionButton({
   variant = 'outline',
   onPress,
   disabled,
+  labelStyle,
 }: Props) {
   const filled = variant === 'filled';
   const foreground = filled ? colors.white : colors.black;
@@ -78,7 +92,9 @@ export default function ActionButton({
           {icon ? (
             <SvgIcon name={icon} size={ICON_SIZE} color={foreground} />
           ) : null}
-          <Text style={[styles.label, {color: foreground}]} numberOfLines={1}>
+          <Text
+            style={[styles.label, labelStyle, {color: foreground}]}
+            numberOfLines={1}>
             {label}
           </Text>
         </Animated.View>

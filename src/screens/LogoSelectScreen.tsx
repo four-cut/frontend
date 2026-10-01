@@ -38,7 +38,9 @@ import HomeButton from '../components/HomeButton';
 import StripPreview from '../components/StripPreview';
 import type {CaptureNavigation, RootNavigation} from '../navigation/types';
 import {useCaptureSession} from '../state/CaptureSessionContext';
-import {colors, fonts} from '../theme';
+import {colors} from '../theme';
+// UI-V2: 결과 화면에서만 쓰는 타이포그래피. 공용 theme 은 그대로 둔다.
+import {fontsV2, lineV2, sizeV2} from '../theme/typographyV2';
 
 type SaveState = 'idle' | 'saving' | 'saved' | 'failed';
 type QrState = 'idle' | 'preparing' | 'ready' | 'failed';
@@ -447,6 +449,7 @@ export default function LogoSelectScreen() {
             칸이 공유로 바뀐다 — 저장됐다는 건 아래 안내 문구가 알려 준다. */}
         <View style={styles.actionRow}>
           <ActionButton
+            labelStyle={styles.buttonLabel}
             variant="outline"
             icon="print"
             label={printing ? t.result.printing : t.result.print}
@@ -456,6 +459,7 @@ export default function LogoSelectScreen() {
           {/* 가운데 칸만 채워서 가장 먼저 누를 동작(저장, 이어서 공유)을 강조한다. */}
           {/* 한 버튼의 문구·아이콘만 바꿔야 바뀔 때 튀는 애니메이션이 걸린다. */}
           <ActionButton
+            labelStyle={styles.buttonLabel}
             variant="filled"
             icon={showShare ? 'share' : 'save'}
             label={showShare ? t.common.share : saveLabel}
@@ -464,6 +468,7 @@ export default function LogoSelectScreen() {
           />
           {/* 사진(스트립)만 있어도 QR 을 만들 수 있다. 영상은 있으면 같이 올린다. */}
           <ActionButton
+            labelStyle={styles.buttonLabel}
             variant="outline"
             icon="qr"
             label={qrState === 'preparing' ? t.result.qrPreparing : t.result.qr}
@@ -594,8 +599,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   status: {
-    fontSize: 14,
-    fontFamily: fonts.bold,
+    // UI-V2
+    fontSize: sizeV2.caption,
+    lineHeight: lineV2.caption,
+    fontFamily: fontsV2.regular,
     color: colors.textMuted,
     includeFontPadding: false,
   },
@@ -604,14 +611,18 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   sectionLabel: {
-    fontSize: 15,
-    fontFamily: fonts.bold,
+    // UI-V2
+    fontSize: sizeV2.caption,
+    lineHeight: lineV2.caption,
+    fontFamily: fontsV2.semibold,
     color: colors.textPrimary,
     includeFontPadding: false,
   },
   pending: {
-    fontSize: 13,
-    fontFamily: fonts.bold,
+    // UI-V2
+    fontSize: sizeV2.footnote,
+    lineHeight: lineV2.footnote,
+    fontFamily: fontsV2.regular,
     color: colors.textMuted,
     includeFontPadding: false,
   },
@@ -648,8 +659,10 @@ const styles = StyleSheet.create({
   frameThumbLabel: {
     width: FRAME_CARD_WIDTH,
     textAlign: 'center',
-    fontSize: 12,
-    fontFamily: fonts.bold,
+    // UI-V2
+    fontSize: sizeV2.footnote,
+    lineHeight: lineV2.footnote,
+    fontFamily: fontsV2.regular,
     color: colors.textMuted,
     includeFontPadding: false,
   },
@@ -661,8 +674,10 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   saveNote: {
-    fontSize: 13,
-    fontFamily: fonts.bold,
+    // UI-V2
+    fontSize: sizeV2.footnote,
+    lineHeight: lineV2.footnote,
+    fontFamily: fontsV2.regular,
     color: colors.textMuted,
     includeFontPadding: false,
   },
@@ -671,8 +686,10 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   settingsLinkText: {
-    fontSize: 13,
-    fontFamily: fonts.bold,
+    // UI-V2
+    fontSize: sizeV2.footnote,
+    lineHeight: lineV2.footnote,
+    fontFamily: fontsV2.semibold,
     color: colors.textPrimary,
     textDecorationLine: 'underline',
     includeFontPadding: false,
@@ -692,8 +709,10 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   qrTitle: {
-    fontSize: 20,
-    fontFamily: fonts.display,
+    // UI-V2
+    fontSize: sizeV2.sectionTitle,
+    lineHeight: lineV2.sectionTitle,
+    fontFamily: fontsV2.bold,
     color: colors.textPrimary,
     includeFontPadding: false,
   },
@@ -702,15 +721,19 @@ const styles = StyleSheet.create({
     height: 220,
   },
   qrWarn: {
-    fontSize: 13,
-    fontFamily: fonts.bold,
+    // UI-V2
+    fontSize: sizeV2.footnote,
+    lineHeight: lineV2.footnote,
+    fontFamily: fontsV2.regular,
     color: '#D8342B',
     textAlign: 'center',
     includeFontPadding: false,
   },
   qrHint: {
-    fontSize: 13,
-    fontFamily: fonts.bold,
+    // UI-V2
+    fontSize: sizeV2.footnote,
+    lineHeight: lineV2.footnote,
+    fontFamily: fontsV2.regular,
     color: colors.textMuted,
     textAlign: 'center',
     includeFontPadding: false,
@@ -727,9 +750,17 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   saveError: {
-    fontSize: 13,
-    fontFamily: fonts.bold,
+    // UI-V2
+    fontSize: sizeV2.footnote,
+    lineHeight: lineV2.footnote,
+    fontFamily: fontsV2.regular,
     color: '#D8342B',
     includeFontPadding: false,
+  },
+  /** UI-V2: ActionButton 라벨에 끼워 넣는다. */
+  buttonLabel: {
+    fontSize: sizeV2.button,
+    lineHeight: lineV2.button,
+    fontFamily: fontsV2.semibold,
   },
 });

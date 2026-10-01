@@ -15,7 +15,8 @@ import HomeButton from '../components/HomeButton';
 import PrimaryButton from '../components/PrimaryButton';
 import StripPreview from '../components/StripPreview';
 import {useT} from '../i18n';
-import type {CaptureNavigation, RootNavigation} from '../navigation/types';
+import type {CaptureNavigation} from '../navigation/types';
+import {useGuardLeaveFlow} from '../navigation/useGuardLeaveFlow';
 import {useCaptureSession} from '../state/CaptureSessionContext';
 import {colors, fonts, fontSize} from '../theme';
 
@@ -31,6 +32,10 @@ export default function PhotoSelectScreen() {
     useCaptureSession();
   const t = useT();
 
+  // 뒤로가기·스와이프·홈 버튼 모두 확인을 거쳐 홈으로 나간다.
+  // 훅이라 아래 조기 반환보다 앞에 둔다.
+  const {leave: goHome} = useGuardLeaveFlow(true, t.leaveFlow.bodyShots);
+
   if (!layout) {
     return null;
   }
@@ -39,16 +44,6 @@ export default function PhotoSelectScreen() {
   const complete = selection.length === cutCount;
   const thumbWidth =
     layout === 'portrait' ? THUMB_HEIGHT * 0.66 : THUMB_HEIGHT * 1.6;
-
-  const goHome = () => {
-    // navigate 는 MainTabs 를 CaptureFlow 위에 새로 쌓는다. 그러면 촬영 세션이
-    // 살아 있는 채로 홈만 덮여서, 다시 촬영하면 이전 촬영본이 딸려 온다.
-    // popTo 는 아래에 있는 MainTabs 로 되돌아가면서 CaptureFlow 를 걷어낸다.
-    navigation.getParent<RootNavigation>()?.popTo('MainTabs', {
-      screen: 'Shoot',
-      params: {screen: 'Home'},
-    });
-  };
 
   return (
     <View style={[styles.container, {paddingTop: insets.top}]}>

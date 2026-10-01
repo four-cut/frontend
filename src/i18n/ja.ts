@@ -101,6 +101,14 @@ const ja: Strings = {
         : `撮影${index}枚目、${order}番目に選択中`,
   },
 
+  /** 撮影の途中で抜けるときの確認 */
+  leaveFlow: {
+    title: '本当に戻りますか？',
+    bodyShots: 'これまでに撮った写真は消え、最初の画面に戻ります。',
+    bodyResult: '保存していない4カットは消え、最初の画面に戻ります。',
+    stay: '続ける',
+    leave: '戻る',
+  },
   result: {
     myFrames: 'マイフレームを選ぶ',
     noFrames: '選べるフレームがありません',

@@ -24,6 +24,7 @@ import {useT} from '../i18n';
 import {SLOT_ASPECT} from '../capture/stripLayout';
 import {speedUpSessionVideo} from '../capture/videoSpeed';
 import type {CaptureNavigation} from '../navigation/types';
+import {useGuardLeaveFlow} from '../navigation/useGuardLeaveFlow';
 import {TIMER_SECONDS, useCaptureSession} from '../state/CaptureSessionContext';
 import {colors, fonts, fontSize} from '../theme';
 
@@ -171,6 +172,14 @@ export default function CaptureScreen() {
   const canChooseBack = backDevice != null;
   // 지금까지 찍은 장수. 목표치(shotCount)와 헷갈리지 않게 이름을 나눈다.
   const [taken, setTaken] = useState(0);
+
+  // 촬영 도중 뒤로가기를 막는다. 다 찍으면 풀어 둔다 — 아래 effect 가
+  // replace 로 다음 화면에 넘어가는데, 그것까지 막으면 안 된다.
+  // (replace 는 녹화를 닫은 뒤라 그 사이에 이 값이 먼저 반영된다.)
+  const {confirming} = useGuardLeaveFlow(
+    taken > 0 && taken < shotCount,
+    t.leaveFlow.bodyShots,
+  );
   const [remaining, setRemaining] = useState(TIMER_SECONDS);
 
   // 카운트다운과 바로촬영이 겹쳐 두 번 찍히는 걸 막는다.
@@ -206,7 +215,9 @@ export default function CaptureScreen() {
       !isFocused ||
       taken >= shotCount ||
       needsRotate ||
-      cameraError
+      cameraError ||
+      // 나갈지 묻는 동안에는 찍지 않는다.
+      confirming
     ) {
       return;
     }
@@ -223,12 +234,21 @@ export default function CaptureScreen() {
     cameraError,
     device,
     hasPermission,
+    confirming,
     isFocused,
     needsRotate,
     remaining,
     shotCount,
     taken,
   ]);
+
+  // "계속하기" 로 돌아오면 카운트다운을 처음부터 다시 센다. 확인창을 닫고
+  // 자세를 다시 잡을 시간이 필요하다 — 남은 1초에서 바로 찍히면 당황스럽다.
+  useEffect(() => {
+    if (confirming) {
+      setRemaining(TIMER_SECONDS);
+    }
+  }, [confirming]);
 
   /** 카메라 세션이 뜬 뒤에야 레코더를 만들 수 있다. */
   const startRecording = useCallback(async () => {

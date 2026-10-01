@@ -12,13 +12,14 @@ import {
 } from 'react-native';
 import {CameraRoll} from '@react-native-camera-roll/camera-roll';
 import {Text} from '../components/AppText';
-import {useFocusEffect} from '@react-navigation/native';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {useAuth, useSocialSignIn} from '../auth';
 import {STRIP_ASPECT} from '../capture/stripLayout';
 import {useSavedStrips, type StripItem} from '../gallery/useSavedStrips';
 import {useT} from '../i18n';
+import type {RootNavigation} from '../navigation/types';
 import {colors, fonts} from '../theme';
 
 const COLUMNS = 3;
@@ -46,9 +47,27 @@ export default function GalleryScreen() {
   const {width} = useWindowDimensions();
   const {status: authStatus, member} = useAuth();
   const {signOutEverywhere} = useSocialSignIn();
+  const navigation = useNavigation<RootNavigation>();
   const {sections, status, reload, loadMore, loadingMore} = useSavedStrips();
 
   const [zoomed, setZoomed] = useState<StripItem | null>(null);
+
+  /**
+   * 로그아웃하면 이 화면에 남아 있으면 안 된다.
+   *
+   * 로그인 게이트는 탭을 "누를 때" 한 번 판단한다. 이미 갤러리에 들어와 있는
+   * 상태로 로그아웃하면 아무도 다시 판단하지 않아서, 로그아웃 버튼만 사라지고
+   * 화면은 그대로 남아 있었다.
+   *
+   * 로그인 화면만 띄우지 않고 홈으로 먼저 물러난다. 갤러리에 남겨 둔 채로
+   * 로그인만 띄우면, 로그인 창을 내렸을 때 로그아웃 상태의 갤러리가 그대로
+   * 보인다. 홈은 로그인이 필요 없으니 내려도 갈 곳이 있다.
+   */
+  const handleSignOut = useCallback(async () => {
+    await signOutEverywhere();
+    navigation.navigate('MainTabs', {screen: 'Shoot'});
+    navigation.navigate('Login', {next: 'Gallery'});
+  }, [signOutEverywhere, navigation]);
 
   // 촬영을 마치고 돌아오면 새로 저장된 것이 있을 수 있다.
   useFocusEffect(
@@ -111,7 +130,7 @@ export default function GalleryScreen() {
         {member ? (
           <Pressable
             accessibilityRole="button"
-            onPress={signOutEverywhere}
+            onPress={handleSignOut}
             hitSlop={8}>
             <Text style={styles.signOut}>{t.gallery.signOut}</Text>
           </Pressable>

@@ -12,7 +12,6 @@ import {
   View,
 } from 'react-native';
 import {Text} from '../components/AppText';
-import {useNavigation} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {
@@ -36,7 +35,7 @@ import {STRIP_ASPECT} from '../capture/stripLayout';
 import ActionButton from '../components/ActionButton';
 import HomeButton from '../components/HomeButton';
 import StripPreview from '../components/StripPreview';
-import type {CaptureNavigation, RootNavigation} from '../navigation/types';
+import {useGuardLeaveFlow} from '../navigation/useGuardLeaveFlow';
 import {useCaptureSession} from '../state/CaptureSessionContext';
 import {colors} from '../theme';
 // UI-V2: 결과 화면에서만 쓰는 타이포그래피. 공용 theme 은 그대로 둔다.
@@ -62,7 +61,6 @@ const FRAME_CARD_INNER_WIDTH = FRAME_CARD_WIDTH - FRAME_CARD_BORDER * 2;
 export default function LogoSelectScreen() {
   const insets = useSafeAreaInsets();
   const t = useT();
-  const navigation = useNavigation<CaptureNavigation>();
   const {width} = useWindowDimensions();
   const [previewAreaHeight, setPreviewAreaHeight] = useState(0);
   const {
@@ -321,15 +319,12 @@ export default function LogoSelectScreen() {
     }
   };
 
-  const goHome = () => {
-    // navigate 는 MainTabs 를 CaptureFlow 위에 새로 쌓는다. 그러면 촬영 세션이
-    // 살아 있는 채로 홈만 덮여서, 다시 촬영하면 이전 촬영본이 딸려 온다.
-    // popTo 는 아래에 있는 MainTabs 로 되돌아가면서 CaptureFlow 를 걷어낸다.
-    navigation.getParent<RootNavigation>()?.popTo('MainTabs', {
-      screen: 'Shoot',
-      params: {screen: 'Home'},
-    });
-  };
+  // 저장했거나 QR 을 받았으면 결과물이 남아 있으니 묻지 않고 나간다.
+  // qrState 는 모달을 닫으면 idle 로 돌아가므로, 한 번 생기면 남는 qrUrl 로 본다.
+  const {leave: goHome} = useGuardLeaveFlow(
+    saveState !== 'saved' && !qrUrl,
+    t.leaveFlow.bodyResult,
+  );
 
   // 폭 기준으로만 잡으면 아래 버튼·프레임 목록이 커졌을 때 남은 높이를
   // 넘어서 목록 제목을 덮는다. 실측한 영역 높이 안에 들어오게 줄인다.

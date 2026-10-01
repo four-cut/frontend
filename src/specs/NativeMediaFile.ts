@@ -48,6 +48,9 @@ export interface Spec extends TurboModule {
    *
    * 이미 없는 파일은 실패가 아니다. 세는 데서만 빠진다.
    *
+   * 앱의 임시 폴더(Android cacheDir, iOS Caches·tmp) 밖의 경로는 지우지 않고
+   * 건너뛴다. 앨범 원본이 섞여 들어와도 지워지지 않게 하는 마지막 안전장치다.
+   *
    * @param uris `file://` 로 시작해도 되고 그냥 경로여도 된다.
    */
   deleteFiles(uris: Array<string>): Promise<number>;

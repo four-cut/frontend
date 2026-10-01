@@ -281,6 +281,20 @@ static NSString *WriteToCache(NSData *data, NSString *uti, NSError **error) {
   NSFileManager *manager = [NSFileManager defaultManager];
   NSInteger removed = 0;
 
+  // 앱의 임시 폴더 밖은 절대 지우지 않는다 (Android 와 같은 이유 — 앨범 원본을
+  // 지울 위험). 합성·배속 결과는 Caches 에, 카메라 촬영본은 tmp 에 생긴다.
+  // /var 와 /private/var 가 같은 곳이라 둘 다 심볼릭 링크를 풀어서 비교한다.
+  NSString *caches =
+      NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES)
+          .firstObject;
+  NSMutableArray<NSString *> *roots = [NSMutableArray array];
+  for (NSString *root in @[ caches ?: @"", NSTemporaryDirectory() ]) {
+    if (root.length > 0) {
+      [roots addObject:[[root stringByResolvingSymlinksInPath]
+                           stringByAppendingString:@"/"]];
+    }
+  }
+
   for (id entry in uris) {
     if (![entry isKindOfClass:[NSString class]]) {
       continue;
@@ -288,6 +302,17 @@ static NSString *WriteToCache(NSData *data, NSString *uti, NSError **error) {
     NSString *raw = (NSString *)entry;
     NSString *path = [raw hasPrefix:@"file://"] ? [NSURL URLWithString:raw].path : raw;
     if (path == nil) {
+      continue;
+    }
+    NSString *resolved = [path stringByResolvingSymlinksInPath];
+    BOOL inside = NO;
+    for (NSString *root in roots) {
+      if ([resolved hasPrefix:root]) {
+        inside = YES;
+        break;
+      }
+    }
+    if (!inside) {
       continue;
     }
     // 이미 없는 파일은 실패가 아니다. 지워진 것만 센다.

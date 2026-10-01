@@ -51,6 +51,12 @@ export default function LoginScreen() {
         case 'Gallery':
           navigation.replace('MainTabs', {screen: 'Gallery'});
           return;
+        case 'AlbumFlow':
+          navigation.replace('CaptureFlow', {
+            screen: 'LayoutSelect',
+            params: {source: 'album'},
+          });
+          return;
         default:
           navigation.goBack();
       }

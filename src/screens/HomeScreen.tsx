@@ -47,6 +47,18 @@ export default function HomeScreen() {
           onPress={() => gate('Guide', () => navigation.navigate('Guide'))}
         />
         <PrimaryButton
+          label={t.home.fromAlbum}
+          onPress={() =>
+            gate('AlbumFlow', () =>
+              navigation.getParent<RootNavigation>()?.navigate('CaptureFlow', {
+                screen: 'LayoutSelect',
+                params: {source: 'album'},
+              }),
+            )
+          }
+          style={styles.secondAction}
+        />
+        <PrimaryButton
           label={t.home.makeFrame}
           onPress={() =>
             gate('FrameBuilder', () =>

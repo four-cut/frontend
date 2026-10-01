@@ -28,6 +28,7 @@ const ko = {
 
   home: {
     shoot: '촬영하기',
+    fromAlbum: '앨범에서 선택',
     makeFrame: '프레임 만들기',
   },
 
@@ -77,6 +78,19 @@ const ko = {
     frontA11y: '전면 카메라로 촬영',
     backA11y: '후면 카메라로 촬영',
     shootNow: '바로 촬영',
+    cameraFailed: '카메라를 켜지 못했어요',
+    pickAgain: '카메라 다시 고르기',
+  },
+
+  albumPick: {
+    title: '앨범에서 사진을 골라주세요',
+    /** "3/4장 선택" */
+    count: (picked: number, total: number) => `${picked}/${total}장 선택`,
+    /** "앨범 사진, 2번으로 선택됨" */
+    photoA11y: (order: number | null) =>
+      order === null ? '앨범 사진' : `앨범 사진, ${order}번으로 선택됨`,
+    preparing: '사진 준비 중...',
+    prepareFailed: '사진을 불러오지 못했어요. 다시 시도해주세요.',
   },
 
   photoSelect: {
@@ -99,11 +113,12 @@ const ko = {
     composeFailed: '합성에 실패했습니다',
     zoomA11y: '결과물 크게 보기',
 
+    // 인쇄·저장·QR 을 한 줄에 나란히 두므로 버튼 문구는 짧게 쓴다.
     save: {
-      idle: '사진, 영상 저장하기',
-      saving: '저장 중...',
+      idle: '저장',
+      saving: '저장 중',
       saved: '저장됨',
-      failed: '다시 저장하기',
+      failed: '다시 저장',
     },
     saveFailed: '저장에 실패했습니다',
     /** "사진 앱 > 찍고갈래 앨범에 저장했어요" — 앨범 이름은 번역하지 않는다. */
@@ -112,16 +127,17 @@ const ko = {
     videoPending: '영상은 아직 준비 중입니다',
     openSettings: '설정에서 권한 허용',
 
-    print: '인쇄하기',
-    printing: '인쇄 준비 중...',
+    print: '인쇄',
+    printing: '인쇄 중',
     /** 인쇄 작업 이름 — 프린터 대기열에 뜬다. */
     printJob: '찍고갈래 네컷',
 
-    qr: 'QR로 받기',
-    qrPreparing: 'QR 만드는 중...',
+    qr: 'QR',
+    qrPreparing: 'QR 생성 중',
     qrTitle: 'QR을 찍어 받아가세요',
     qrHint: '휴대폰 카메라로 찍으면 다운로드 화면이 열립니다',
     qrVideoOnly: '사진을 올리지 못해 영상만 받을 수 있어요',
+    qrPhotoOnly: '영상은 준비 중이라 지금은 사진만 받을 수 있어요',
     qrVideoNotReady: '영상이 아직 준비되지 않았습니다',
     qrNoFrame: '서버에 등록된 프레임이 없습니다',
     qrFailed: 'QR 을 만들지 못했습니다',

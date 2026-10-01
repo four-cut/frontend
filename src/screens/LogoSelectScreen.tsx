@@ -33,8 +33,8 @@ import type {FrameDesign} from '../frameBuilder/types';
 import NativeMediaFile from '../specs/NativeMediaFile';
 import NativePrint from '../specs/NativePrint';
 import {STRIP_ASPECT} from '../capture/stripLayout';
+import ActionButton from '../components/ActionButton';
 import HomeButton from '../components/HomeButton';
-import PrimaryButton from '../components/PrimaryButton';
 import StripPreview from '../components/StripPreview';
 import type {CaptureNavigation, RootNavigation} from '../navigation/types';
 import {useCaptureSession} from '../state/CaptureSessionContext';
@@ -65,7 +65,7 @@ export default function LogoSelectScreen() {
   const navigation = useNavigation<CaptureNavigation>();
   const {width} = useWindowDimensions();
   const [previewAreaHeight, setPreviewAreaHeight] = useState(0);
-  const {layout, shots, selection, video, frame, selectFrame} =
+  const {layout, shots, selection, video, frame, selectFrame, fromAlbum} =
     useCaptureSession();
 
   // composeStrip이 네이티브 모듈로 이미 file:// 경로까지 떨궈서 돌려준다.
@@ -81,11 +81,18 @@ export default function LogoSelectScreen() {
     null,
   );
   const [saveError, setSaveError] = useState<string | null>(null);
+  // 저장을 마치면 저장 칸이 공유로 바뀐다. 바뀌는 순간 버튼이 튀어서 알아챈다.
+  const showShare = saveState === 'saved';
   const [zoomed, setZoomed] = useState(false);
 
   const [qrState, setQrState] = useState<QrState>('idle');
   const [qrUrl, setQrUrl] = useState<string | null>(null);
   const [qrError, setQrError] = useState<string | null>(null);
+  const [qrOpen, setQrOpen] = useState(false);
+  /** QR 페이지에 올라간 것들. 다시 누르면 빠진 것만 채워 올린다. */
+  const [qrSessionId, setQrSessionId] = useState<string | null>(null);
+  const [qrUploadedStrip, setQrUploadedStrip] = useState<string | null>(null);
+  const [qrHasVideo, setQrHasVideo] = useState(false);
   /** QR 페이지에 사진까지 올라갔는지. 영상만 올라간 경우와 구분한다. */
   const [qrHasPhoto, setQrHasPhoto] = useState(false);
 
@@ -222,49 +229,80 @@ export default function LogoSelectScreen() {
    * 부스에 태블릿으로 두면 손님 기기가 아니라서 앨범 저장·공유가 소용없다.
    * QR 을 찍어 각자 폰으로 받아가는 경로가 필요하다.
    *
-   * 지금은 서버가 영상만 QR 로 만들어 준다. 합성 이미지를 올릴 엔드포인트와
-   * 사진·영상을 함께 내려주는 다운로드 페이지가 생기면 여기서 한 번 더
-   * 올리고 QR 이 그 페이지를 가리키게 된다.
+   * 서버는 사진(스트립)을 올려도, 영상을 올려도 같은 다운로드 페이지의 QR 을
+   * 준다. 그래서 영상이 없어도(앨범으로 만든 네컷, 아직 영상 변환 중) 사진만으로
+   * QR 을 만들고, 영상이 있으면 같은 세션에 함께 올린다.
+   *
+   * 한 번 만든 세션은 재사용한다. 다시 누르면 프레임을 바꿔 달라진 스트립이나
+   * 그사이 준비된 영상처럼 빠진 것만 올리고, 다 올라가 있으면 QR 만 다시 띄운다.
    */
   const handleQr = async () => {
-    if (qrState === 'preparing') {
+    if (qrState === 'preparing' || !strip) {
       return;
     }
-    if (!video) {
-      setQrError(t.result.qrVideoNotReady);
-      setQrState('failed');
+    const needPhoto = qrUploadedStrip !== strip && strip.startsWith('file://');
+    const needVideo = !!video && !qrHasVideo;
+    if (qrUrl && !needPhoto && !needVideo) {
+      setQrOpen(true);
       return;
     }
 
     setQrState('preparing');
     setQrError(null);
     try {
-      // 화면에서 고른 프레임 id 는 서버에 없을 수 있어서 그대로 못 쓴다.
-      const remote = await fetchRemoteFrames();
-      const frameId = remote[0]?.frameId;
-      if (frameId === undefined) {
-        throw new Error(t.result.qrNoFrame);
+      let sessionId = qrSessionId;
+      if (!sessionId) {
+        // 화면에서 고른 프레임 id 는 서버에 없을 수 있어서 그대로 못 쓴다.
+        const remote = await fetchRemoteFrames();
+        const frameId = remote[0]?.frameId;
+        if (frameId === undefined) {
+          throw new Error(t.result.qrNoFrame);
+        }
+        sessionId = (await createSession(frameId)).sessionId;
+        setQrSessionId(sessionId);
       }
 
-      const session = await createSession(frameId);
+      let url = qrUrl;
 
-      // 사진을 못 올려도 영상만으로 QR 은 쓸 수 있다. 여기서 전체를 실패시키면
-      // 원래 되던 것까지 막히므로, 실패는 기억만 해두고 계속 간다.
-      let photoUploaded = false;
-      if (strip?.startsWith('file://')) {
+      // 사진과 영상 중 하나만 올라가도 QR 은 쓸 수 있다. 한쪽 실패로 전체를
+      // 막지 않고, 무엇이 빠졌는지는 QR 창 안내 문구로 알린다.
+      let photoOk = qrUploadedStrip === strip;
+      if (needPhoto) {
         try {
-          await uploadCompositeImage(session.sessionId, strip);
-          photoUploaded = true;
+          const uploaded = await uploadCompositeImage(sessionId, strip);
+          url = uploaded.qrCodeUrl ?? url;
+          setQrUploadedStrip(strip);
+          photoOk = true;
         } catch {
-          // 아래에서 안내 문구로 알린다.
+          photoOk = false;
         }
       }
 
-      const uploaded = await uploadVideo(session.sessionId, video);
-      setQrHasPhoto(photoUploaded);
-      setQrUrl(uploaded.qrCodeUrl);
+      let videoOk = qrHasVideo;
+      if (needVideo && video) {
+        try {
+          const uploaded = await uploadVideo(sessionId, video);
+          url = uploaded.qrCodeUrl;
+          setQrHasVideo(true);
+          videoOk = true;
+        } catch {
+          // 사진만으로 QR 을 줄 수 있으면 그대로 간다.
+        }
+      }
+
+      if (!url || (!photoOk && !videoOk)) {
+        throw new Error(t.result.qrFailed);
+      }
+      setQrHasPhoto(photoOk);
+      setQrUrl(url);
       setQrState('ready');
+      setQrOpen(true);
     } catch (error) {
+      // 만료 등으로 세션이 망가졌을 수 있으니 다음엔 새로 만든다.
+      setQrSessionId(null);
+      setQrUploadedStrip(null);
+      setQrHasVideo(false);
+      setQrUrl(null);
       setQrError(error instanceof Error ? error.message : t.result.qrFailed);
       setQrState('failed');
     }
@@ -393,34 +431,45 @@ export default function LogoSelectScreen() {
         {frameLoadFailedId !== null ? (
           <Text style={styles.saveError}>{t.result.framesLoadFailed}</Text>
         ) : null}
-        <PrimaryButton
-          labelStyle={styles.buttonLabel}
-          label={printing ? t.result.printing : t.result.print}
-          disabled={!strip || printing}
-          onPress={handlePrint}
-        />
-        <PrimaryButton
-          labelStyle={styles.buttonLabel}
-          label={saveLabel}
-          disabled={!strip || saveState === 'saving' || saveState === 'saved'}
-          onPress={handleSave}
-          style={styles.secondAction}
-        />
+        {/* 인쇄·저장·QR 을 한 줄에 나란히 둔다. 세로로 쌓으면 버튼이 화면
+            아래를 다 차지해서 결과물 미리보기가 작아진다. 저장을 마치면 저장
+            칸이 공유로 바뀐다 — 저장됐다는 건 아래 안내 문구가 알려 준다. */}
+        <View style={styles.actionRow}>
+          <ActionButton
+            labelStyle={styles.buttonLabel}
+            variant="outline"
+            icon="print"
+            label={printing ? t.result.printing : t.result.print}
+            disabled={!strip || printing}
+            onPress={handlePrint}
+          />
+          {/* 가운데 칸만 채워서 가장 먼저 누를 동작(저장, 이어서 공유)을 강조한다. */}
+          {/* 한 버튼의 문구·아이콘만 바꿔야 바뀔 때 튀는 애니메이션이 걸린다. */}
+          <ActionButton
+            labelStyle={styles.buttonLabel}
+            variant="filled"
+            icon={showShare ? 'share' : 'save'}
+            label={showShare ? t.common.share : saveLabel}
+            disabled={!strip || saveState === 'saving'}
+            onPress={showShare ? handleShare : handleSave}
+          />
+          {/* 사진(스트립)만 있어도 QR 을 만들 수 있다. 영상은 있으면 같이 올린다. */}
+          <ActionButton
+            labelStyle={styles.buttonLabel}
+            variant="outline"
+            icon="qr"
+            label={qrState === 'preparing' ? t.result.qrPreparing : t.result.qr}
+            disabled={!strip || qrState === 'preparing'}
+            onPress={handleQr}
+          />
+        </View>
 
         {/* 무엇이 어디에 저장됐는지 말해 준다. 조용히 끝내면 됐는지 알 수 없다. */}
         {saveState === 'saved' && saved ? (
           <Text style={styles.saveNote}>
             {t.result.savedTo(ALBUM_NAME)}
-            {saved.video ? '' : t.result.videoNotSaved}
+            {saved.video || fromAlbum ? '' : t.result.videoNotSaved}
           </Text>
-        ) : null}
-
-        {saveState === 'saved' ? (
-          <PrimaryButton
-            labelStyle={styles.buttonLabel}
-            label={t.common.share}
-            onPress={handleShare}
-          />
         ) : null}
 
         {saveState === 'failed' && saveError ? (
@@ -442,18 +491,11 @@ export default function LogoSelectScreen() {
           </>
         ) : null}
 
-        <PrimaryButton
-          labelStyle={styles.buttonLabel}
-          label={qrState === 'preparing' ? t.result.qrPreparing : t.result.qr}
-          disabled={!video || qrState === 'preparing'}
-          onPress={qrState === 'ready' ? () => setQrState('ready') : handleQr}
-        />
-
         {qrState === 'failed' && qrError ? (
           <Text style={styles.saveError}>{qrError}</Text>
         ) : null}
 
-        {saveState === 'idle' && !video ? (
+        {saveState === 'idle' && !video && !fromAlbum ? (
           <Text style={styles.saveNote}>{t.result.videoPending}</Text>
         ) : null}
       </View>
@@ -481,14 +523,14 @@ export default function LogoSelectScreen() {
 
       {/* 각자 폰으로 받아가는 경로. 부스 태블릿에서는 이게 유일한 수단이다. */}
       <Modal
-        visible={qrState === 'ready' && !!qrUrl}
+        visible={qrOpen && !!qrUrl}
         transparent
         animationType="fade"
-        onRequestClose={() => setQrState('idle')}>
+        onRequestClose={() => setQrOpen(false)}>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t.common.close}
-          onPress={() => setQrState('idle')}
+          onPress={() => setQrOpen(false)}
           style={styles.qrBackdrop}>
           <View style={styles.qrCard}>
             <Text style={styles.qrTitle}>{t.result.qrTitle}</Text>
@@ -500,9 +542,12 @@ export default function LogoSelectScreen() {
               />
             ) : null}
             <Text style={styles.qrHint}>{t.result.qrHint}</Text>
-            {qrHasPhoto ? null : (
+            {!qrHasPhoto ? (
               <Text style={styles.qrWarn}>{t.result.qrVideoOnly}</Text>
-            )}
+            ) : !qrHasVideo && !fromAlbum ? (
+              // 영상 변환이 끝나기 전에 누른 경우. 준비되면 다시 누르면 추가된다.
+              <Text style={styles.qrHint}>{t.result.qrPhotoOnly}</Text>
+            ) : null}
           </View>
         </Pressable>
       </Modal>
@@ -611,8 +656,9 @@ const styles = StyleSheet.create({
   frameThumbLabelSelected: {
     color: colors.textPrimary,
   },
-  secondAction: {
-    marginTop: 0,
+  actionRow: {
+    flexDirection: 'row',
+    gap: 8,
   },
   saveNote: {
     // UI-V2
@@ -698,7 +744,7 @@ const styles = StyleSheet.create({
     color: '#D8342B',
     includeFontPadding: false,
   },
-  /** UI-V2: PrimaryButton 라벨에 끼워 넣는다. */
+  /** UI-V2: ActionButton 라벨에 끼워 넣는다. */
   buttonLabel: {
     fontSize: sizeV2.button,
     lineHeight: lineV2.button,

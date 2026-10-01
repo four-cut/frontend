@@ -1,12 +1,19 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
+import {
+  useNavigation,
+  useRoute,
+  type RouteProp,
+} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import BackButton from '../components/BackButton';
 import LayoutCard from '../components/LayoutCard';
 import {useT} from '../i18n';
-import type {CaptureNavigation} from '../navigation/types';
+import type {
+  CaptureNavigation,
+  CaptureStackParamList,
+} from '../navigation/types';
 import {
   useCaptureSession,
   type CaptureLayout,
@@ -21,14 +28,17 @@ import {colors} from '../theme';
 export default function LayoutSelectScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<CaptureNavigation>();
+  const route = useRoute<RouteProp<CaptureStackParamList, 'LayoutSelect'>>();
   const {selectLayout} = useCaptureSession();
   const t = useT();
+  const fromAlbum = route.params?.source === 'album';
 
-  // 가로형의 회전 안내는 이제 촬영 화면 안에서 기기 방향을 감지해 처리한다.
+  // 가로형의 회전 안내는 촬영 화면 안에서 기기 방향을 감지해 처리한다.
   // (세로로 들고 있으면 "돌려주세요"를 덮어 보여 주고, 가로로 돌리면 자동 촬영)
+  // 앨범 사진으로 만들 때는 찍지 않으니 기기를 돌릴 필요도 없다.
   const choose = (layout: CaptureLayout) => {
     selectLayout(layout);
-    navigation.navigate('Capture');
+    navigation.navigate(fromAlbum ? 'AlbumPick' : 'Capture');
   };
 
   return (

@@ -21,9 +21,12 @@ export type MainTabParamList = {
  * 탭 내부가 아니라 루트 스택의 형제로 둔다. (CR-01)
  */
 export type CaptureStackParamList = {
-  LayoutSelect: undefined;
+  /** source 가 'album' 이면 레이아웃을 고른 뒤 촬영 대신 앨범 선택으로 간다. */
+  LayoutSelect: {source?: 'album'} | undefined;
   RotateGuide: undefined;
   Capture: undefined;
+  /** 앨범에서 컷 수만큼 사진을 고른다 — 촬영 대신. */
+  AlbumPick: undefined;
   PhotoSelect: undefined;
   LogoSelect: undefined;
 };
@@ -32,7 +35,7 @@ export type CaptureStackParamList = {
  * 로그인이 필요한 동작. 로그인을 마치면 여기로 이어서 보낸다.
  * 네비게이션 파라미터로 실려야 해서 문자열 유니온으로 둔다.
  */
-export type AuthGateTarget = 'Guide' | 'FrameBuilder' | 'Gallery';
+export type AuthGateTarget = 'Guide' | 'FrameBuilder' | 'Gallery' | 'AlbumFlow';
 
 export type RootStackParamList = {
   MainTabs: NavigatorScreenParams<MainTabParamList> | undefined;

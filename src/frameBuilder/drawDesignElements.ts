@@ -83,8 +83,9 @@ export async function drawBackgroundImage(
 
 /**
  * 실제 촬영본은 항상 슬롯 자리를 완전히 덮으므로, 편집 중 미리보기에서도
- * 그 자리를 슬롯색으로 가려야 배경/스티커가 사진에 가려질지 아닐지
- * 헷갈리지 않는다. composeStrip에서 사진을 그리기 직전 자리와 정확히 같다.
+ * 그 자리를 슬롯색으로 가려야 배경이 사진에 가려질지 아닐지 헷갈리지
+ * 않는다. 스티커·텍스트는 사진 위에 오므로 이 다음에 그린다.
+ * composeStrip에서 사진을 그리는 자리와 정확히 같다.
  */
 export function drawSlotMasks(canvas: SkCanvas, slots: SlotRect[]): void {
   const paint = Skia.Paint();

@@ -44,7 +44,7 @@ export type SlotRect = {x: number; y: number; width: number; height: number};
 /**
  * 슬롯(사진이 들어갈 자리)의 픽셀 좌표. composeStrip이 사진을 그리는 위치와
  * 정확히 같은 계산이라, 프레임 만들기 편집 화면·미리보기에서 이 자리를
- * 배경/스티커/텍스트로부터 가려서(마스킹) 실제 결과물과 똑같이 보여줄 수 있다.
+ * 배경으로부터 가려서(마스킹) 실제 결과물과 똑같이 보여줄 수 있다.
  */
 export function computeSlotRects(
   layout: CaptureLayout,

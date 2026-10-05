@@ -9,6 +9,7 @@ import {
   resolveStickerUri,
 } from '../frameBuilder/defaultStickers';
 import {
+  deleteFrame,
   loadFrame,
   loadFrames,
   saveFrame,
@@ -159,24 +160,35 @@ function getBasicFrameDesign(
 }
 
 const basicFramePreviewCache = new Map<FrameOrientation, Promise<string>>();
+/** 다 그려진 썸네일. 목록을 돌려줄 때 기다리지 않고 바로 꺼내 쓴다. */
+const basicFramePreviewReady = new Map<FrameOrientation, string>();
 
 /**
  * 베이직 프레임의 목록 썸네일. 이미지 파일이 따로 없어서, 프레임 만들기가
  * 저장할 때 쓰는 렌더러로 한 번 그려 둔다 — 로고 위치까지 실제 결과물과 같다.
+ *
+ * 1200px 짜리 시트를 통째로 그려 PNG 로 떨구는 일이라 몇 초 걸린다. 앱을
+ * 켤 때마다 한 번씩만 그리고, 가능하면 prefetchBasicFramePreviews 로 미리
+ * 그려 둔다.
  */
 function getBasicFramePreview(orientation: FrameOrientation): Promise<string> {
   let cached = basicFramePreviewCache.get(orientation);
   if (!cached) {
     const layout = orientation === 'PORTRAIT' ? 'portrait' : 'landscape';
-    cached = getBasicFrameDesign(orientation).then(design =>
-      renderFrameDesign(
-        layout,
-        design.backgroundColor,
-        design.textElements,
-        design.stickerElements,
-        design.backgroundImageUri,
-      ),
-    );
+    cached = getBasicFrameDesign(orientation)
+      .then(design =>
+        renderFrameDesign(
+          layout,
+          design.backgroundColor,
+          design.textElements,
+          design.stickerElements,
+          design.backgroundImageUri,
+        ),
+      )
+      .then(uri => {
+        basicFramePreviewReady.set(orientation, uri);
+        return uri;
+      });
     // 실패한 결과를 붙잡고 있으면 다음에 열 때도 계속 빈 칸이 된다.
     cached.catch(() => basicFramePreviewCache.delete(orientation));
     basicFramePreviewCache.set(orientation, cached);
@@ -226,12 +238,16 @@ export async function fetchFrames(
       !orientation || frame.orientation === orientation;
     const [seeds, saved] = await Promise.all([
       Promise.all(
-        LOCAL_FRAMES.filter(matches).map(async frame => ({
-          ...withLocalizedName(frame),
-          previewImageUrl: await getBasicFramePreview(frame.orientation).catch(
-            () => '',
-          ),
-        })),
+        // 썸네일을 기다리지 않는다. 아직 안 그려졌으면 빈 값으로 보내고
+        // 화면이 fetchFramePreview 로 따로 받아 채운다. 기다리면 사진 합성과
+        // 겹쳐서 목록 자체가 한참 늦게 뜬다.
+        LOCAL_FRAMES.filter(matches).map(frame => {
+          getBasicFramePreview(frame.orientation).catch(() => {});
+          return {
+            ...withLocalizedName(frame),
+            previewImageUrl: basicFramePreviewReady.get(frame.orientation) ?? '',
+          };
+        }),
       ),
       loadFrames().catch(() => []),
     ]);
@@ -240,6 +256,30 @@ export async function fetchFrames(
 
   const query = orientation ? `?orientation=${orientation}` : '';
   return apiGet<FrameSummary[]>(`/api/frames${query}`);
+}
+
+/**
+ * fetchFrames 가 썸네일 없이 돌려준 프레임의 썸네일을 받는다. 베이직 프레임은
+ * 그려질 때까지 기다리고, 그 밖의 프레임은 가진 값을 그대로 돌려준다.
+ */
+export function fetchFramePreview(frame: FrameSummary): Promise<string> {
+  const seed = LOCAL_FRAMES.find(item => item.frameId === frame.frameId);
+  return seed && USE_LOCAL_FRAMES
+    ? getBasicFramePreview(seed.orientation)
+    : Promise.resolve(frame.previewImageUrl);
+}
+
+/**
+ * 베이직 프레임 썸네일을 미리 그려 둔다. 홈 화면이 뜬 뒤에 부른다 —
+ * 촬영을 마치고 프레임을 고를 때 사진 합성과 겹치지 않게 하려고.
+ */
+export function prefetchBasicFramePreviews(): void {
+  if (!USE_LOCAL_FRAMES) {
+    return;
+  }
+  for (const orientation of ['PORTRAIT', 'LANDSCAPE'] as const) {
+    getBasicFramePreview(orientation).catch(() => {});
+  }
 }
 
 /**
@@ -348,4 +388,18 @@ export async function saveLocalFrame(input: {
   // 다시 켜도 이어서 겹치지 않도록 만든 시각을 쓴다.
   const saved = await saveFrame({frameId: Date.now(), ...input});
   return toSummary(saved);
+}
+
+/**
+ * 내가 만든 프레임만, 최근에 만든 것부터. 베이직 프레임은 앱에 들어 있어서
+ * 지울 수 없으므로 "내 프레임" 화면에는 넣지 않는다.
+ */
+export async function fetchMyFrames(): Promise<FrameSummary[]> {
+  const saved = await loadFrames();
+  return saved.map(toSummary).reverse();
+}
+
+/** 내가 만든 프레임을 기기 frame 폴더에서 지운다. */
+export function deleteLocalFrame(frameId: number): Promise<void> {
+  return deleteFrame(frameId);
 }

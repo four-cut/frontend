@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   Alert,
   Image,
@@ -31,6 +31,7 @@ import {
   resolveStickerUri,
   type DefaultSticker,
 } from '../frameBuilder/defaultStickers';
+import FrameNameDialog from '../frameBuilder/FrameNameDialog';
 import {PALETTE} from '../frameBuilder/palette';
 import {renderFrameDesign} from '../frameBuilder/renderFrameDesign';
 import type {StickerElement, TextElement} from '../frameBuilder/types';
@@ -230,7 +231,25 @@ export default function FrameBuilderScreen() {
   const [textColorPickerOpen, setTextColorPickerOpen] = useState(false);
   const [stickerSourceOpen, setStickerSourceOpen] = useState(false);
   const [stickerPickerOpen, setStickerPickerOpen] = useState(false);
+  const [nameDialogOpen, setNameDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  // 키보드의 완료와 저장 버튼이 거의 동시에 눌리면 handleComplete 가 두 번
+  // 불려 같은 프레임이 두 개 저장된다. state 는 다음 렌더까지 안 바뀌어서
+  // ref 로 막는다.
+  const savingRef = useRef(false);
+
+  // 저장하는 동안에는 이 화면을 떠나지 못하게 한다 (뒤로 버튼·안드로이드
+  // 뒤로 가기 모두). 떠나도 저장은 끝까지 가서, 사용자는 취소한 줄 알았는데
+  // 프레임이 생겨 있게 된다.
+  useEffect(
+    () =>
+      navigation.addListener('beforeRemove', event => {
+        if (savingRef.current) {
+          event.preventDefault();
+        }
+      }),
+    [navigation],
+  );
   const [canvasArea, setCanvasArea] = useState({width: 0, height: 0});
 
   // 텍스트 편집 툴바가 뜨면 canvasArea(위아래 여백)가 줄어든다. 폭 기준으로만
@@ -359,7 +378,13 @@ export default function FrameBuilderScreen() {
     setBackgroundImagePickerOpen(false);
   };
 
-  const handleComplete = async () => {
+  // 완료를 누르면 이름부터 받는다. 이름을 정해야 내 프레임에서 구분된다.
+  const handleComplete = async (name: string) => {
+    if (savingRef.current) {
+      return;
+    }
+    savingRef.current = true;
+    setNameDialogOpen(false);
     setSaving(true);
     try {
       const orientation = layout === 'portrait' ? 'PORTRAIT' : 'LANDSCAPE';
@@ -371,7 +396,7 @@ export default function FrameBuilderScreen() {
         backgroundImageUri,
       );
       await saveLocalFrame({
-        name: layout === 'portrait' ? t.frame.myPortrait : t.frame.myLandscape,
+        name,
         orientation,
         previewImageUrl,
         design: {
@@ -381,6 +406,9 @@ export default function FrameBuilderScreen() {
           stickerElements,
         },
       });
+      // 저장이 끝났으니 떠나는 것을 막지 않는다. 먼저 풀어야 아래 popTo 가
+      // beforeRemove 에 막히지 않는다.
+      savingRef.current = false;
       // navigate 로는 FrameBuilder 가 아래에 남아 계속 쌓인다. (LogoSelect 와 같은 이유)
       navigation.popTo('MainTabs', {
         screen: 'Shoot',
@@ -389,6 +417,7 @@ export default function FrameBuilderScreen() {
     } catch {
       Alert.alert(t.frame.saveFailed, t.common.retry);
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   };
@@ -403,7 +432,7 @@ export default function FrameBuilderScreen() {
         <BackButton onPress={() => navigation.goBack()} />
         <PrimaryButton
           label={saving ? t.frame.saving : t.common.done}
-          onPress={handleComplete}
+          onPress={() => setNameDialogOpen(true)}
           disabled={saving}
           style={styles.completeButton}
           labelStyle={styles.completeButtonLabel}
@@ -604,6 +633,12 @@ export default function FrameBuilderScreen() {
         insetBottom={insets.bottom}
         onSelect={handlePickSticker}
         onClose={() => setStickerPickerOpen(false)}
+      />
+
+      <FrameNameDialog
+        visible={nameDialogOpen}
+        onCancel={() => setNameDialogOpen(false)}
+        onSave={handleComplete}
       />
 
       <AlbumPickerSheet

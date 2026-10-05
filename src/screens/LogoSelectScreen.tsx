@@ -16,6 +16,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {
   fetchFrameDetail,
+  fetchFramePreview,
   fetchFrames,
   fetchRemoteFrames,
   type FrameSummary,
@@ -109,6 +110,12 @@ export default function LogoSelectScreen() {
   const [frameLoadFailedId, setFrameLoadFailedId] = useState<number | null>(
     null,
   );
+  /**
+   * 처음 씌울 프레임의 디자인까지 정해졌는지. 그 전에는 합성하지 않는다 —
+   * 프레임 없이 한 번, 프레임을 씌워 또 한 번 합성하면 무거운 합성을 두 번
+   * 하게 돼서 결과가 그만큼 늦게 나온다.
+   */
+  const [initialFrameReady, setInitialFrameReady] = useState(false);
 
   // 목록을 받아 오는 사이에 사용자가 먼저 골랐을 수도 있다. 그 순간의 값을
   // 보려고 ref 로 따라 둔다 — 의존성에 frame 을 넣으면 고를 때마다 목록을
@@ -121,23 +128,62 @@ export default function LogoSelectScreen() {
       return;
     }
     const orientation = layout === 'portrait' ? 'PORTRAIT' : 'LANDSCAPE';
+    let cancelled = false;
     fetchFrames(orientation)
-      .then(list => {
+      .then(async list => {
+        if (cancelled) {
+          return;
+        }
         setFrames(list);
+        fillPreviews(list, () => cancelled);
         // 들어오자마자 기본 프레임이 씌워져 있어야 한다. 전에는 목록에서 한 번
         // 눌러야 적용돼서, 아무것도 안 고르면 맨 프레임으로 저장·인쇄됐다.
         //
-        // 이미 고른 게 있으면 건드리지 않는다 — 프레임을 고르고 뒤로 갔다
-        // 돌아오면 고른 것이 그대로 남아야 한다.
-        if (!frameRef.current && list.length > 0) {
-          chooseFrame(list[0]);
+        // 이미 고른 게 있으면 그것을 다시 씌운다 — 프레임을 고르고 뒤로 갔다
+        // 돌아오면 고른 것이 그대로 남아야 한다. 디자인은 이 화면이 들고
+        // 있어서 돌아오면 비어 있으므로 다시 받아 온다.
+        const initial = frameRef.current ?? list[0];
+        if (initial) {
+          await chooseFrame(initial);
         }
       })
-      .catch(() => setFrames([]));
+      .catch(() => setFrames([]))
+      .finally(() => {
+        if (!cancelled) {
+          setInitialFrameReady(true);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
     // chooseFrame 은 매 렌더 새로 만들어지고, frame 은 ref 로 읽는다 —
     // 둘을 의존성에 넣으면 목록을 계속 다시 불러온다.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [layout]);
+
+  /** 썸네일 없이 온 카드(아직 안 그려진 베이직 프레임)를 그려지는 대로 채운다. */
+  const fillPreviews = (list: FrameSummary[], isCancelled: () => boolean) => {
+    for (const item of list) {
+      if (item.previewImageUrl) {
+        continue;
+      }
+      fetchFramePreview(item)
+        .then(url => {
+          if (isCancelled() || !url) {
+            return;
+          }
+          setFrames(current =>
+            current?.map(frameItem =>
+              frameItem.frameId === item.frameId
+                ? {...frameItem, previewImageUrl: url}
+                : frameItem,
+            ) ?? current,
+          );
+        })
+        // 못 그리면 카드는 빈 슬롯 미리보기로 남는다.
+        .catch(() => {});
+    }
+  };
 
   const chooseFrame = async (summary: FrameSummary) => {
     selectFrame(summary);
@@ -152,7 +198,7 @@ export default function LogoSelectScreen() {
   };
 
   useEffect(() => {
-    if (!layout) {
+    if (!layout || !initialFrameReady) {
       return;
     }
     let cancelled = false;
@@ -184,7 +230,7 @@ export default function LogoSelectScreen() {
     return () => {
       cancelled = true;
     };
-  }, [layout, selection, shots, design, trackTempFile]);
+  }, [layout, selection, shots, design, trackTempFile, initialFrameReady]);
 
   // 프린터/매수/용지 크기 선택은 OS 인쇄 시트가 담당한다 (EXT-01).
   const handlePrint = async () => {
@@ -428,7 +474,8 @@ export default function LogoSelectScreen() {
                       styles.frameThumbLabel,
                       selected && styles.frameThumbLabelSelected,
                     ]}
-                    numberOfLines={1}>
+                    // 카드가 좁아 한 줄이면 이름(최대 8자)이 잘린다.
+                    numberOfLines={2}>
                     {item.name}
                   </Text>
                 </Pressable>

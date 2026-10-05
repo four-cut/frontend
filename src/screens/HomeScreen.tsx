@@ -1,7 +1,8 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Image, Pressable, StyleSheet, View, Text as RNText} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {prefetchBasicFramePreviews} from '../api/frames';
 import {images} from '../assets';
 import LanguageDialog from '../components/LanguageDialog';
 import PrimaryButton from '../components/PrimaryButton';
@@ -16,6 +17,14 @@ export default function HomeScreen() {
   const gate = useAuthGate();
   const t = useT();
   const [languageOpen, setLanguageOpen] = useState(false);
+
+  // 베이직 프레임 썸네일은 처음 그릴 때 몇 초 걸린다. 촬영을 마치고 프레임을
+  // 고를 때 그리면 사진 합성과 겹쳐서 목록이 한참 늦게 뜨므로, 홈이 뜨고
+  // 화면이 자리 잡은 뒤에 미리 그려 둔다. 앱이 켜져 있는 동안 한 번만 그린다.
+  useEffect(() => {
+    const timer = setTimeout(prefetchBasicFramePreviews, 1500);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <View style={[styles.container, {paddingTop: insets.top}]}>

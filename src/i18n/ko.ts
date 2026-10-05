@@ -23,6 +23,7 @@ const ko = {
 
   tab: {
     shoot: '찰칵',
+    myFrames: '내 프레임',
     gallery: '갤러리',
   },
 
@@ -151,6 +152,19 @@ const ko = {
     qrFailed: 'QR 을 만들지 못했습니다',
   },
 
+  myFrames: {
+    title: '내 프레임',
+    zoomA11y: '크게 보기',
+    deleteA11y: '이 프레임 삭제',
+    empty: '아직 만든 프레임이 없어요',
+    emptyHint: '프레임 만들기에서 나만의 프레임을 만들어 보세요',
+    loadFailed: '프레임을 불러오지 못했어요',
+    deleteTitle: '이 프레임을 삭제할까요?',
+    /** 휴지통 없이 바로 지워진다 — 지우기 전에 알아야 하는 사실이다. */
+    deleteBody: (name: string) => `"${name}"을(를) 삭제하면 되돌릴 수 없어요.`,
+    deleteFailed: '삭제하지 못했어요',
+  },
+
   gallery: {
     title: '내 네컷',
     signOut: '로그아웃',
@@ -180,9 +194,10 @@ const ko = {
     title: '프레임 만들기',
     saving: '저장 중...',
     saveFailed: '저장에 실패했습니다',
-    /** 새로 만든 프레임의 기본 이름 */
-    myPortrait: '내가 만든 세로형',
-    myLandscape: '내가 만든 가로형',
+    nameTitle: '프레임 이름',
+    nameDescription: '내 프레임에서 이 이름으로 구분돼요',
+    namePlaceholder: '예: 우리 반 네컷',
+    save: '저장',
 
     text: '텍스트',
     sticker: '스티커',

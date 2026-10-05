@@ -25,6 +25,7 @@ const ja: Strings = {
 
   tab: {
     shoot: 'カシャ',
+    myFrames: 'マイフレーム',
     gallery: 'ギャラリー',
   },
 
@@ -145,6 +146,18 @@ const ja: Strings = {
     qrFailed: 'QRを作成できませんでした',
   },
 
+  myFrames: {
+    title: 'マイフレーム',
+    zoomA11y: '拡大する',
+    deleteA11y: 'このフレームを削除',
+    empty: '作ったフレームはまだありません',
+    emptyHint: 'フレーム作成でオリジナルのフレームを作ってみましょう',
+    loadFailed: 'フレームを読み込めませんでした',
+    deleteTitle: 'このフレームを削除しますか？',
+    deleteBody: (name: string) => `「${name}」を削除すると元に戻せません。`,
+    deleteFailed: '削除できませんでした',
+  },
+
   gallery: {
     title: 'わたしの4カット',
     signOut: 'ログアウト',
@@ -173,8 +186,10 @@ const ja: Strings = {
     title: 'フレームを作る',
     saving: '保存中...',
     saveFailed: '保存に失敗しました',
-    myPortrait: '自作の縦型',
-    myLandscape: '自作の横型',
+    nameTitle: 'フレーム名',
+    nameDescription: 'マイフレームでこの名前で見分けられます',
+    namePlaceholder: '例：クラスの4カット',
+    save: '保存',
 
     text: 'テキスト',
     sticker: 'ステッカー',

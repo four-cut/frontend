@@ -81,6 +81,19 @@ export interface Spec extends TurboModule {
 
   /** 폴더 안 항목 이름들. 폴더가 없으면 빈 배열이다. */
   listDirectory(path: string): Promise<Array<string>>;
+
+  /**
+   * 폴더를 안의 파일까지 통째로 지운다. 이미 없으면 그대로 성공이다.
+   *
+   * 지우기 전에 같은 자리의 `.trash-` 로 시작하는 이름으로 옮긴다. 옮기고 나서
+   * 지우다 실패해도 성공으로 끝나고, 그 찌꺼기는 목록을 읽는 쪽이 건너뛰고
+   * 치운다.
+   *
+   * 앱 전용 저장 폴더(getDocumentDirectory) 안의 경로만 지운다. 그 폴더
+   * 자체나 바깥 경로를 넘기면 지우지 않고 reject 한다 — 경로 조립이 한 번만
+   * 어긋나도 사용자의 다른 데이터를 날릴 수 있어서 막아 둔다.
+   */
+  deleteDirectory(path: string): Promise<void>;
 }
 
 // getEnforcing 이 아니라 get 이다. 모듈이 없는 환경(iOS·jest)에서도

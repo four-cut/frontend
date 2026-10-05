@@ -1,6 +1,7 @@
 export const images = {
   logo: require('./images/logo.png'),
   tabCamera: require('./images/tab-camera.png'),
+  tabFrame: require('./images/tab-frame.png'),
   tabGallery: require('./images/tab-gallery.png'),
   cameraFlip: require('./images/btn-camera-flip.png'),
   refresh: require('./images/ic-refresh.png'),

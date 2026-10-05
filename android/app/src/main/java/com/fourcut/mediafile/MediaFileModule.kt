@@ -184,6 +184,34 @@ class MediaFileModule(reactContext: ReactApplicationContext) :
     promise.resolve(names)
   }
 
+  override fun deleteDirectory(path: String, promise: Promise) {
+    try {
+      val target = toFile(path)
+      // filesDir 바로 아래부터만 지운다. filesDir 자체나 그 밖은 거절한다.
+      val filesRoot = reactApplicationContext.filesDir.canonicalPath + File.separator
+      if (!target.canonicalPath.startsWith(filesRoot)) {
+        promise.reject(DELETE_ERROR_CODE, "앱 저장 폴더 밖은 지울 수 없습니다: $path")
+        return
+      }
+      if (!target.exists()) {
+        promise.resolve(null)
+        return
+      }
+      // 파일을 하나씩 지우다 중간에 실패하면 반쯤 지워진 폴더가 남는다. 먼저
+      // 점(.)으로 시작하는 이름으로 통째로 옮겨서 한 번에 "없는 것"으로 만든
+      // 뒤 지운다. 옮긴 뒤 지우다 실패한 찌꺼기는 목록에서 보이지 않는다.
+      val trash = File(target.parentFile, ".trash-${target.name}-${System.currentTimeMillis()}")
+      val victim = if (target.renameTo(trash)) trash else target
+      if (!victim.deleteRecursively() && victim == target) {
+        promise.reject(DELETE_ERROR_CODE, "폴더를 다 지우지 못했습니다: $path")
+        return
+      }
+      promise.resolve(null)
+    } catch (error: Exception) {
+      promise.reject(DELETE_ERROR_CODE, error.message, error)
+    }
+  }
+
   private fun toFile(pathOrUri: String): File =
       File(if (pathOrUri.startsWith("file://")) Uri.parse(pathOrUri).path ?: "" else pathOrUri)
 
@@ -192,5 +220,6 @@ class MediaFileModule(reactContext: ReactApplicationContext) :
     private const val ERROR_CODE = "MEDIA_FILE_WRITE_FAILED"
     private const val SHARE_ERROR_CODE = "MEDIA_FILE_SHARE_FAILED"
     private const val READ_ERROR_CODE = "MEDIA_FILE_READ_FAILED"
+    private const val DELETE_ERROR_CODE = "MEDIA_FILE_DELETE_FAILED"
   }
 }

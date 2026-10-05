@@ -5,6 +5,7 @@ import {
 } from '@react-navigation/bottom-tabs';
 
 import GalleryScreen from '../screens/GalleryScreen';
+import MyFramesScreen from '../screens/MyFramesScreen';
 import BottomTabBar from './BottomTabBar';
 import ShootNavigator from './ShootNavigator';
 import type {MainTabParamList} from './types';
@@ -20,6 +21,7 @@ export default function MainTabNavigator() {
   return (
     <Tab.Navigator tabBar={renderTabBar} screenOptions={{headerShown: false}}>
       <Tab.Screen name="Shoot" component={ShootNavigator} />
+      <Tab.Screen name="MyFrames" component={MyFramesScreen} />
       <Tab.Screen name="Gallery" component={GalleryScreen} />
     </Tab.Navigator>
   );

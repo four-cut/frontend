@@ -13,6 +13,7 @@ export type ShootStackParamList = {
 /** 하단 탭 — 탭바가 보이는 영역 */
 export type MainTabParamList = {
   Shoot: NavigatorScreenParams<ShootStackParamList> | undefined;
+  MyFrames: undefined;
   Gallery: undefined;
 };
 

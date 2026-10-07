@@ -2,6 +2,10 @@
   "migIndex": 1,
   "data": [
     {
+      "path": "assets/fonts/Jua-LICENSE.txt",
+      "sha1": "7c4a50c49a5a0013a151c136f526869855c802dd"
+    },
+    {
       "path": "assets/fonts/Jua-Regular.ttf",
       "sha1": "0059e52db6ed95edb14d63b57973bcc7fb0d71a8"
     },
@@ -11,7 +15,7 @@
     },
     {
       "path": "assets/fonts/Pretendard-LICENSE.txt",
-      "sha1": "63394962f8cb269b678bb30c8eea4855a87c3f56"
+      "sha1": "f394a9fb56af695d183769e19abbb7b42cd5e04a"
     },
     {
       "path": "assets/fonts/Pretendard-Regular.ttf",
@@ -20,6 +24,10 @@
     {
       "path": "assets/fonts/Pretendard-SemiBold.ttf",
       "sha1": "e247ab351a1797b1a81f7a5e945c416de9f7fd91"
+    },
+    {
+      "path": "assets/fonts/ZenMaruGothic-LICENSE.txt",
+      "sha1": "40bfad66df8f6d183fb0ab219d15b7ec1564bded"
     },
     {
       "path": "assets/fonts/ZenMaruGothic-Regular.ttf",

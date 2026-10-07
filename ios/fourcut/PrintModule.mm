@@ -93,6 +93,11 @@ static UIViewController *TopViewControllerForPrint(void) {
         UIPrintInteractionController.sharedPrintController;
 
     UIPrintInfo *info = UIPrintInfo.printInfo;
+    // 네컷은 사진이다. Photo 로 둬야 인쇄 시트가 사진 용지(4×6)를 기본으로
+    // 고른다 — General 로 두면 문서로 보고 A4 를 기본으로 잡는다.
+    //
+    // 여기서 잘림이 생기는 건 printingItem 에 이미지를 그대로 넘길 때뿐이고,
+    // 아래처럼 렌더러로 직접 그리면 Photo 여도 그린 그대로 나간다.
     info.outputType = UIPrintInfoOutputPhoto;
     info.jobName = jobName;
     controller.printInfo = info;

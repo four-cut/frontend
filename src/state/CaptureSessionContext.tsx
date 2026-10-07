@@ -34,8 +34,14 @@ type CaptureSession = {
   cutCount: number;
   /** 촬영본 경로. file:// 스킴을 포함한다. */
   shots: string[];
-  /** 고른 촬영본의 인덱스. 배열 순서가 곧 스트립에 놓이는 순서다. */
-  selection: number[];
+  /**
+   * 스트립의 자리마다 어느 촬영본이 들어갈지. 길이는 항상 컷 수와 같고,
+   * 아직 안 채운 자리는 null 이다.
+   *
+   * 고른 순서대로 쌓는 배열이 아니다 — 그러면 가운데 것을 빼는 순간 뒤가
+   * 앞으로 당겨져서, 누른 자리가 아니라 맨 뒤가 비는 것처럼 보인다.
+   */
+  selection: (number | null)[];
   /** 8장을 찍는 과정을 담은 영상. 녹화가 끝나야 채워진다. (OQ-01) */
   video: string | null;
   /**
@@ -66,6 +72,39 @@ type CaptureSession = {
   setAlbumShots: (paths: string[]) => void;
 };
 
+/**
+ * 자리 배열에서 한 촬영본을 넣거나 뺀다.
+ *
+ * 이미 들어 있으면 그 자리만 비운다 — 뒤 사진을 앞으로 당겨오지 않는다.
+ * 당겨오면 1번을 뺐는데 4번 자리가 빈 것처럼 보인다.
+ *
+ * 새로 넣을 때는 앞에서부터 처음 비어 있는 자리에 넣는다.
+ */
+export function toggleSlot(
+  slots: (number | null)[],
+  shotIndex: number,
+  cutCount: number,
+): (number | null)[] {
+  // 길이가 어긋나 있어도 자리 수는 항상 컷 수에 맞춘다.
+  const next =
+    slots.length === cutCount
+      ? [...slots]
+      : Array.from({length: cutCount}, (_, index) => slots[index] ?? null);
+
+  const at = next.indexOf(shotIndex);
+  if (at >= 0) {
+    next[at] = null;
+    return next;
+  }
+
+  const empty = next.indexOf(null);
+  if (empty < 0) {
+    return slots;
+  }
+  next[empty] = shotIndex;
+  return next;
+}
+
 const CaptureSessionContext = createContext<CaptureSession | null>(null);
 
 type Props = {children: React.ReactNode};
@@ -78,7 +117,7 @@ export function CaptureSessionProvider({children}: Props) {
   const [layout, setLayout] = useState<CaptureLayout | null>(null);
   const [frame, setFrame] = useState<FrameSummary | null>(null);
   const [shots, setShots] = useState<string[]>([]);
-  const [selection, setSelection] = useState<number[]>([]);
+  const [selection, setSelection] = useState<(number | null)[]>([]);
   const [video, setVideo] = useState<string | null>(null);
   const [fromAlbum, setFromAlbum] = useState(false);
 
@@ -119,6 +158,8 @@ export function CaptureSessionProvider({children}: Props) {
 
   const selectLayout = useCallback((next: CaptureLayout) => {
     setLayout(next);
+    // 방향이 정해져야 컷 수가 정해진다. 자리를 그 수만큼 비워 둔다.
+    setSelection(Array.from({length: CUT_COUNT[next]}, () => null));
   }, []);
 
   const selectFrame = useCallback((next: FrameSummary | null) => {
@@ -131,15 +172,7 @@ export function CaptureSessionProvider({children}: Props) {
 
   const toggleSelection = useCallback(
     (shotIndex: number) => {
-      setSelection(prev => {
-        if (prev.includes(shotIndex)) {
-          return prev.filter(index => index !== shotIndex);
-        }
-        if (prev.length >= cutCount) {
-          return prev;
-        }
-        return [...prev, shotIndex];
-      });
+      setSelection(prev => toggleSlot(prev, shotIndex, cutCount));
     },
     [cutCount],
   );

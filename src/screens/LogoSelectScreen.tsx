@@ -202,7 +202,11 @@ export default function LogoSelectScreen() {
       return;
     }
     let cancelled = false;
-    const photos = selection.map(index => shots[index]);
+    // 여기까지 왔다면 자리가 다 찼다(다음 버튼이 그때만 열린다). 그래도
+    // 타입상 빈 자리가 있을 수 있으므로 걸러서 넘긴다.
+    const photos = selection
+      .filter((index): index is number => index != null)
+      .map(index => shots[index]);
 
     setComposing(true);
     composeStrip(layout, photos, design)

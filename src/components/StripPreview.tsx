@@ -8,8 +8,8 @@ import {Text} from './AppText';
 
 type Props = {
   layout: CaptureLayout;
-  /** 슬롯 순서대로 채운다. 모자라면 나머지는 빈 슬롯으로 남는다. */
-  photos: string[];
+  /** 슬롯 순서대로 채운다. 빈 자리는 undefined 로 두면 그대로 비워 그린다. */
+  photos: (string | undefined)[];
   /** 시트 폭. 높이는 비율로 정해진다. */
   width: number;
   /**

@@ -40,8 +40,10 @@ export default function PhotoSelectScreen() {
     return null;
   }
 
-  const chosen = selection.map(index => shots[index]);
-  const complete = selection.length === cutCount;
+  // 빈 자리는 undefined 로 둔다 — StripPreview 가 그 자리를 비워 그린다.
+  const chosen = selection.map(index => (index == null ? undefined : shots[index]));
+  const pickedCount = selection.filter(index => index != null).length;
+  const complete = pickedCount === cutCount;
   const thumbWidth =
     layout === 'portrait' ? THUMB_HEIGHT * 0.66 : THUMB_HEIGHT * 1.6;
 
@@ -63,7 +65,7 @@ export default function PhotoSelectScreen() {
       </View>
 
       <Text style={styles.counter}>
-        {t.photoSelect.count(selection.length, cutCount)}
+        {t.photoSelect.count(pickedCount, cutCount)}
       </Text>
 
       <ScrollView

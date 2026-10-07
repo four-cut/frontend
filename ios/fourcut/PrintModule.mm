@@ -4,6 +4,41 @@
 
 static NSString *const kPrintErrorCode = @"PRINT_FAILED";
 
+/**
+ * 이미지 한 장을 용지에 비율을 지켜 맞춰 그리는 렌더러.
+ *
+ * printingItem 에 UIImage 를 그냥 넘기면 UIKit 이 용지를 가득 채우도록
+ * (aspect fill) 그린다. 네컷처럼 길쭉한 그림은 그러면 크게 확대되면서
+ * 위아래가 잘려 나간다. 직접 그려서 인쇄 가능 영역 안에 통째로 들어가게 한다.
+ */
+@interface FourcutImagePrintRenderer : UIPrintPageRenderer
+@property(nonatomic, strong) UIImage *image;
+@end
+
+@implementation FourcutImagePrintRenderer
+
+- (NSInteger)numberOfPages {
+  return 1;
+}
+
+- (void)drawPageAtIndex:(NSInteger)pageIndex inRect:(CGRect)printableRect {
+  CGSize size = self.image.size;
+  if (size.width <= 0 || size.height <= 0) {
+    return;
+  }
+
+  CGFloat scale = MIN(CGRectGetWidth(printableRect) / size.width,
+                      CGRectGetHeight(printableRect) / size.height);
+  CGSize fitted = CGSizeMake(size.width * scale, size.height * scale);
+  CGRect target =
+      CGRectMake(CGRectGetMidX(printableRect) - fitted.width / 2,
+                 CGRectGetMidY(printableRect) - fitted.height / 2,
+                 fitted.width, fitted.height);
+  [self.image drawInRect:target];
+}
+
+@end
+
 @implementation PrintModule
 
 RCT_EXPORT_MODULE(Print)
@@ -61,8 +96,14 @@ static UIViewController *TopViewControllerForPrint(void) {
     info.outputType = UIPrintInfoOutputPhoto;
     info.jobName = jobName;
     controller.printInfo = info;
-    controller.printingItem = image;
-    // 사진이 잘리지 않게 용지에 맞춘다. Android 의 SCALE_MODE_FIT 과 같은 뜻이다.
+
+    // printingItem 대신 렌더러를 쓴다 — 비율을 지켜 맞추려면 직접 그려야 한다.
+    // (Android 의 SCALE_MODE_FIT 과 같은 결과)
+    FourcutImagePrintRenderer *renderer = [FourcutImagePrintRenderer new];
+    renderer.image = image;
+    controller.printPageRenderer = renderer;
+
+    // 사진 용지가 여러 장 물려 있으면 고를 수 있게 한다.
     controller.showsPaperSelectionForLoadedPapers = YES;
 
     void (^completion)(UIPrintInteractionController *, BOOL, NSError *) =

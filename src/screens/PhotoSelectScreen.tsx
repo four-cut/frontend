@@ -58,6 +58,7 @@ export default function PhotoSelectScreen() {
           layout={layout}
           photos={chosen}
           width={width * SHEET_WIDTH_RATIO}
+          showSlotNumbers
         />
       </View>
 

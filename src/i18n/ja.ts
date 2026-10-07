@@ -7,10 +7,13 @@ import type {Strings} from './ko';
  * 경어체(です・ます)와 명사형(「保存」/「保存する」)이 화면마다 섞이지
  * 않았는지 보는 게 좋다.
  *
- * 브랜드명 "찍고갈래" 는 번역하지 않고 한국어 그대로 둔다.
+ * 브랜드명은 일본어 이름 「撮ってく？」(톳테쿠?)를 쓴다. 다만 사진 앱의 앨범
+ * 이름은 한국어 "찍고갈래" 그대로다 — 앨범 이름으로 저장물을 찾기 때문에
+ * 언어에 따라 바꾸면 갤러리가 갈라진다.
  */
 const ja: Strings = {
   common: {
+    wordmark: '撮ってく？',
     done: '完了',
     close: '閉じる',
     back: '戻る',
@@ -132,7 +135,7 @@ const ja: Strings = {
 
     print: '印刷',
     printing: '印刷中',
-    printJob: '찍고갈래 4カット',
+    printJob: '撮ってく？ 4カット',
 
     qr: 'QR',
     qrPreparing: 'QR作成中',
@@ -214,7 +217,7 @@ const ja: Strings = {
   },
 
   stickers: {
-    logo: '찍고갈래 ロゴ',
+    logo: '撮ってく？ ロゴ',
   },
 
   frameNames: {

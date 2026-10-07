@@ -1,0 +1,4 @@
+<resources>
+    <!-- 일본어 기기에서 아이콘 아래에 뜨는 앱 이름. -->
+    <string name="app_name">撮ってく？</string>
+</resources>

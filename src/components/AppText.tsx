@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 
 import {useLocale} from '../i18n';
-import {LOCALE_FONT} from '../theme';
+import {localeFontFamily} from '../theme';
 
 /**
  * 언어에 맞는 서체로 그려 주는 Text.
@@ -35,7 +35,10 @@ export function Text({style, ...rest}: TextProps) {
     return <RNText style={style} {...rest} />;
   }
   return (
-    <RNText style={[style, {fontFamily: LOCALE_FONT[locale]}]} {...rest} />
+    <RNText
+      style={[style, {fontFamily: localeFontFamily(locale, flat.fontFamily)}]}
+      {...rest}
+    />
   );
 }
 
@@ -58,7 +61,9 @@ export const TextInput = React.forwardRef<
     <RNTextInput
       ref={ref}
       style={
-        flat?.fontFamily ? [style, {fontFamily: LOCALE_FONT[locale]}] : style
+        flat?.fontFamily
+          ? [style, {fontFamily: localeFontFamily(locale, flat.fontFamily)}]
+          : style
       }
       {...rest}
     />

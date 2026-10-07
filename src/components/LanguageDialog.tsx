@@ -103,8 +103,11 @@ const styles = StyleSheet.create({
     shadowOffset: {width: 0, height: 8},
     elevation: 8,
   },
+  // 아래 글자들은 줄 높이를 고정한다. 안 주면 글자 상자 높이가 서체마다
+  // 달라서, 언어를 고르는 순간 창 높이가 바뀌고 가운데 정렬된 창이 움직인다.
   title: {
     fontSize: 18,
+    lineHeight: 24,
     fontFamily: fonts.bold,
     color: colors.textPrimary,
     includeFontPadding: false,
@@ -125,6 +128,7 @@ const styles = StyleSheet.create({
   },
   rowLabel: {
     fontSize: fontSize.button,
+    lineHeight: 24,
     fontFamily: fonts.regular,
     color: colors.textMuted,
     includeFontPadding: false,
@@ -135,6 +139,7 @@ const styles = StyleSheet.create({
   },
   check: {
     fontSize: fontSize.button,
+    lineHeight: 24,
     color: colors.textPrimary,
   },
   done: {
@@ -144,6 +149,7 @@ const styles = StyleSheet.create({
   },
   doneText: {
     fontSize: fontSize.button,
+    lineHeight: 24,
     fontFamily: fonts.bold,
     color: colors.textPrimary,
     includeFontPadding: false,

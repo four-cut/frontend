@@ -18,9 +18,10 @@
  *
  * ## 주의
  *
- * 일본어는 `AppText` 가 Zen Maru Gothic 으로 갈아 끼우므로 여기 굵기가 적용되지
- * 않는다. Pretendard 에는 가나·한자가 없어 섞어 쓰면 글자마다 서체가 바뀐다.
- * 일본어까지 주려면 PretendardJP 가 필요한데 한자 때문에 한 벌에 수십 MB다.
+ * Pretendard 에는 가나·한자가 없어 일본어와 섞어 쓰면 글자마다 서체가 바뀐다.
+ * 그래서 일본어는 `AppText` 가 Shin Retro Maru Gothic 의 대응 굵기로 갈아
+ * 끼운다(`typography.ts` 의 `localeFontFamily`, SemiBold → Medium).
+ * 여기 굵기 위계는 일본어에서도 유지된다.
  *
  * `typography.ts` 의 경고는 여기에도 그대로다 — fontFamily 와 fontWeight 를
  * 함께 주면 안 된다. 굵기는 파일로 고른다.

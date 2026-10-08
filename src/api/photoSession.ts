@@ -69,7 +69,8 @@ export function composeSession(sessionId: string) {
 export function uploadCompositeImage(sessionId: string, fileUri: string) {
   return apiUpload<CompositeUploaded>(
     `/api/sessions/${sessionId}/composite/image`,
-    {uri: fileUri, name: 'strip.png', type: 'image/png'},
+    // composeStrip 이 JPEG 로 만든다 (STRIP_MIME).
+    {uri: fileUri, name: 'strip.jpg', type: 'image/jpeg'},
   );
 }
 

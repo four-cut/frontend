@@ -1,5 +1,6 @@
 import {Image} from 'react-native';
 import {Skia, type SkCanvas, type SkTypeface} from '@shopify/react-native-skia';
+import {drawImageSmooth} from '../capture/drawImageSmooth';
 
 import {coverCrop, type SlotRect} from '../capture/stripLayout';
 import {getLocale} from '../i18n';
@@ -73,12 +74,14 @@ export async function drawBackgroundImage(
     canvasWidth,
     canvasHeight,
   );
-  canvas.drawImageRect(
+  // 배경 사진도 촬영본처럼 크게 줄여 그리므로 같은 방식으로 부드럽게 줄인다.
+  drawImageSmooth(
+    canvas,
     image,
     Skia.XYWHRect(crop.x, crop.y, crop.width, crop.height),
     Skia.XYWHRect(0, 0, canvasWidth, canvasHeight),
-    Skia.Paint(),
   );
+  image.dispose();
 }
 
 /**
@@ -117,7 +120,8 @@ export async function drawStickerElements(
     }
     const width = sticker.widthRatio * canvasWidth;
     const height = width / sticker.aspectRatio;
-    canvas.drawImageRect(
+    drawImageSmooth(
+      canvas,
       image,
       Skia.XYWHRect(0, 0, image.width(), image.height()),
       Skia.XYWHRect(
@@ -126,8 +130,8 @@ export async function drawStickerElements(
         width,
         height,
       ),
-      Skia.Paint(),
     );
+    image.dispose();
   }
 }
 

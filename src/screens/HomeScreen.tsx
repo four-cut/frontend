@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react';
-import {Image, Pressable, StyleSheet, View, Text as RNText} from 'react-native';
+import {Image, Pressable, StyleSheet, View} from 'react-native';
+import {Text} from '../components/AppText';
 import {useNavigation} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {prefetchBasicFramePreviews} from '../api/frames';
@@ -45,9 +46,9 @@ export default function HomeScreen() {
 
       <View style={styles.hero}>
         <Image source={images.logo} style={styles.logo} resizeMode="contain" />
-        {/* 워드마크는 브랜드명이라 일본어에서도 한국어 그대로 둔다.
-            Zen Maru Gothic 에는 한글이 없어서 react-native 의 Text 로 그린다. */}
-        <RNText style={styles.wordmark}>찍고갈래?</RNText>
+        {/* 워드마크는 언어마다 정해 둔 브랜드명을 쓴다(한국어 "찍고갈래?",
+            일본어 「撮ってく？」). 서체는 AppText 가 언어에 맞게 고른다. */}
+        <Text style={styles.wordmark}>{t.common.wordmark}</Text>
       </View>
 
       <View style={styles.actions}>

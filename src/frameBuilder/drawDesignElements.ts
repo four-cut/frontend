@@ -16,7 +16,7 @@ import type {StickerElement, TextElement} from './types';
 // 고른다.
 const FONT_ASSETS: Record<TextScript, number> = {
   ko: require('../../assets/fonts/Jua-Regular.ttf'),
-  ja: require('../../assets/fonts/ZenMaruGothic-Regular.ttf'),
+  ja: require('../../assets/fonts/ShinRetroMaruGothic-Bold.ttf'),
 };
 
 type TextScript = 'ko' | 'ja';

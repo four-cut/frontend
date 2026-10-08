@@ -86,20 +86,19 @@ export default function PhotoSelectScreen() {
               )}
               accessibilityState={{selected: picked}}
               onPress={() => toggleSelection(index)}
-              style={[
-                styles.thumb,
-                {width: thumbWidth, height: THUMB_HEIGHT},
-                picked && styles.thumbPicked,
-              ]}>
+              style={[styles.thumb, {width: thumbWidth, height: THUMB_HEIGHT}]}>
               <Image
                 source={{uri}}
                 style={styles.thumbImage}
                 resizeMode="cover"
               />
               {picked ? (
-                <View style={styles.badge}>
-                  <Text style={styles.badgeLabel}>{order + 1}</Text>
-                </View>
+                <>
+                  <View pointerEvents="none" style={styles.thumbPicked} />
+                  <View style={styles.badge}>
+                    <Text style={styles.badgeLabel}>{order + 1}</Text>
+                  </View>
+                </>
               ) : null}
             </Pressable>
           );
@@ -155,7 +154,12 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: colors.slot,
   },
+  // 테두리는 썸네일 스타일에 직접 붙였다 떼지 않고 위에 덮는 뷰로 그린다.
+  // 안드로이드는 borderWidth 가 빠지면 NaN 으로 되돌리는데, overflow: hidden 이
+  // 그 값으로 자르는 영역을 계산해 0 크기가 되면서 사진이 통째로 잘려 나간다.
   thumbPicked: {
+    ...StyleSheet.absoluteFill,
+    borderRadius: 8,
     borderWidth: 2,
     borderColor: colors.textPrimary,
   },

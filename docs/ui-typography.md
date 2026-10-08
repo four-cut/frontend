@@ -56,9 +56,10 @@ grep -rn "UI-V2" src/
 ## 주의
 
 - **폰트를 추가했으므로 이 브랜치를 받으면 Android 재빌드가 필요하다.** `npm install` 만으로는 글꼴이 안 보인다.
-- **일본어에는 굵기가 적용되지 않는다.** `AppText` 가 일본어일 때 Zen Maru Gothic 으로
-  갈아 끼우기 때문이다. Pretendard 에는 가나·한자가 없어 섞어 쓸 수 없고, PretendardJP 는
-  한자 때문에 한 벌에 수십 MB라 넣지 않았다.
+- **일본어는 Shin Retro Maru Gothic(新レトロ丸ゴシック)으로 그린다.** Pretendard 에는
+  가나·한자가 없어 섞어 쓸 수 없어서, `AppText` 가 일본어일 때 대응 굵기
+  (Regular / SemiBold → Medium / Bold)로 갈아 끼운다. 굵기 위계는 일본어에서도 유지된다.
+  Jua 를 쓰는 나머지 화면은 Bold 로 나온다 — Jua 가 획이 두꺼운 서체라 굵기를 맞췄다.
 
 ## 같이 논의할 것
 

@@ -1,5 +1,5 @@
 import React, {useCallback} from 'react';
-import {Image, Pressable, StyleSheet, View, Text as RNText} from 'react-native';
+import {Image, Pressable, StyleSheet, View} from 'react-native';
 import {Text} from '../components/AppText';
 import {
   useNavigation,
@@ -109,8 +109,8 @@ export default function LoginScreen() {
 
       <View style={styles.hero}>
         <Image source={images.logo} style={styles.logo} resizeMode="contain" />
-        {/* 브랜드명이라 번역하지 않는다 — HomeScreen 과 같은 이유로 RNText. */}
-        <RNText style={styles.wordmark}>찍고갈래?</RNText>
+        {/* HomeScreen 과 같은 워드마크 — 언어마다 정해 둔 브랜드명. */}
+        <Text style={styles.wordmark}>{t.common.wordmark}</Text>
         <Text style={styles.guide}>{t.login.guide}</Text>
       </View>
 

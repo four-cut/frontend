@@ -86,6 +86,9 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: fontSize.tabLabel,
+    // 줄 높이를 고정한다. 안 주면 글자 상자 높이가 서체마다 달라서, 언어를
+    // 바꾸는 순간 이 줄이 몇 px 커지거나 줄고 화면이 밀린다.
+    lineHeight: 18,
     fontFamily: fonts.bold,
     includeFontPadding: false,
   },

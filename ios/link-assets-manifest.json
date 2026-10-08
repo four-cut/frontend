@@ -3,7 +3,7 @@
   "data": [
     {
       "path": "assets/fonts/Jua-LICENSE.txt",
-      "sha1": "7c4a50c49a5a0013a151c136f526869855c802dd"
+      "sha1": "a4a04838c9fbc4efa3f2278f8b478132def4c06d"
     },
     {
       "path": "assets/fonts/Jua-Regular.ttf",
@@ -26,12 +26,20 @@
       "sha1": "e247ab351a1797b1a81f7a5e945c416de9f7fd91"
     },
     {
-      "path": "assets/fonts/ZenMaruGothic-LICENSE.txt",
-      "sha1": "40bfad66df8f6d183fb0ab219d15b7ec1564bded"
+      "path": "assets/fonts/ShinRetroMaruGothic-Bold.ttf",
+      "sha1": "a6709266dcb33281cbb17bf0d2003eec2e26a67e"
     },
     {
-      "path": "assets/fonts/ZenMaruGothic-Regular.ttf",
-      "sha1": "271eaadc50f7e1d2fbab90141f65cdd13c59546a"
+      "path": "assets/fonts/ShinRetroMaruGothic-LICENSE.txt",
+      "sha1": "64fa96294602222d354ad18bf0df57c1bc79c470"
+    },
+    {
+      "path": "assets/fonts/ShinRetroMaruGothic-Medium.ttf",
+      "sha1": "74a1957892d9a61923e00a121bd2daa6da5b3731"
+    },
+    {
+      "path": "assets/fonts/ShinRetroMaruGothic-Regular.ttf",
+      "sha1": "da6656f3ef04e2aa70de04a69d8302b2b0a7f40e"
     }
   ]
 }

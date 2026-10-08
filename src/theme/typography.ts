@@ -19,29 +19,64 @@
 const TEMPORARY_FONT = 'Jua-Regular';
 
 /**
- * 언어별 본문 서체.
+ * 일본어 서체 — 新レトロ丸ゴシック(Shin Retro Maru Gothic, SIL OFL) 세 굵기.
+ * 文字魚/Typographish 가 BOOTH 에서 배포하는 둥근 고딕으로, Jua 의 둥근
+ * 인상과 잘 맞는다.
  *
- * Jua 에는 가나·한자가 한 글자도 없다(코드포인트 2521개, 전부 한글·라틴).
- * 일본어를 Jua 로 그리면 OS 가 글자마다 시스템 고딕으로 대체해서, 둥근
- * 인상이 사라지고 화면마다 서체가 섞여 보인다. 인상이 가장 가까운
- * Zen Maru Gothic(SIL OFL, 둥근 고딕)을 같이 번들해서 일본어일 때 쓴다.
+ * Jua·Pretendard 에는 가나·한자가 한 글자도 없다. 일본어를 그대로 그리면 OS 가
+ * 글자마다 시스템 고딕으로 대체해서 화면마다 서체가 섞여 보인다. 그래서
+ * 일본어일 때는 components/AppText 가 서체를 통째로 갈아 끼운다.
  *
- * 워드마크("찍고갈래?")는 한국어 그대로 두기로 했으므로 언어와 무관하게
- * 항상 Jua 다 — Zen Maru Gothic 에는 한글이 없다.
+ * 굵기는 Regular·Medium·Bold 뿐이라 SemiBold 자리에는 Medium 을 쓴다.
+ * 배포본 둘 중 "for_adobe" 를 넣었다 — 파일 이름이 PostScript 이름과 같아야
+ * 안드로이드(파일 이름)와 iOS(PostScript 이름)에서 같은 문자열로 잡힌다.
+ *
+ * 한자는 JIS 제1·2수준(약 7,800자)까지다. 화면의 Text 는 그 밖의 글자를
+ * OS 가 다른 서체로 대체해 주지만, 프레임 합성(Skia drawText)은 대체가 없어서
+ * 사용자가 프레임에 넣은 글자가 그 밖이면 빈 네모로 저장된다.
+ *
+ * 워드마크도 언어를 따른다 — 한국어 "찍고갈래?"는 Jua, 일본어 「撮ってく？」는
+ * 이 서체의 Bold 로 그린다.
  */
-export const LOCALE_FONT: Record<'ko' | 'ja', string> = {
-  ko: TEMPORARY_FONT,
-  ja: 'ZenMaruGothic-Regular',
-};
+const JA_FONT = {
+  regular: 'ShinRetroMaruGothic-Regular',
+  semibold: 'ShinRetroMaruGothic-Medium',
+  bold: 'ShinRetroMaruGothic-Bold',
+} as const;
+
+/**
+ * 한국어 서체 이름을 일본어일 때 쓸 서체로 바꾼다.
+ *
+ * 굵기가 있는 서체(Pretendard)는 같은 굵기로 맞춘다. 그래야 굵기로 만든
+ * 위계가 일본어에서도 그대로 남는다.
+ *
+ * Jua 는 파일 이름이 Regular 지만 획이 두꺼운 서체다. Regular 로 보내면
+ * 한국어에서 굵게 보이던 제목·버튼이 일본어에서만 가늘어진다 — 앱 글자의
+ * 대부분이 Jua 라서 화면 전체가 얇아 보인다. 눈에 보이는 굵기가 가까운
+ * Bold 로 보낸다.
+ */
+export function localeFontFamily(locale: 'ko' | 'ja', source: string): string {
+  if (locale === 'ko') {
+    return source;
+  }
+  if (source === TEMPORARY_FONT) {
+    return JA_FONT.bold;
+  }
+  if (source.endsWith('-SemiBold')) {
+    return JA_FONT.semibold;
+  }
+  if (source.endsWith('-Bold')) {
+    return JA_FONT.bold;
+  }
+  return JA_FONT.regular;
+}
 
 export const fonts = {
   regular: TEMPORARY_FONT as string | undefined,
   bold: TEMPORARY_FONT as string | undefined,
   /**
-   * 로고 워드마크("찍고갈래?")용. 언어를 바꿔도 이 값은 바뀌지 않는다 —
-   * 워드마크만은 항상 한글이라 Jua 로 그려야 한다. 이 폰트를 쓰는 Text 는
-   * components/AppText 가 아니라 react-native 의 Text 를 그대로 써서
-   * 언어별 서체 치환을 피한다.
+   * 로고 워드마크용. 한국어 "찍고갈래?"는 Jua 로, 일본어 「撮ってく？」는
+   * components/AppText 가 일본어 서체로 갈아 끼워 그린다.
    */
   display: TEMPORARY_FONT as string | undefined,
 };

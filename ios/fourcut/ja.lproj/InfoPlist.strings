@@ -2,3 +2,6 @@
 "NSCameraUsageDescription" = "4カット写真を撮影するためにカメラを使用します。";
 "NSPhotoLibraryAddUsageDescription" = "完成した4カット写真と動画を写真アプリに保存します。";
 "NSPhotoLibraryUsageDescription" = "アルバムの写真で4カットを作ったり、フレームに写真を入れたり、保存した4カットをギャラリーに表示したりするために写真アプリにアクセスします。";
+
+/* 홈 화면 아이콘 아래에 뜨는 앱 이름(일본어). */
+"CFBundleDisplayName" = "撮ってく？";

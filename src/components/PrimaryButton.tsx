@@ -59,6 +59,8 @@ const styles = StyleSheet.create({
   label: {
     color: colors.white,
     fontSize: fontSize.button,
+    // 서체가 바뀌어도(언어 전환) 라벨 상자 높이가 같도록 고정한다.
+    lineHeight: 24,
     fontFamily: fonts.bold,
     includeFontPadding: false,
   },

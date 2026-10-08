@@ -26,6 +26,7 @@ import {
   uploadCompositeImage,
   uploadVideo,
 } from '../api/photoSession';
+import {toUserMessage} from '../api/userMessage';
 import {composeStrip} from '../capture/composeStrip';
 import {ALBUM_NAME, saveToAlbum} from '../capture/saveToAlbum';
 import {useT} from '../i18n';
@@ -270,7 +271,11 @@ export default function LogoSelectScreen() {
       }
     } catch (error) {
       setSaveError(
-        error instanceof Error ? error.message : t.result.saveFailed,
+        toUserMessage(error, {
+          fallback: t.result.saveFailed,
+          // 권한 문구는 그대로 둬야 아래에서 "설정에서 권한 허용" 을 띄운다.
+          known: [t.errors.noSavePermission, t.errors.noSaveTarget],
+        }),
       );
       setSaveState('failed');
     }
@@ -364,7 +369,13 @@ export default function LogoSelectScreen() {
       setQrUploadedStrip(null);
       setQrHasVideo(false);
       setQrUrl(null);
-      setQrError(error instanceof Error ? error.message : t.result.qrFailed);
+      setQrError(
+        toUserMessage(error, {
+          fallback: t.result.qrFailed,
+          offline: t.result.qrOffline,
+          known: [t.result.qrFailed, t.result.qrNoFrame],
+        }),
+      );
       setQrState('failed');
     }
   };

@@ -60,6 +60,20 @@ react {
 def enableProguardInReleaseBuilds = false
 
 /**
+ * 정식 업로드 키가 설정돼 있는지.
+ *
+ * 처음에는 release 도 디버그 키로 서명하게 돼 있었다. 디버그 키는 저장소에
+ * 공개돼 있어 누구나 같은 서명으로 앱을 만들 수 있고, Play 는 디버그 서명
+ * 업로드를 거부한다.
+ */
+def hasUploadKey = ['FOURCUT_UPLOAD_STORE_FILE', 'FOURCUT_UPLOAD_STORE_PASSWORD',
+                    'FOURCUT_UPLOAD_KEY_ALIAS', 'FOURCUT_UPLOAD_KEY_PASSWORD']
+        .every { project.hasProperty(it) }
+if (!hasUploadKey) {
+    logger.warn("[fourcut] 업로드 키가 없어 release 를 디버그 키로 서명합니다. Play 에는 올릴 수 없습니다. (docs/release-signing.md)")
+}
+
+/**
  * The preferred build flavor of JavaScriptCore (JSC)
  *
  * For example, to use the international variant, you can use:
@@ -99,15 +113,26 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        // 업로드 키는 저장소에 두지 않는다. 각자 ~/.gradle/gradle.properties 에
+        // FOURCUT_UPLOAD_* 네 값을 넣어 둔 사람만 정식 서명 빌드를 만들 수 있다.
+        // 설정 방법은 docs/release-signing.md.
+        if (hasUploadKey) {
+            release {
+                storeFile file(FOURCUT_UPLOAD_STORE_FILE)
+                storePassword FOURCUT_UPLOAD_STORE_PASSWORD
+                keyAlias FOURCUT_UPLOAD_KEY_ALIAS
+                keyPassword FOURCUT_UPLOAD_KEY_PASSWORD
+            }
+        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            // 업로드 키가 없으면 디버그 키로 서명한다. 실기기 시험용 APK 를 누구나
+            // 만들 수 있게 하려는 것이고, 이렇게 만든 파일은 Play 가 업로드를 거부한다.
+            signingConfig hasUploadKey ? signingConfigs.release : signingConfigs.debug
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
         }
@@ -118,8 +143,6 @@ dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
 
-    // OS 인쇄 시트를 띄우는 PrintHelper. (PrintModule)
-    implementation("androidx.print:print:1.0.0")
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")

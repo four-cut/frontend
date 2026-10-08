@@ -16,15 +16,16 @@
 		8DDDA43216A0E542FC30D19F /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 3CDAE8A8F910ED0C426FC66C /* InfoPlist.strings */; };
 		925CB92544F569CDCC8AE951 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		C6671FD615FBA0A1D9A1267B /* PrintModule.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7CED7071CBF5A4AF3C10C225 /* PrintModule.mm */; };
-		188D81F677874027B5208017 /* Jua-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8830A981B2B24FF294FFF0A5 /* Jua-Regular.ttf */; };
-		4CA18DCE253041D884C18750 /* Pretendard-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6C189012306140479A7F67CD /* Pretendard-Bold.ttf */; };
-		0ACCBDA00ECD42EDBD9ED0B7 /* Pretendard-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 844BE3EB1310424EB036ACF7 /* Pretendard-Regular.ttf */; };
-		9F5962837FA5435D9983A1E3 /* Pretendard-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B2C81B0A58CF4CBD85020327 /* Pretendard-SemiBold.ttf */; };
-		4277A1297C83468292C86698 /* ShinRetroMaruGothic-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6579307F6F1B424288291BCE /* ShinRetroMaruGothic-Bold.ttf */; };
-		1CB32D7CEE1E4CDD8F2FAE63 /* ShinRetroMaruGothic-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = CC89689691294FF099CA2E61 /* ShinRetroMaruGothic-Medium.ttf */; };
-		69E07CC5B6CC46DABB01475B /* ShinRetroMaruGothic-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = EAA6D411B9174DB0A381EB5F /* ShinRetroMaruGothic-Regular.ttf */; };
-		2B157DD414794A97AE2D6902 /* Pretendard-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = E3E05369CE904D7E92BFD2E1 /* Pretendard-LICENSE.txt */; };
-		6EAFE153EB404279B59EAFDC /* ShinRetroMaruGothic-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = A7AB16E571D04DE484EF793B /* ShinRetroMaruGothic-LICENSE.txt */; };
+		AFD170C9B42D4AF7BBFE9AB3 /* Jua-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 836D38C3E7D941C4ACCD4F98 /* Jua-Regular.ttf */; };
+		3D64608691404E0D985D5984 /* Pretendard-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 013043A99A7A42109AF9D601 /* Pretendard-Bold.ttf */; };
+		E7493E822F024E13973C0D76 /* Pretendard-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E0831DDDD6474DB087A342D0 /* Pretendard-Regular.ttf */; };
+		CE63DDEB231843E4A2181FDE /* Pretendard-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5389A4E41F3D4A929C20909A /* Pretendard-SemiBold.ttf */; };
+		805A755BB1E147AEA79657E7 /* ShinRetroMaruGothic-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = EEB367B9957F444AAD524924 /* ShinRetroMaruGothic-Bold.ttf */; };
+		11398A6D55894022B14B7B9B /* ShinRetroMaruGothic-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 40A8164388674184AB833FA4 /* ShinRetroMaruGothic-Medium.ttf */; };
+		37BB99754633472DBF2EBAAF /* ShinRetroMaruGothic-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B4A2499192104A95A7A38989 /* ShinRetroMaruGothic-Regular.ttf */; };
+		69FEEE97678A4CD08A3C15CE /* Jua-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 06F11857B95D426EACFFAC3C /* Jua-LICENSE.txt */; };
+		62AF6342E6DC4F6FBF2D0AAE /* Pretendard-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = CDCC50C5C0394C9881766D4F /* Pretendard-LICENSE.txt */; };
+		41BAAD4C6EB44CF2A5978BCA /* ShinRetroMaruGothic-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 64A0F95F55C745348B63E663 /* ShinRetroMaruGothic-LICENSE.txt */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -46,15 +47,16 @@
 		B7FA73AEC216AB3BAD856286 /* ko */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = ko; path = fourcut/ko.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		EB7668C72C34DD2C56E6DC9F /* VideoSpeedModule.mm */ = {isa = PBXFileReference; includeInIndex = 1; name = VideoSpeedModule.mm; path = fourcut/VideoSpeedModule.mm; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		8830A981B2B24FF294FFF0A5 /* Jua-Regular.ttf */ = {isa = PBXFileReference; name = "Jua-Regular.ttf"; path = "../assets/fonts/Jua-Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		6C189012306140479A7F67CD /* Pretendard-Bold.ttf */ = {isa = PBXFileReference; name = "Pretendard-Bold.ttf"; path = "../assets/fonts/Pretendard-Bold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		844BE3EB1310424EB036ACF7 /* Pretendard-Regular.ttf */ = {isa = PBXFileReference; name = "Pretendard-Regular.ttf"; path = "../assets/fonts/Pretendard-Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		B2C81B0A58CF4CBD85020327 /* Pretendard-SemiBold.ttf */ = {isa = PBXFileReference; name = "Pretendard-SemiBold.ttf"; path = "../assets/fonts/Pretendard-SemiBold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		6579307F6F1B424288291BCE /* ShinRetroMaruGothic-Bold.ttf */ = {isa = PBXFileReference; name = "ShinRetroMaruGothic-Bold.ttf"; path = "../assets/fonts/ShinRetroMaruGothic-Bold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		CC89689691294FF099CA2E61 /* ShinRetroMaruGothic-Medium.ttf */ = {isa = PBXFileReference; name = "ShinRetroMaruGothic-Medium.ttf"; path = "../assets/fonts/ShinRetroMaruGothic-Medium.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		EAA6D411B9174DB0A381EB5F /* ShinRetroMaruGothic-Regular.ttf */ = {isa = PBXFileReference; name = "ShinRetroMaruGothic-Regular.ttf"; path = "../assets/fonts/ShinRetroMaruGothic-Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		E3E05369CE904D7E92BFD2E1 /* Pretendard-LICENSE.txt */ = {isa = PBXFileReference; name = "Pretendard-LICENSE.txt"; path = "../assets/fonts/Pretendard-LICENSE.txt"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		A7AB16E571D04DE484EF793B /* ShinRetroMaruGothic-LICENSE.txt */ = {isa = PBXFileReference; name = "ShinRetroMaruGothic-LICENSE.txt"; path = "../assets/fonts/ShinRetroMaruGothic-LICENSE.txt"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		836D38C3E7D941C4ACCD4F98 /* Jua-Regular.ttf */ = {isa = PBXFileReference; name = "Jua-Regular.ttf"; path = "../assets/fonts/Jua-Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		013043A99A7A42109AF9D601 /* Pretendard-Bold.ttf */ = {isa = PBXFileReference; name = "Pretendard-Bold.ttf"; path = "../assets/fonts/Pretendard-Bold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		E0831DDDD6474DB087A342D0 /* Pretendard-Regular.ttf */ = {isa = PBXFileReference; name = "Pretendard-Regular.ttf"; path = "../assets/fonts/Pretendard-Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		5389A4E41F3D4A929C20909A /* Pretendard-SemiBold.ttf */ = {isa = PBXFileReference; name = "Pretendard-SemiBold.ttf"; path = "../assets/fonts/Pretendard-SemiBold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		EEB367B9957F444AAD524924 /* ShinRetroMaruGothic-Bold.ttf */ = {isa = PBXFileReference; name = "ShinRetroMaruGothic-Bold.ttf"; path = "../assets/fonts/ShinRetroMaruGothic-Bold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		40A8164388674184AB833FA4 /* ShinRetroMaruGothic-Medium.ttf */ = {isa = PBXFileReference; name = "ShinRetroMaruGothic-Medium.ttf"; path = "../assets/fonts/ShinRetroMaruGothic-Medium.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		B4A2499192104A95A7A38989 /* ShinRetroMaruGothic-Regular.ttf */ = {isa = PBXFileReference; name = "ShinRetroMaruGothic-Regular.ttf"; path = "../assets/fonts/ShinRetroMaruGothic-Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		06F11857B95D426EACFFAC3C /* Jua-LICENSE.txt */ = {isa = PBXFileReference; name = "Jua-LICENSE.txt"; path = "../assets/fonts/Jua-LICENSE.txt"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		CDCC50C5C0394C9881766D4F /* Pretendard-LICENSE.txt */ = {isa = PBXFileReference; name = "Pretendard-LICENSE.txt"; path = "../assets/fonts/Pretendard-LICENSE.txt"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		64A0F95F55C745348B63E663 /* ShinRetroMaruGothic-LICENSE.txt */ = {isa = PBXFileReference; name = "ShinRetroMaruGothic-LICENSE.txt"; path = "../assets/fonts/ShinRetroMaruGothic-LICENSE.txt"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -139,15 +141,16 @@
 		BF3E8EBD2EED43A3B382FC31 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				8830A981B2B24FF294FFF0A5 /* Jua-Regular.ttf */,
-				6C189012306140479A7F67CD /* Pretendard-Bold.ttf */,
-				844BE3EB1310424EB036ACF7 /* Pretendard-Regular.ttf */,
-				B2C81B0A58CF4CBD85020327 /* Pretendard-SemiBold.ttf */,
-				6579307F6F1B424288291BCE /* ShinRetroMaruGothic-Bold.ttf */,
-				CC89689691294FF099CA2E61 /* ShinRetroMaruGothic-Medium.ttf */,
-				EAA6D411B9174DB0A381EB5F /* ShinRetroMaruGothic-Regular.ttf */,
-				E3E05369CE904D7E92BFD2E1 /* Pretendard-LICENSE.txt */,
-				A7AB16E571D04DE484EF793B /* ShinRetroMaruGothic-LICENSE.txt */,
+				836D38C3E7D941C4ACCD4F98 /* Jua-Regular.ttf */,
+				013043A99A7A42109AF9D601 /* Pretendard-Bold.ttf */,
+				E0831DDDD6474DB087A342D0 /* Pretendard-Regular.ttf */,
+				5389A4E41F3D4A929C20909A /* Pretendard-SemiBold.ttf */,
+				EEB367B9957F444AAD524924 /* ShinRetroMaruGothic-Bold.ttf */,
+				40A8164388674184AB833FA4 /* ShinRetroMaruGothic-Medium.ttf */,
+				B4A2499192104A95A7A38989 /* ShinRetroMaruGothic-Regular.ttf */,
+				06F11857B95D426EACFFAC3C /* Jua-LICENSE.txt */,
+				CDCC50C5C0394C9881766D4F /* Pretendard-LICENSE.txt */,
+				64A0F95F55C745348B63E663 /* ShinRetroMaruGothic-LICENSE.txt */,
 			);
 			name = Resources;
 			path = "";
@@ -219,15 +222,16 @@
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				925CB92544F569CDCC8AE951 /* PrivacyInfo.xcprivacy in Resources */,
 				8DDDA43216A0E542FC30D19F /* InfoPlist.strings in Resources */,
-				188D81F677874027B5208017 /* Jua-Regular.ttf in Resources */,
-				4CA18DCE253041D884C18750 /* Pretendard-Bold.ttf in Resources */,
-				0ACCBDA00ECD42EDBD9ED0B7 /* Pretendard-Regular.ttf in Resources */,
-				9F5962837FA5435D9983A1E3 /* Pretendard-SemiBold.ttf in Resources */,
-				4277A1297C83468292C86698 /* ShinRetroMaruGothic-Bold.ttf in Resources */,
-				1CB32D7CEE1E4CDD8F2FAE63 /* ShinRetroMaruGothic-Medium.ttf in Resources */,
-				69E07CC5B6CC46DABB01475B /* ShinRetroMaruGothic-Regular.ttf in Resources */,
-				2B157DD414794A97AE2D6902 /* Pretendard-LICENSE.txt in Resources */,
-				6EAFE153EB404279B59EAFDC /* ShinRetroMaruGothic-LICENSE.txt in Resources */,
+				AFD170C9B42D4AF7BBFE9AB3 /* Jua-Regular.ttf in Resources */,
+				3D64608691404E0D985D5984 /* Pretendard-Bold.ttf in Resources */,
+				E7493E822F024E13973C0D76 /* Pretendard-Regular.ttf in Resources */,
+				CE63DDEB231843E4A2181FDE /* Pretendard-SemiBold.ttf in Resources */,
+				805A755BB1E147AEA79657E7 /* ShinRetroMaruGothic-Bold.ttf in Resources */,
+				11398A6D55894022B14B7B9B /* ShinRetroMaruGothic-Medium.ttf in Resources */,
+				37BB99754633472DBF2EBAAF /* ShinRetroMaruGothic-Regular.ttf in Resources */,
+				69FEEE97678A4CD08A3C15CE /* Jua-LICENSE.txt in Resources */,
+				62AF6342E6DC4F6FBF2D0AAE /* Pretendard-LICENSE.txt in Resources */,
+				41BAAD4C6EB44CF2A5978BCA /* ShinRetroMaruGothic-LICENSE.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

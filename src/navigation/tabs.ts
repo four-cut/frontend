@@ -1,7 +1,7 @@
 import {images} from '../assets';
 import type {Strings} from '../i18n';
 
-export type TabName = 'Shoot' | 'Gallery';
+export type TabName = 'Shoot' | 'MyFrames' | 'Gallery';
 
 /**
  * requiresAuth 인 탭은 로그인 전에는 로그인 화면으로 보낸다.
@@ -14,6 +14,13 @@ export const TABS = [
     name: 'Shoot' as const,
     labelKey: 'shoot' as keyof Strings['tab'],
     icon: images.tabCamera,
+    requiresAuth: false,
+  },
+  {
+    // 기기에 저장된 프레임만 보여 주므로 로그인 없이 볼 수 있다.
+    name: 'MyFrames' as const,
+    labelKey: 'myFrames' as keyof Strings['tab'],
+    icon: images.tabFrame,
     requiresAuth: false,
   },
   {

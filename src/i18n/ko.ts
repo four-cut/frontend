@@ -25,6 +25,7 @@ const ko = {
 
   tab: {
     shoot: '찰칵',
+    myFrames: '내 프레임',
     gallery: '갤러리',
   },
 
@@ -47,6 +48,20 @@ const ko = {
     title: '설정',
     open: '설정 열기',
     language: '언어',
+    /** 설정 · 계정 */
+    account: '계정',
+    signOut: '로그아웃',
+    deleteAccount: '회원 탈퇴',
+    deleteTitle: '정말 탈퇴하시겠어요?',
+    deleteBody:
+      '계정과 로그인 정보가 삭제되고 되돌릴 수 없습니다. 기기에 저장한 네컷 사진은 지워지지 않습니다.',
+    deleteConfirm: '탈퇴하기',
+    deleted: '탈퇴가 완료되었습니다.',
+    deleteFailed: '탈퇴하지 못했습니다. 잠시 후 다시 시도해주세요.',
+    /** 설정 · 정보 */
+    info: '정보',
+    privacy: '개인정보처리방침',
+    terms: '이용약관',
   },
 
   guide: {
@@ -151,6 +166,22 @@ const ko = {
     qrVideoNotReady: '영상이 아직 준비되지 않았습니다',
     qrNoFrame: '서버에 등록된 프레임이 없습니다',
     qrFailed: 'QR 을 만들지 못했습니다',
+    /** QR 은 서버가 있어야 만들 수 있다. 끊겼을 때 할 수 있는 걸 알려 준다. */
+    qrOffline:
+      'QR은 인터넷이 연결돼 있어야 만들 수 있어요. 지금은 저장이나 인쇄를 이용해주세요.',
+  },
+
+  myFrames: {
+    title: '내 프레임',
+    zoomA11y: '크게 보기',
+    deleteA11y: '이 프레임 삭제',
+    empty: '아직 만든 프레임이 없어요',
+    emptyHint: '프레임 만들기에서 나만의 프레임을 만들어 보세요',
+    loadFailed: '프레임을 불러오지 못했어요',
+    deleteTitle: '이 프레임을 삭제할까요?',
+    /** 휴지통 없이 바로 지워진다 — 지우기 전에 알아야 하는 사실이다. */
+    deleteBody: (name: string) => `"${name}"을(를) 삭제하면 되돌릴 수 없어요.`,
+    deleteFailed: '삭제하지 못했어요',
   },
 
   gallery: {
@@ -182,9 +213,10 @@ const ko = {
     title: '프레임 만들기',
     saving: '저장 중...',
     saveFailed: '저장에 실패했습니다',
-    /** 새로 만든 프레임의 기본 이름 */
-    myPortrait: '내가 만든 세로형',
-    myLandscape: '내가 만든 가로형',
+    nameTitle: '프레임 이름',
+    nameDescription: '내 프레임에서 이 이름으로 구분돼요',
+    namePlaceholder: '예: 우리 반 네컷',
+    save: '저장',
 
     text: '텍스트',
     sticker: '스티커',
@@ -255,6 +287,9 @@ const ko = {
     /** "/api/frames 요청이 실패했습니다 (500 …)" */
     requestFailed: (path: string, status: number, detail: string) =>
       `${path} 요청이 실패했습니다 (${status} ${detail})`,
+    /** 사용자에게 보이는 공용 오류 문구 (api/userMessage.ts) */
+    offline: '인터넷 연결이 불안정해요. 연결을 확인한 뒤 다시 시도해주세요.',
+    server: '서버에 문제가 생겼어요. 잠시 후 다시 시도해주세요.',
   },
 };
 

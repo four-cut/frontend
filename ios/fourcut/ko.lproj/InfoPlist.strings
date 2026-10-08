@@ -2,4 +2,4 @@
    이 문구는 iOS 가 앱 밖에서 띄운다. */
 "NSCameraUsageDescription" = "네컷 사진을 촬영하기 위해 카메라를 사용합니다.";
 "NSPhotoLibraryAddUsageDescription" = "완성된 네컷 사진과 영상을 사진 앱에 저장합니다.";
-"NSPhotoLibraryUsageDescription" = "찍고갈래? 앨범을 만들어 결과물을 모아 두기 위해 사진 앱에 접근합니다.";
+"NSPhotoLibraryUsageDescription" = "앨범의 사진으로 네컷을 만들고, 프레임에 사진을 넣고, 저장한 네컷을 갤러리에서 보여 주기 위해 사진 앱에 접근합니다.";

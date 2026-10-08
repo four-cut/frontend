@@ -423,6 +423,46 @@ static BOOL EnsureParentDirectory(NSString *path, NSError **error) {
   resolve([names ?: @[] sortedArrayUsingSelector:@selector(compare:)]);
 }
 
+- (void)deleteDirectory:(NSString *)path
+                resolve:(RCTPromiseResolveBlock)resolve
+                 reject:(RCTPromiseRejectBlock)reject {
+  NSFileManager *manager = NSFileManager.defaultManager;
+  // 없는 경로는 심볼릭 링크(/var → /private/var)가 풀리지 않아 아래 앞부분
+  // 비교가 어긋난다. 지울 게 없으면 비교 전에 성공으로 끝낸다.
+  if (![manager fileExistsAtPath:PathFromUriOrPath(path)]) {
+    resolve(nil);
+    return;
+  }
+  NSString *documents = [manager URLsForDirectory:NSDocumentDirectory
+                                        inDomains:NSUserDomainMask]
+                            .firstObject.path.stringByResolvingSymlinksInPath;
+  NSString *target = PathFromUriOrPath(path).stringByStandardizingPath
+                         .stringByResolvingSymlinksInPath;
+  // Documents 바로 아래부터만 지운다. Documents 자체나 그 밖은 거절한다.
+  NSString *root = [documents stringByAppendingString:@"/"];
+  if (documents == nil || ![target hasPrefix:root]) {
+    reject(@"MEDIA_FILE_DELETE_FAILED",
+           [NSString stringWithFormat:@"앱 저장 폴더 밖은 지울 수 없습니다: %@", path],
+           nil);
+    return;
+  }
+  // 파일을 하나씩 지우다 중간에 실패하면 반쯤 지워진 폴더가 남는다. 먼저
+  // 점(.)으로 시작하는 이름으로 통째로 옮겨서 한 번에 "없는 것"으로 만든
+  // 뒤 지운다. 옮긴 뒤 지우다 실패한 찌꺼기는 목록에서 보이지 않는다.
+  NSString *trash = [target.stringByDeletingLastPathComponent
+      stringByAppendingPathComponent:
+          [NSString stringWithFormat:@".trash-%@-%lld",
+                                     target.lastPathComponent,
+                                     (long long)(NSDate.date.timeIntervalSince1970 * 1000)]];
+  BOOL moved = [manager moveItemAtPath:target toPath:trash error:nil];
+  NSError *error = nil;
+  if (![manager removeItemAtPath:(moved ? trash : target) error:&error] && !moved) {
+    reject(@"MEDIA_FILE_DELETE_FAILED", error.localizedDescription, error);
+    return;
+  }
+  resolve(nil);
+}
+
 - (std::shared_ptr<facebook::react::TurboModule>)
     getTurboModule:(const facebook::react::ObjCTurboModule::InitParams &)params {
   return std::make_shared<facebook::react::NativeMediaFileSpecJSI>(params);

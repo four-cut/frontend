@@ -51,17 +51,18 @@ export async function renderFrameDesign(
     );
   }
 
-  // 스티커를 먼저 그려서 나중에 그리는 텍스트가 항상 위에 보이게 한다.
+  // 실제로는 이 자리에 촬영본이 들어간다 — 배경이 비쳐 보이면 편집 중에
+  // 헷갈리므로 슬롯색으로 가린다.
+  drawSlotMasks(canvas, computeSlotRects(layout, geometry));
+
+  // 스티커는 사진 위에 올린다 (composeStrip과 같은 순서). 텍스트는 그보다
+  // 나중에 그려서 항상 맨 위에 보이게 한다.
   await drawStickerElements(
     canvas,
     geometry.width,
     geometry.height,
     stickerElements,
   );
-
-  // 실제로는 이 자리에 촬영본이 들어간다 — 배경/스티커가 비쳐 보이면
-  // 편집 중에 헷갈리므로 슬롯색으로 가린다.
-  drawSlotMasks(canvas, computeSlotRects(layout, geometry));
 
   await drawTextElements(canvas, geometry.width, geometry.height, textElements);
 

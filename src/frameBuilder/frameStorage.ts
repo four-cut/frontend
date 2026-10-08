@@ -167,10 +167,33 @@ export async function loadFrames(): Promise<StoredFrame[]> {
   }
   const root = await rootDir();
   const names = await MediaFile.listDirectory(root);
-  const frames = await Promise.all(names.map(name => readFrame(join(root, name))));
+  // 점으로 시작하는 건 지우는 중이던 폴더(.trash-…)다. 프레임이 아니므로
+  // 건너뛰고, 지난번에 다 못 지운 것이면 이참에 다시 지운다.
+  for (const name of names) {
+    if (name.startsWith('.trash-')) {
+      MediaFile.deleteDirectory(join(root, name)).catch(() => {});
+    }
+  }
+  const frames = await Promise.all(
+    names
+      .filter(name => !name.startsWith('.'))
+      .map(name => readFrame(join(root, name))),
+  );
   return frames
     .filter((frame): frame is StoredFrame => frame !== null)
     .sort((a, b) => a.frameId - b.frameId);
+}
+
+/** 프레임 폴더를 이미지까지 통째로 지운다. 이미 없으면 그대로 끝난다. */
+export async function deleteFrame(frameId: number): Promise<void> {
+  // 폴더 이름이 되는 값이라 정수만 받는다. '..' 같은 값이 섞이면 frame
+  // 폴더 밖을 가리키게 된다.
+  if (!Number.isSafeInteger(frameId) || frameId <= 0) {
+    throw new Error(`Invalid frameId: ${frameId}`);
+  }
+  await requireMediaFile().deleteDirectory(
+    join(await rootDir(), String(frameId)),
+  );
 }
 
 export async function loadFrame(frameId: number): Promise<StoredFrame | null> {

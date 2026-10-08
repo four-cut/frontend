@@ -28,6 +28,7 @@ const ja: Strings = {
 
   tab: {
     shoot: 'カシャ',
+    myFrames: 'マイフレーム',
     gallery: 'ギャラリー',
   },
 
@@ -50,6 +51,20 @@ const ja: Strings = {
     title: '設定',
     open: '設定を開く',
     language: '言語',
+    /** 設定・アカウント */
+    account: 'アカウント',
+    signOut: 'ログアウト',
+    deleteAccount: '退会する',
+    deleteTitle: '本当に退会しますか？',
+    deleteBody:
+      'アカウントとログイン情報が削除され、元に戻せません。端末に保存した4カット写真は削除されません。',
+    deleteConfirm: '退会する',
+    deleted: '退会が完了しました。',
+    deleteFailed: '退会できませんでした。しばらくしてからもう一度お試しください。',
+    /** 設定・情報 */
+    info: '情報',
+    privacy: 'プライバシーポリシー',
+    terms: '利用規約',
   },
 
   guide: {
@@ -146,6 +161,21 @@ const ja: Strings = {
     qrVideoNotReady: '動画はまだ準備ができていません',
     qrNoFrame: 'サーバーに登録されたフレームがありません',
     qrFailed: 'QRを作成できませんでした',
+    /** QR はサーバーが必要。つながらないときにできることを伝える。 */
+    qrOffline:
+      'QR を作るにはインターネット接続が必要です。今は保存か印刷をご利用ください。',
+  },
+
+  myFrames: {
+    title: 'マイフレーム',
+    zoomA11y: '拡大する',
+    deleteA11y: 'このフレームを削除',
+    empty: '作ったフレームはまだありません',
+    emptyHint: 'フレーム作成でオリジナルのフレームを作ってみましょう',
+    loadFailed: 'フレームを読み込めませんでした',
+    deleteTitle: 'このフレームを削除しますか？',
+    deleteBody: (name: string) => `「${name}」を削除すると元に戻せません。`,
+    deleteFailed: '削除できませんでした',
   },
 
   gallery: {
@@ -176,8 +206,10 @@ const ja: Strings = {
     title: 'フレームを作る',
     saving: '保存中...',
     saveFailed: '保存に失敗しました',
-    myPortrait: '自作の縦型',
-    myLandscape: '自作の横型',
+    nameTitle: 'フレーム名',
+    nameDescription: 'マイフレームでこの名前で見分けられます',
+    namePlaceholder: '例：クラスの4カット',
+    save: '保存',
 
     text: 'テキスト',
     sticker: 'ステッカー',
@@ -235,6 +267,9 @@ const ja: Strings = {
       `フレーム ${frameId} が見つかりません。`,
     requestFailed: (path: string, status: number, detail: string) =>
       `${path} のリクエストに失敗しました (${status} ${detail})`,
+    /** ユーザーに表示する共通エラー文言 (api/userMessage.ts) */
+    offline: 'インターネット接続が不安定です。接続を確認してからもう一度お試しください。',
+    server: 'サーバーに問題が発生しました。しばらくしてからもう一度お試しください。',
   },
 };
 

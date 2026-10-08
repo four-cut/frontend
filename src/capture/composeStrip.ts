@@ -18,7 +18,8 @@ import {getStrings} from '../i18n';
  * 낼 수 없다. 그래서 오프스크린 서피스에 직접 그린다.
  *
  * design을 주면 프레임 만들기에서 만든 배경·스티커·텍스트도 같이 그린다 —
- * 스티커는 사진 밑(배경), 텍스트는 사진 위(장식)에 놓는다.
+ * 배경은 사진 밑, 스티커와 텍스트는 사진 위에 놓는다. 스티커가 사진에
+ * 가려지는 것보다 사진 위에 붙어 있는 쪽이 자연스럽다고 정했다.
  *
  * @returns 합성 결과의 `file://` 경로. 네이티브 모듈이 없는 환경에서는
  *   미리보기용 data URI 를 돌려주며, 이 경우 앨범 저장과 인쇄는 할 수 없다.
@@ -46,15 +47,6 @@ export async function composeStrip(
       geometry.width,
       geometry.height,
       design.backgroundImageUri,
-    );
-  }
-
-  if (design?.stickerElements.length) {
-    await drawStickerElements(
-      canvas,
-      geometry.width,
-      geometry.height,
-      design.stickerElements,
     );
   }
 
@@ -87,6 +79,15 @@ export async function composeStrip(
       Skia.XYWHRect(crop.x, crop.y, crop.width, crop.height),
       Skia.XYWHRect(x, y, geometry.slotWidth, geometry.slotHeight),
       paint,
+    );
+  }
+
+  if (design?.stickerElements.length) {
+    await drawStickerElements(
+      canvas,
+      geometry.width,
+      geometry.height,
+      design.stickerElements,
     );
   }
 

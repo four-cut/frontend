@@ -77,22 +77,54 @@ export async function apiSend<T>(
   return parse<T>(response, path);
 }
 
+/** 업로드를 언제까지 기다릴지. 호출하는 쪽이 파일 크기에 맞춰 바꾼다. */
+export const UPLOAD_TIMEOUT_MS = 60_000;
+
+export type UploadOptions = {
+  /** 이만큼 지나도 안 끝나면 끊는다. */
+  timeoutMs?: number;
+  /** 사용자가 취소하면 끊는다. */
+  signal?: AbortSignal;
+};
+
 /**
  * 파일 업로드.
  *
  * Content-Type 을 직접 넣으면 안 된다. multipart 경계 문자열을
  * RN 이 만들어 붙여야 해서, 지정하는 순간 서버가 본문을 못 읽는다.
  *
- * 사진·영상은 8초 안에 못 올릴 수 있어 타임아웃을 걸지 않는다.
+ * 사진·영상은 8초 안에 못 올릴 수 있어 일반 요청보다 길게 기다린다. 그래도
+ * 끝은 있어야 한다 — 전에는 제한이 없어서 부스 와이파이가 중간에 끊기면
+ * "QR 생성 중" 에서 영원히 멈췄다.
  */
 export async function apiUpload<T>(
   path: string,
   file: {uri: string; name: string; type: string},
+  options: UploadOptions = {},
 ): Promise<T> {
   const form = new FormData();
   // RN 의 FormData 는 {uri, name, type} 형태를 파일로 취급한다.
   form.append('file', file as unknown as Blob);
 
-  const response = await authFetch(path, {method: 'POST', body: form});
-  return parse<T>(response, path);
+  // 시간 초과와 사용자 취소를 신호 하나로 합친다. 둘 다 AbortError 로 끝나서,
+  // 어느 쪽이었는지는 부른 쪽이 자기 신호를 보고 가린다.
+  const controller = new AbortController();
+  const abort = () => controller.abort();
+  const timeout = setTimeout(abort, options.timeoutMs ?? UPLOAD_TIMEOUT_MS);
+  const {signal} = options;
+  if (signal?.aborted) {
+    abort();
+  }
+  signal?.addEventListener('abort', abort);
+  try {
+    const response = await authFetch(path, {
+      method: 'POST',
+      body: form,
+      signal: controller.signal,
+    });
+    return await parse<T>(response, path);
+  } finally {
+    clearTimeout(timeout);
+    signal?.removeEventListener('abort', abort);
+  }
 }

@@ -131,6 +131,7 @@ const ja: Strings = {
       'フレームを読み込めませんでした。もう一度お試しください。',
     applyFrameA11y: (name: string) => `${name}フレームを適用`,
     composeFailed: '合成に失敗しました',
+    composeRetry: 'もう一度試す',
     zoomA11y: '完成した写真を拡大',
 
     save: {
@@ -141,8 +142,16 @@ const ja: Strings = {
     },
     saveFailed: '保存に失敗しました',
     savedTo: (album: string) => `写真アプリ > ${album} アルバムに保存しました`,
-    videoNotSaved: '（動画は保存されませんでした）',
     videoPending: '動画はまだ準備中です',
+    resaveHint: 'フレームを変えました。この写真も残すにはもう一度保存してください',
+    videoLater: '動画は準備ができたら別に保存できます',
+    saveVideo: '動画も保存する',
+    savingVideo: '動画を保存中',
+    videoSaved: '動画も一緒に保存しました',
+    videoSaveFailed: '動画を保存できませんでした',
+    shareTitle: '何を共有しますか？',
+    sharePhoto: '写真',
+    shareVideo: '動画',
     openSettings: '設定で許可する',
 
     print: '印刷',
@@ -155,6 +164,11 @@ const ja: Strings = {
     qrHint: 'スマホのカメラで読み取るとダウンロード画面が開きます',
     qrVideoOnly: '写真をアップロードできず、動画のみ受け取れます',
     qrPhotoOnly: '動画は準備中のため、今は写真のみ受け取れます',
+    qrExpiry: (days: number) =>
+      `${days}日間受け取れます。その後はリンクが無効になります`,
+    qrImageFailed: 'QRを読み込めませんでした',
+    qrImageRetry: '再読み込み',
+    qrCancel: 'QR作成をキャンセル',
     qrVideoNotReady: '動画はまだ準備ができていません',
     qrNoFrame: 'サーバーに登録されたフレームがありません',
     qrFailed: 'QRを作成できませんでした',

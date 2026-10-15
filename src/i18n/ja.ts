@@ -250,6 +250,26 @@ const ja: Strings = {
 
   stickers: {
     logo: '撮ってく？ ロゴ',
+    cat: 'ねこ',
+    bear: 'くま',
+    duo: 'くまとねこ',
+    heart: 'ハート',
+    brokenHeart: '割れたハート',
+    star: '星',
+    sparkle: 'きらきら',
+    flower: '花',
+    cherry: 'さくらんぼ',
+    note: '音符',
+    fire: '炎',
+    paw: '肉球',
+    crown: '王冠',
+    skull: 'どくろ',
+    bow: 'リボン',
+    lightning: 'いなずま',
+    speech: 'ふきだし',
+    cool: 'COOL の文字',
+    love: 'LOVE の文字',
+    mood: 'MOOD の文字',
   },
 
   frameNames: {

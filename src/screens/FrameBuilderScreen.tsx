@@ -9,6 +9,7 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  Text as RNText,
   useWindowDimensions,
   View,
   type GestureResponderEvent,
@@ -34,6 +35,11 @@ import {
 import FrameNameDialog from '../frameBuilder/FrameNameDialog';
 import {PALETTE} from '../frameBuilder/palette';
 import {renderFrameDesign} from '../frameBuilder/renderFrameDesign';
+import {
+  normalizeWeight,
+  splitTextRuns,
+  TEXT_WEIGHTS,
+} from '../frameBuilder/textFonts';
 import type {StickerElement, TextElement} from '../frameBuilder/types';
 import {
   computeSlotRects,
@@ -56,8 +62,9 @@ const COLOR_SHEET_HEIGHT_RATIO = 1 / 3;
 
 /** 텍스트·스티커를 캔버스 밖으로 끌 때, 네 방향 모두 이만큼(px)까지만 나가게 한다. */
 const DRAG_OVERFLOW_PX = 24;
+/** 텍스트 상자의 테두리(1) + 여백(2). styles.textDraggable 과 맞춘다. */
+const TEXT_BOX_INSET = 3;
 
-const WEIGHT_OPTIONS: TextElement['fontWeight'][] = [400, 500, 600, 700];
 
 /** 24×24 기준 선 아이콘 경로. 아이콘 라이브러리 없이 Skia로 그린다. */
 const ICON_PATHS = {
@@ -691,6 +698,39 @@ function SlotPlaceholders({
   );
 }
 
+/**
+ * 프레임 텍스트를 저장 결과(drawTextElements)와 같은 서체로 그린다.
+ *
+ * 글자마다 서체를 textFonts 가 정한 대로 나눠 그린다. RN 에 맡기면 없는 글자를
+ * OS 서체로 바꿔 그려서, 저장 결과와 글자 모양·폭이 달라진다.
+ *
+ * AppText 의 Text 가 아니라 RN Text 를 쓴다. AppText 는 앱 언어가 일본어면
+ * fontFamily 를 일본어 서체로 바꿔 끼우는데, 그러면 저장 결과와 서체가 어긋난다.
+ * includeFontPadding 을 끄는 것도 같은 이유다 — 안드로이드는 기본으로 줄 위아래에
+ * 여백을 더해서 글자가 아래로 밀린다. Skia 의 Paragraph 는 그 여백이 없다.
+ */
+function FrameText({
+  element,
+  fontSize: size,
+}: {
+  element: TextElement;
+  fontSize: number;
+}) {
+  return (
+    // 시스템 글꼴 크기(설정 > 글자 크기)를 따라 커지면 저장 결과보다 글자가
+    // 커진다. 캔버스 위 글자는 인쇄물의 일부라 기기 설정과 무관해야 한다.
+    <RNText
+      allowFontScaling={false}
+      style={[styles.frameText, {fontSize: size, color: element.color}]}>
+      {splitTextRuns(element.content, element.fontWeight).map((run, index) => (
+        <RNText key={index} style={{fontFamily: run.fontFamily}}>
+          {run.text}
+        </RNText>
+      ))}
+    </RNText>
+  );
+}
+
 type DraggableTextProps = {
   element: TextElement;
   canvasWidth: number;
@@ -768,21 +808,16 @@ function DraggableText({
         };
       }}
       style={[
-        styles.draggable,
+        styles.textDraggable,
         {
-          left: element.xRatio * canvasWidth,
-          top: element.yRatio * canvasHeight,
+          // 테두리·여백만큼 바깥으로 빼서, 선택 여부와 상관없이 글자의 왼쪽
+          // 위가 (xRatio, yRatio)에 오게 한다. 저장할 때 그 점에 그린다.
+          left: element.xRatio * canvasWidth - TEXT_BOX_INSET,
+          top: element.yRatio * canvasHeight - TEXT_BOX_INSET,
         },
-        selected && styles.draggableSelected,
+        selected && styles.textDraggableSelected,
       ]}>
-      <Text
-        style={{
-          fontSize: previewFontSize,
-          fontWeight: String(element.fontWeight) as never,
-          color: element.color,
-        }}>
-        {element.content}
-      </Text>
+      <FrameText element={element} fontSize={previewFontSize} />
     </View>
   );
 }
@@ -925,27 +960,31 @@ function TextStyleToolbar({
         <View style={styles.controlGroup}>
           <Text style={styles.controlLabel}>{t.frame.weightLabel}</Text>
           <View style={styles.weightChips}>
-            {WEIGHT_OPTIONS.map(weight => (
-              <Pressable
-                key={weight}
-                accessibilityRole="button"
-                accessibilityState={{selected: weight === element.fontWeight}}
-                accessibilityLabel={t.frame.weight[weight]}
-                onPress={() => onChangeWeight(weight)}
-                style={[
-                  styles.weightChip,
-                  weight === element.fontWeight && styles.weightChipActive,
-                ]}>
-                <Text
-                  style={[
-                    styles.weightChipText,
-                    {fontWeight: String(weight) as never},
-                    weight === element.fontWeight && styles.weightChipTextActive,
-                  ]}>
-                  {t.frame.sampleGlyph}
-                </Text>
-              </Pressable>
-            ))}
+            {TEXT_WEIGHTS.map(weight => {
+              const active = weight === normalizeWeight(element.fontWeight);
+              return (
+                <Pressable
+                  key={weight}
+                  accessibilityRole="button"
+                  accessibilityState={{selected: active}}
+                  accessibilityLabel={t.frame.weight[weight]}
+                  onPress={() => onChangeWeight(weight)}
+                  style={[styles.weightChip, active && styles.weightChipActive]}>
+                  {/* 실제로 저장될 서체로 보여 준다 (FrameText 와 같은 이유로 RN Text) */}
+                  <RNText
+                    style={[
+                      styles.weightChipText,
+                      {
+                        fontFamily: splitTextRuns(t.frame.sampleGlyph, weight)[0]
+                          ?.fontFamily,
+                      },
+                      active && styles.weightChipTextActive,
+                    ]}>
+                    {t.frame.sampleGlyph}
+                  </RNText>
+                </Pressable>
+              );
+            })}
           </View>
         </View>
       </View>
@@ -1589,6 +1628,21 @@ const styles = StyleSheet.create({
   },
   draggable: {
     position: 'absolute',
+  },
+  textDraggable: {
+    position: 'absolute',
+    // 선택하면 보이는 테두리를 처음부터 투명하게 깔아 둔다. 선택할 때만
+    // 테두리·여백이 생기면 그만큼 글자가 움직인다. (TEXT_BOX_INSET)
+    borderWidth: 1,
+    borderColor: 'transparent',
+    borderStyle: 'dashed',
+    padding: 2,
+  },
+  textDraggableSelected: {
+    borderColor: colors.black,
+  },
+  frameText: {
+    includeFontPadding: false,
   },
   draggableSelected: {
     borderWidth: 1,

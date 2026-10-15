@@ -1455,12 +1455,22 @@ function StickerSourceSheet({
               <Text style={styles.defaultStickerLabel}>
                 {t.frame.defaultStickers}
               </Text>
-              <View style={styles.defaultStickerGrid}>
+              {/* 스티커가 47개라 한 화면에 안 들어간다. 시트 자체는 maxHeight
+                  로 묶여 있으므로, 넘치는 만큼은 여기서 스크롤한다. 위의
+                  "갤러리에서 선택" 줄은 고정으로 남겨 둔다. */}
+              <ScrollView
+                style={styles.defaultStickerScroll}
+                contentContainerStyle={styles.defaultStickerGrid}>
                 {DEFAULT_STICKERS.map(sticker => (
                   <Pressable
                     key={sticker.id}
                     accessibilityRole="button"
-                    accessibilityLabel={t.stickers[sticker.labelKey]}
+                    accessibilityLabel={
+                      // 같은 종류가 여럿이면 번호를 붙여 서로 구분되게 읽어 준다.
+                      sticker.labelIndex
+                        ? `${t.stickers[sticker.labelKey]} ${sticker.labelIndex}`
+                        : t.stickers[sticker.labelKey]
+                    }
                     onPress={() => onPickDefault(sticker)}
                     style={styles.defaultStickerItem}>
                     <Image
@@ -1470,7 +1480,7 @@ function StickerSourceSheet({
                     />
                   </Pressable>
                 ))}
-              </View>
+              </ScrollView>
             </>
           ) : null}
         </Pressable>
@@ -1845,10 +1855,16 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 10,
   },
+  defaultStickerScroll: {
+    // 시트가 maxHeight 로 묶여 있어 flex 로 두면 내용만큼 늘어나 버린다.
+    // 스티커 다섯 줄쯤 보이는 높이로 잘라 두고 나머지는 스크롤한다.
+    maxHeight: 320,
+  },
   defaultStickerGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 12,
+    paddingBottom: 4,
   },
   defaultStickerItem: {
     width: 64,

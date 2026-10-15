@@ -2,52 +2,31 @@ import {Image} from 'react-native';
 import {Skia, type SkCanvas, type SkTypeface} from '@shopify/react-native-skia';
 
 import {coverCrop, type SlotRect} from '../capture/stripLayout';
-import {getLocale} from '../i18n';
 import {colors} from '../theme';
+import {
+  splitTextRuns,
+  TEXT_FONT_FILES,
+  type TextFontFamily,
+} from './textFonts';
 import type {StickerElement, TextElement} from './types';
 
 // Skia의 FontMgr.System()이 노출하는 시스템 폰트 목록(33개)엔 한글이 포함된
-// 패밀리가 하나도 없어서(sans-serif 등은 전부 라틴 전용) drawText가 두부(tofu)
-// 박스로만 그려진다. 앱에 이미 번들된 폰트를 직접 로드해서 쓴다.
-//
-// 그리고 Skia의 drawText는 글리프가 없어도 다른 폰트로 대체해 주지 않는다.
-// RN의 Text는 OS가 글자마다 대체해 주지만 여기는 아니라서, Jua 하나로 그리면
-// 일본어를 입력한 프레임이 통째로 두부로 저장된다. 글자를 보고 맞는 폰트를
-// 고른다.
-const FONT_ASSETS: Record<TextScript, number> = {
-  ko: require('../../assets/fonts/Jua-Regular.ttf'),
-  ja: require('../../assets/fonts/ShinRetroMaruGothic-Bold.ttf'),
-};
+// 패밀리가 하나도 없어서(sans-serif 등은 전부 라틴 전용) 텍스트가 두부(tofu)
+// 박스로만 그려진다. 앱에 번들된 서체 파일을 직접 읽어 쓴다. 어느 글자를 어느
+// 서체로 그릴지는 편집 화면과 똑같이 textFonts 가 정한다.
+const typefaceCache = new Map<TextFontFamily, Promise<SkTypeface | null>>();
 
-type TextScript = 'ko' | 'ja';
-
-const HANGUL = /[\uac00-\ud7a3\u1100-\u11ff\u3130-\u318f]/;
-// 가나와 CJK 한자. 한자는 한국어 한자와 겹치므로 한글을 먼저 본다.
-const JAPANESE = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uff66-\uff9f]/;
-
-/** 이 문자열을 어느 폰트로 그릴지. 라틴·숫자뿐이면 앱 언어를 따른다. */
-function scriptOf(text: string): TextScript {
-  if (HANGUL.test(text)) {
-    return 'ko';
-  }
-  if (JAPANESE.test(text)) {
-    return 'ja';
-  }
-  return getLocale();
-}
-
-const typefaceCache: Partial<Record<TextScript, Promise<SkTypeface | null>>> =
-  {};
-
-function loadTypeface(script: TextScript): Promise<SkTypeface | null> {
-  let cached = typefaceCache[script];
+function loadTypeface(family: TextFontFamily): Promise<SkTypeface | null> {
+  let cached = typefaceCache.get(family);
   if (!cached) {
     cached = (async () => {
-      const uri = Image.resolveAssetSource(FONT_ASSETS[script])!.uri;
+      const uri = Image.resolveAssetSource(TEXT_FONT_FILES[family])!.uri;
       const data = await Skia.Data.fromURI(uri);
       return Skia.Typeface.MakeFreeTypeFaceFromData(data);
     })();
-    typefaceCache[script] = cached;
+    // 실패를 붙잡고 있으면 다음 저장 때도 계속 서체 없이 그려진다.
+    cached.catch(() => typefaceCache.delete(family));
+    typefaceCache.set(family, cached);
   }
   return cached;
 }
@@ -131,40 +110,56 @@ export async function drawStickerElements(
   }
 }
 
+/**
+ * 텍스트를 편집 화면과 같은 서체·같은 자리에 그린다.
+ *
+ * (xRatio, yRatio)는 편집 화면에서 글자 상자의 왼쪽 위다. drawText 는 y 를
+ * 글자의 기준선(밑줄 자리)으로 받아서, 저장하면 글자가 한 줄 높이만큼 위로
+ * 올라가 있었다. Paragraph 는 줄의 맨 위를 기준으로 그리고 RN Text 처럼
+ * 글자 사이 간격(커닝)도 적용해서, 편집 화면과 같은 자리·같은 폭으로 나온다.
+ */
 export async function drawTextElements(
   canvas: SkCanvas,
   canvasWidth: number,
   canvasHeight: number,
   textElements: TextElement[],
 ): Promise<void> {
-  // 쓰이는 폰트만 미리 받아 둔다 — 한 글자도 안 쓰는 폰트를 3.8MB씩 읽을
-  // 이유가 없다.
-  const scripts = [...new Set(textElements.map(e => scriptOf(e.content)))];
-  const typefaces = new Map<TextScript, SkTypeface | null>(
-    await Promise.all(
-      scripts.map(
-        async script =>
-          [script, await loadTypeface(script)] as [
-            TextScript,
-            SkTypeface | null,
-          ],
-      ),
-    ),
+  const runsByElement = textElements.map(element =>
+    splitTextRuns(element.content, element.fontWeight),
   );
 
-  for (const element of textElements) {
-    const paint = Skia.Paint();
-    paint.setColor(Skia.Color(element.color));
-    paint.setAntiAlias(true);
+  // 쓰이는 서체만 읽는다 — 한 글자도 안 쓰는 서체를 3MB씩 읽을 이유가 없다.
+  const families = [
+    ...new Set(runsByElement.flat().map(run => run.fontFamily)),
+  ];
+  const provider = Skia.TypefaceFontProvider.Make();
+  await Promise.all(
+    families.map(async family => {
+      const typeface = await loadTypeface(family);
+      if (typeface) {
+        provider.registerFont(typeface, family);
+      }
+    }),
+  );
 
-    const typeface = typefaces.get(scriptOf(element.content));
-    const font = Skia.Font(typeface ?? undefined, element.fontSize);
-    canvas.drawText(
-      element.content,
+  textElements.forEach((element, index) => {
+    const builder = Skia.ParagraphBuilder.Make({}, provider);
+    for (const run of runsByElement[index]) {
+      builder.pushStyle({
+        color: Skia.Color(element.color),
+        fontSize: element.fontSize,
+        fontFamilies: [run.fontFamily],
+      });
+      builder.addText(run.text);
+      builder.pop();
+    }
+    const paragraph = builder.build();
+    // 한 줄짜리라 줄바꿈이 일어나지 않게 폭을 넉넉히 준다.
+    paragraph.layout(canvasWidth * 10);
+    paragraph.paint(
+      canvas,
       element.xRatio * canvasWidth,
       element.yRatio * canvasHeight,
-      paint,
-      font,
     );
-  }
+  });
 }

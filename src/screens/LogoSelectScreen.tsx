@@ -27,7 +27,7 @@ import {
   uploadVideo,
 } from '../api/photoSession';
 import {toUserMessage} from '../api/userMessage';
-import {composeStrip} from '../capture/composeStrip';
+import {composeStrip, STRIP_MIME} from '../capture/composeStrip';
 import {ALBUM_NAME, saveToAlbum} from '../capture/saveToAlbum';
 import {useT} from '../i18n';
 import type {FrameDesign} from '../frameBuilder/types';
@@ -288,7 +288,7 @@ export default function LogoSelectScreen() {
       return;
     }
     // 시트를 띄우는 데까지가 우리 몫이라 실패해도 조용히 넘어간다.
-    NativeMediaFile?.shareFile(strip, 'image/png').catch(() => {});
+    NativeMediaFile?.shareFile(strip, STRIP_MIME).catch(() => {});
   };
 
   /**

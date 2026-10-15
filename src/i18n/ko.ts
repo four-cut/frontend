@@ -267,6 +267,28 @@ const ko = {
    */
   stickers: {
     logo: '찍고갈래 로고',
+    // 스티커 시트에서 잘라 낸 것들. 같은 종류가 여럿이면 화면에서 번호를
+    // 붙여 읽어 준다 ("고양이 3").
+    cat: '고양이',
+    bear: '곰',
+    duo: '곰과 고양이',
+    heart: '하트',
+    brokenHeart: '깨진 하트',
+    star: '별',
+    sparkle: '반짝임',
+    flower: '꽃',
+    cherry: '체리',
+    note: '음표',
+    fire: '불',
+    paw: '발바닥',
+    crown: '왕관',
+    skull: '해골',
+    bow: '리본',
+    lightning: '번개',
+    speech: '말풍선',
+    cool: 'COOL 글자',
+    love: 'LOVE 글자',
+    mood: 'MOOD 글자',
   },
 
   /** 서버에서 내려오는 기본 프레임 이름 — 응답에 이름이 없을 때만 쓴다. */

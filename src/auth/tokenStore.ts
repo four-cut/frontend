@@ -15,6 +15,11 @@ const SERVICE = 'com.fourcut.app.auth';
 export async function saveSession(session: Session): Promise<void> {
   await Keychain.setGenericPassword('session', JSON.stringify(session), {
     service: SERVICE,
+    // 기본값(AFTER_FIRST_UNLOCK)은 ThisDeviceOnly 가 아니라서 암호화 백업에
+    // 실려 다른 기기로 복원될 수 있다. 로그인 상태가 기기를 넘어가면 안 되므로
+    // 이 기기에만 남는 쪽으로 고정한다. 읽을 수 있는 시점(첫 잠금 해제 이후)은
+    // 그대로라 동작은 달라지지 않는다.
+    accessible: Keychain.ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
   });
 }
 

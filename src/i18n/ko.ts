@@ -134,6 +134,7 @@ const ko = {
     /** "베이직 세로형 프레임 적용" */
     applyFrameA11y: (name: string) => `${name} 프레임 적용`,
     composeFailed: '합성에 실패했습니다',
+    composeRetry: '다시 시도',
     zoomA11y: '결과물 크게 보기',
 
     // 인쇄·저장·QR 을 한 줄에 나란히 두므로 버튼 문구는 짧게 쓴다.
@@ -146,8 +147,18 @@ const ko = {
     saveFailed: '저장에 실패했습니다',
     /** "사진 앱 > 찍고갈래 앨범에 저장했어요" — 앨범 이름은 번역하지 않는다. */
     savedTo: (album: string) => `사진 앱 > ${album} 앨범에 저장했어요`,
-    videoNotSaved: ' (영상은 저장되지 않았습니다)',
     videoPending: '영상은 아직 준비 중입니다',
+    /** 사진을 저장한 뒤 프레임을 바꾼 경우. 지금 보이는 결과물은 아직 앨범에 없다. */
+    resaveHint: '프레임을 바꿨어요. 이 사진도 남기려면 다시 저장해주세요',
+    /** 사진만 먼저 저장했고 영상은 아직 변환 중일 때 */
+    videoLater: '영상은 준비되면 따로 저장할 수 있어요',
+    saveVideo: '영상도 저장하기',
+    savingVideo: '영상 저장 중',
+    videoSaved: '영상도 함께 저장했어요',
+    videoSaveFailed: '영상을 저장하지 못했습니다',
+    shareTitle: '무엇을 공유할까요?',
+    sharePhoto: '사진',
+    shareVideo: '영상',
     openSettings: '설정에서 권한 허용',
 
     print: '인쇄',
@@ -161,6 +172,12 @@ const ko = {
     qrHint: '휴대폰 카메라로 찍으면 다운로드 화면이 열립니다',
     qrVideoOnly: '사진을 올리지 못해 영상만 받을 수 있어요',
     qrPhotoOnly: '영상은 준비 중이라 지금은 사진만 받을 수 있어요',
+    /** 서버 다운로드 링크 수명(DOWNLOAD_LINK_EXPIRY_DAYS) */
+    qrExpiry: (days: number) =>
+      `${days}일 동안 받을 수 있어요. 그 뒤에는 링크가 만료돼요`,
+    qrImageFailed: 'QR을 불러오지 못했어요',
+    qrImageRetry: '다시 불러오기',
+    qrCancel: 'QR 만들기 취소',
     qrVideoNotReady: '영상이 아직 준비되지 않았습니다',
     qrNoFrame: '서버에 등록된 프레임이 없습니다',
     qrFailed: 'QR 을 만들지 못했습니다',

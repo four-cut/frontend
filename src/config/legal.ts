@@ -8,6 +8,10 @@
  * 아직 문서가 없어서 비워 둔다. 값이 비어 있으면 설정 화면에 항목을
  * 띄우지 않는다 — 눌러도 아무 데도 안 가는 버튼을 내보내는 것보다 낫다.
  * 출시 전에 반드시 채워야 한다.
+ *
+ * 초안은 docs/privacy-policy.md, docs/terms-of-service.md 에 있다. 〔 〕로
+ * 비워 둔 값(운영 주체·연락처·보관 기간·서버 위치 등)을 채우고 법률 검토를
+ * 받은 뒤 웹에 올리고, 그 주소를 여기에 적으면 설정 화면에 항목이 생긴다.
  */
 export const PRIVACY_POLICY_URL: string | null = null;
 export const TERMS_OF_SERVICE_URL: string | null = null;

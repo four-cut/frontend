@@ -49,7 +49,18 @@ const FRAME_CARD_WIDTH = 72;
 const FRAME_CARD_BORDER = 2;
 const FRAME_CARD_INNER_WIDTH = FRAME_CARD_WIDTH - FRAME_CARD_BORDER * 2;
 
-const QR_SIZE = 220;
+/**
+ * QR 한 변. 폰은 220 그대로, 큰 화면은 짧은 변의 40% 까지 키운다.
+ *
+ * 부스에서는 손님이 자기 폰을 들고 태블릿 화면을 조금 떨어져서 찍는다.
+ * 220 고정이면 태블릿에서 화면에 비해 작아 가까이 대야 했다.
+ */
+const QR_MIN_SIZE = 220;
+const QR_MAX_SIZE = 400;
+function qrSizeFor(width: number, height: number): number {
+  const fit = Math.round(Math.min(width, height) * 0.4);
+  return Math.min(QR_MAX_SIZE, Math.max(QR_MIN_SIZE, fit));
+}
 
 /**
  * SR-07 로고 선택 · 출력.
@@ -60,7 +71,7 @@ const QR_SIZE = 220;
 export default function LogoSelectScreen() {
   const insets = useSafeAreaInsets();
   const t = useT();
-  const {width} = useWindowDimensions();
+  const {width, height} = useWindowDimensions();
   const [previewAreaHeight, setPreviewAreaHeight] = useState(0);
   const {
     layout,
@@ -502,7 +513,11 @@ export default function LogoSelectScreen() {
           <View style={styles.qrCard}>
             <Text style={styles.qrTitle}>{t.result.qrTitle}</Text>
             {qr.url ? (
-              <QrImage key={qr.url} uri={qr.url} size={QR_SIZE} />
+              <QrImage
+                key={qr.url}
+                uri={qr.url}
+                size={qrSizeFor(width, height)}
+              />
             ) : null}
             <Text style={styles.qrHint}>{t.result.qrHint}</Text>
             {!qr.hasPhoto ? (

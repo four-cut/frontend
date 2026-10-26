@@ -20,6 +20,11 @@ jest.mock('react-native-keychain', () => ({
     keychainStore.value = null;
     return true;
   }),
+  // tokenStore 가 저장할 때 접근 수준을 지정한다. 목에 없으면 그 자리에서
+  // undefined 를 읽다가 터진다.
+  ACCESSIBLE: {
+    AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY: 'AccessibleAfterFirstUnlockThisDeviceOnly',
+  },
 }));
 
 jest.mock('../../src/auth/authApi', () => ({
@@ -30,6 +35,8 @@ jest.mock('../../src/auth/authApi', () => ({
   deleteMe: jest.fn(),
   AuthError: class extends Error {},
 }));
+
+import * as Keychain from 'react-native-keychain';
 
 import * as authApi from '../../src/auth/authApi';
 import * as session from '../../src/auth/session';
@@ -151,4 +158,26 @@ test('앱을 다시 켜면 저장소에서 세션이 복원된다', async () => 
 
   expect(restored?.accessToken).toBe('access-1');
   expect(restored?.member.nickname).toBe('테스터');
+});
+
+/**
+ * 세션은 이 기기에만 남아야 한다.
+ *
+ * 기본값(AFTER_FIRST_UNLOCK)은 ThisDeviceOnly 가 아니라서 암호화 백업에 실려
+ * 다른 기기로 복원된다. 개인정보처리방침에 "기기 백업에 포함되지 않는다" 고
+ * 적어 두었으므로, 이 옵션이 빠지면 문서가 사실과 달라진다.
+ */
+test('세션을 저장할 때 이 기기 전용으로 잠근다', async () => {
+  const save = Keychain.setGenericPassword as jest.MockedFunction<
+    typeof Keychain.setGenericPassword
+  >;
+  save.mockClear();
+
+  await session.adopt(loginResponse);
+
+  expect(save).toHaveBeenCalled();
+  const options = save.mock.calls[0][2];
+  expect(options?.accessible).toBe(
+    Keychain.ACCESSIBLE.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY,
+  );
 });

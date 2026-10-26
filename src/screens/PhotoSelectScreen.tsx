@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {
   Image,
   Pressable,
@@ -16,6 +16,7 @@ import PrimaryButton from '../components/PrimaryButton';
 import StripPreview from '../components/StripPreview';
 import {useT} from '../i18n';
 import type {CaptureNavigation} from '../navigation/types';
+import {STRIP_ASPECT} from '../capture/stripLayout';
 import {useGuardLeaveFlow} from '../navigation/useGuardLeaveFlow';
 import {useCaptureSession} from '../state/CaptureSessionContext';
 import {colors, fonts, fontSize} from '../theme';
@@ -35,6 +36,7 @@ export default function PhotoSelectScreen() {
   // 뒤로가기·스와이프·홈 버튼 모두 확인을 거쳐 홈으로 나간다.
   // 훅이라 아래 조기 반환보다 앞에 둔다.
   const {leave: goHome} = useGuardLeaveFlow(true, t.leaveFlow.bodyShots);
+  const [previewAreaHeight, setPreviewAreaHeight] = useState(0);
 
   if (!layout) {
     return null;
@@ -47,6 +49,14 @@ export default function PhotoSelectScreen() {
   const thumbWidth =
     layout === 'portrait' ? THUMB_HEIGHT * 0.66 : THUMB_HEIGHT * 1.6;
 
+  // 폭으로만 잡으면 태블릿처럼 넓은 화면에서 시트가 남은 높이를 넘쳐
+  // 제목과 겹친다. 실측한 영역 높이 안에 들어오게 줄인다 (결과 화면과 같다).
+  let sheetWidth = width * SHEET_WIDTH_RATIO;
+  const maxSheetHeight = previewAreaHeight * 0.96;
+  if (maxSheetHeight > 0 && sheetWidth * STRIP_ASPECT > maxSheetHeight) {
+    sheetWidth = maxSheetHeight / STRIP_ASPECT;
+  }
+
   return (
     <View style={[styles.container, {paddingTop: insets.top}]}>
       <View style={styles.header}>
@@ -55,11 +65,15 @@ export default function PhotoSelectScreen() {
 
       <Text style={styles.title}>{t.photoSelect.title}</Text>
 
-      <View style={styles.previewArea}>
+      <View
+        style={styles.previewArea}
+        onLayout={event =>
+          setPreviewAreaHeight(event.nativeEvent.layout.height)
+        }>
         <StripPreview
           layout={layout}
           photos={chosen}
-          width={width * SHEET_WIDTH_RATIO}
+          width={sheetWidth}
           showSlotNumbers
         />
       </View>

@@ -37,7 +37,7 @@ import {useQrDelivery} from '../result/useQrDelivery';
 import {useStripComposer} from '../result/useStripComposer';
 import {useStripSave} from '../result/useStripSave';
 import {useCaptureSession} from '../state/CaptureSessionContext';
-import {colors} from '../theme';
+import {colors, isTabletSize} from '../theme';
 // UI-V2: 결과 화면에서만 쓰는 타이포그래피. 공용 theme 은 그대로 둔다.
 import {fontsV2, lineV2, sizeV2} from '../theme/typographyV2';
 
@@ -48,6 +48,11 @@ const SHEET_WIDTH_RATIO = 0.52;
 const FRAME_CARD_WIDTH = 72;
 const FRAME_CARD_BORDER = 2;
 const FRAME_CARD_INNER_WIDTH = FRAME_CARD_WIDTH - FRAME_CARD_BORDER * 2;
+/**
+ * 태블릿에서 카드를 키우는 비율. 글자가 커지는데(AppText) 카드가 그대로면
+ * "베이직 세로형" 이 "베이직 세로 / 형" 으로 끊긴다.
+ */
+const TABLET_FRAME_CARD_SCALE = 1.4;
 
 /**
  * QR 한 변. 폰은 220 그대로, 큰 화면은 짧은 변의 40% 까지 키운다.
@@ -72,6 +77,10 @@ export default function LogoSelectScreen() {
   const insets = useSafeAreaInsets();
   const t = useT();
   const {width, height} = useWindowDimensions();
+  const cardWidth =
+    FRAME_CARD_WIDTH *
+    (isTabletSize(width, height) ? TABLET_FRAME_CARD_SCALE : 1);
+  const cardInnerWidth = cardWidth - FRAME_CARD_BORDER * 2;
   const [previewAreaHeight, setPreviewAreaHeight] = useState(0);
   const {
     layout,
@@ -332,10 +341,15 @@ export default function LogoSelectScreen() {
                   accessibilityState={{selected}}
                   accessibilityLabel={t.result.applyFrameA11y(item.name)}
                   onPress={() => chooseFrame(item)}
-                  style={styles.frameCard}>
+                  style={[styles.frameCard, {width: cardWidth}]}>
                   <View
                     style={[
                       styles.frameThumb,
+                      {
+                        width: cardWidth,
+                        height:
+                          cardInnerWidth * STRIP_ASPECT + FRAME_CARD_BORDER * 2,
+                      },
                       selected && styles.frameThumbSelected,
                     ]}>
                     {item.previewImageUrl ? (
@@ -353,13 +367,14 @@ export default function LogoSelectScreen() {
                             : 'landscape'
                         }
                         photos={[]}
-                        width={FRAME_CARD_INNER_WIDTH}
+                        width={cardInnerWidth}
                       />
                     )}
                   </View>
                   <Text
                     style={[
                       styles.frameThumbLabel,
+                      {width: cardWidth},
                       selected && styles.frameThumbLabelSelected,
                     ]}
                     // 카드가 좁아 한 줄이면 이름(최대 8자)이 잘린다.

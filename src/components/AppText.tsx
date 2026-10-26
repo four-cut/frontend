@@ -6,10 +6,11 @@ import {
   type TextInputProps,
   type TextProps,
   type TextStyle,
+  useWindowDimensions,
 } from 'react-native';
 
 import {useLocale} from '../i18n';
-import {localeFontFamily} from '../theme';
+import {isTabletSize, localeFontFamily, TABLET_TEXT_SCALE} from '../theme';
 
 /**
  * 언어에 맞는 서체로 그려 주는 Text.
@@ -25,18 +26,44 @@ import {localeFontFamily} from '../theme';
  * 거기에 fontFamily 를 끼얹으면 (typography.ts 에 적어 둔 대로) 안드로이드가
  * 굵기를 못 찾고 조용히 기본 고딕으로 되돌아간다.
  */
-export function Text({style, ...rest}: TextProps) {
+export function Text({
+  style,
+  fixedSize,
+  ...rest
+}: TextProps & {
+  /**
+   * 태블릿에서도 글자를 키우지 않는다. 프레임 캔버스의 텍스트처럼 둘레
+   * 크기에 맞춰 계산한 글자에 쓴다 — 키우면 결과물과 크기가 달라진다.
+   */
+  fixedSize?: boolean;
+}) {
   const locale = useLocale();
-  if (locale === 'ko') {
+  const {width, height} = useWindowDimensions();
+  // 태블릿은 글자를 조금 키운다(theme/screen.ts). 화면마다 따로 잡지 않고
+  // 여기서 한 번에 키워야 화면 안의 글자끼리 비율이 그대로 남는다.
+  const scale =
+    !fixedSize && isTabletSize(width, height) ? TABLET_TEXT_SCALE : 1;
+  if (locale === 'ko' && scale === 1) {
     return <RNText style={style} {...rest} />;
   }
   const flat = StyleSheet.flatten(style) as TextStyle | undefined;
-  if (!flat?.fontFamily) {
-    return <RNText style={style} {...rest} />;
+  const override: {
+    fontFamily?: string;
+    fontSize?: number;
+    lineHeight?: number;
+  } = {};
+  if (locale !== 'ko' && flat?.fontFamily) {
+    override.fontFamily = localeFontFamily(locale, flat.fontFamily);
+  }
+  if (scale !== 1 && flat?.fontSize) {
+    override.fontSize = flat.fontSize * scale;
+    if (flat.lineHeight) {
+      override.lineHeight = flat.lineHeight * scale;
+    }
   }
   return (
     <RNText
-      style={[style, {fontFamily: localeFontFamily(locale, flat.fontFamily)}]}
+      style={Object.keys(override).length > 0 ? [style, override] : style}
       {...rest}
     />
   );

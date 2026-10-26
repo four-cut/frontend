@@ -254,7 +254,6 @@ const styles = StyleSheet.create({
   },
   emptyButton: {
     marginTop: 20,
-    alignSelf: 'stretch',
   },
   list: {
     paddingHorizontal: EDGE,

@@ -39,6 +39,7 @@ const ja: Strings = {
   },
 
   login: {
+    consent: '14歳以上であり、利用規約とプライバシーポリシーに同意します',
     guide: 'ログインして始めましょう',
     connecting: '接続中…',
     kakao: 'カカオで始める',

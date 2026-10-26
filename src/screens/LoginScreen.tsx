@@ -1,5 +1,5 @@
-import React, {useCallback} from 'react';
-import {Image, Pressable, StyleSheet, View} from 'react-native';
+import React, {useCallback, useState} from 'react';
+import {Image, Linking, Pressable, StyleSheet, View} from 'react-native';
 import {Text} from '../components/AppText';
 import {
   useNavigation,
@@ -11,6 +11,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {images} from '../assets';
 import {useSocialSignIn} from '../auth';
 import PrimaryButton from '../components/PrimaryButton';
+import {PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL} from '../config/legal';
 import {LOCALES, LOCALE_LABEL, setLocale, useLocale, useT} from '../i18n';
 import type {
   AuthGateTarget,
@@ -34,6 +35,14 @@ export default function LoginScreen() {
   const locale = useLocale();
 
   const next = route.params?.next;
+
+  // 처리방침에 "만 14세 미만은 가입할 수 없다"고 적었다. 적어 두기만 하면
+  // 지켜지지 않으므로, 로그인 전에 나이와 약관 동의를 확인받는다.
+  const [agreed, setAgreed] = useState(false);
+  const legalLinks = [
+    {label: t.settings.terms, url: TERMS_OF_SERVICE_URL},
+    {label: t.settings.privacy, url: PRIVACY_POLICY_URL},
+  ].filter((item): item is {label: string; url: string} => item.url !== null);
 
   /** 로그인을 마치고 원래 가려던 곳으로 보낸다. */
   const goNext = useCallback(
@@ -115,12 +124,39 @@ export default function LoginScreen() {
       </View>
 
       <View style={styles.actions}>
+        <Pressable
+          accessibilityRole="checkbox"
+          accessibilityState={{checked: agreed}}
+          accessibilityLabel={t.login.consent}
+          onPress={() => setAgreed(value => !value)}
+          hitSlop={6}
+          style={styles.consentRow}>
+          <View style={[styles.checkbox, agreed && styles.checkboxChecked]}>
+            {agreed ? <Text style={styles.checkmark}>✓</Text> : null}
+          </View>
+          <Text style={styles.consentText}>{t.login.consent}</Text>
+        </Pressable>
+        {legalLinks.length > 0 ? (
+          <View style={styles.legalRow}>
+            {legalLinks.map(item => (
+              <Pressable
+                key={item.url}
+                accessibilityRole="link"
+                onPress={() => Linking.openURL(item.url)}
+                hitSlop={6}>
+                <Text style={styles.legalLink}>{item.label}</Text>
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
         <PrimaryButton
           label={pending === 'kakao' ? t.login.connecting : t.login.kakao}
+          disabled={!agreed}
           onPress={() => signIn('kakao')}
         />
         <PrimaryButton
           label={pending === 'google' ? t.login.connecting : t.login.google}
+          disabled={!agreed}
           onPress={() => signIn('google')}
           style={styles.secondAction}
         />
@@ -188,6 +224,49 @@ const styles = StyleSheet.create({
   },
   secondAction: {
     marginTop: 10,
+  },
+  consentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 8,
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 1.5,
+    borderColor: colors.textPrimary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkboxChecked: {
+    backgroundColor: colors.textPrimary,
+  },
+  checkmark: {
+    color: colors.background,
+    fontSize: 14,
+    lineHeight: 18,
+  },
+  consentText: {
+    flex: 1,
+    fontSize: 14,
+    lineHeight: 20,
+    fontFamily: fonts.regular,
+    color: colors.textPrimary,
+  },
+  legalRow: {
+    flexDirection: 'row',
+    gap: 16,
+    marginLeft: 32,
+    marginBottom: 14,
+  },
+  legalLink: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontFamily: fonts.regular,
+    color: colors.textMuted,
+    textDecorationLine: 'underline',
   },
   error: {
     marginTop: 12,

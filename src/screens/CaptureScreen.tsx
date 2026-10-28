@@ -169,6 +169,17 @@ export default function CaptureScreen() {
       : position === 'back'
       ? backDevice ?? frontDevice
       : null;
+  /**
+   * 전면 카메라는 찍은 결과도 좌우를 뒤집는다.
+   *
+   * mirrorMode 기본값 'auto' 는 iOS 에서 automaticallyAdjustsVideoMirroring 이
+   * 되는데, 이건 프리뷰만 거울처럼 뒤집고 촬영 결과(사진·영상)는 그대로 둔다.
+   * 그래서 화면에서 본 것과 좌우가 반대인 사진이 나온다.
+   *
+   * 고를 때의 position 이 아니라 실제로 붙은 device 를 본다 — 전면이 없는
+   * 기기에서는 전면을 골라도 후면이 열린다.
+   */
+  const mirrorMode = device?.position === 'front' ? 'on' : 'off';
   const canChooseFront = frontDevice != null;
   const canChooseBack = backDevice != null;
   // 지금까지 찍은 장수. 목표치(shotCount)와 헷갈리지 않게 이름을 나눈다.
@@ -400,6 +411,7 @@ export default function CaptureScreen() {
           isActive={isFocused}
           device={device}
           outputs={outputs}
+          mirrorMode={mirrorMode}
           onStarted={startRecording}
           onError={handleCameraError}
         />

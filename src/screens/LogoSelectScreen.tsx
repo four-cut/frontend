@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import {Text} from '../components/AppText';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {useOrientation} from 'react-native-vision-camera';
 
 import {
   fetchFrameDetail,
@@ -60,7 +61,10 @@ const QR_SIZE = 220;
 export default function LogoSelectScreen() {
   const insets = useSafeAreaInsets();
   const t = useT();
-  const {width} = useWindowDimensions();
+  const {width, height} = useWindowDimensions();
+  // 가로로 찍었으면 사용자는 폰을 눕힌 채로 여기까지 온다. 촬영·사진 고르기와
+  // 같은 방식으로 내용을 돌려 준다.
+  const deviceOrientation = useOrientation('device');
   const [previewAreaHeight, setPreviewAreaHeight] = useState(0);
   const {
     layout,
@@ -238,6 +242,11 @@ export default function LogoSelectScreen() {
     t.leaveFlow.bodyResult,
   );
 
+  const sideways =
+    layout === 'landscape' &&
+    (deviceOrientation === 'left' || deviceOrientation === 'right');
+  const rotation = deviceOrientation === 'left' ? 90 : -90;
+
   // 폭 기준으로만 잡으면 아래 버튼·프레임 목록이 커졌을 때 남은 높이를
   // 넘어서 목록 제목을 덮는다. 실측한 영역 높이 안에 들어오게 줄인다.
   let sheetWidth = width * SHEET_WIDTH_RATIO;
@@ -245,247 +254,59 @@ export default function LogoSelectScreen() {
   if (maxSheetHeight > 0 && sheetWidth * STRIP_ASPECT > maxSheetHeight) {
     sheetWidth = maxSheetHeight / STRIP_ASPECT;
   }
+  if (sideways) {
+    // 눕히면 세로로 쓸 수 있는 길이가 화면의 짧은 변이 된다. 시트는 항상
+    // 세로라 그 높이에 맞춰야 잘리지 않는다.
+    sheetWidth = Math.min(width * 0.58, (width - 48) / STRIP_ASPECT);
+  }
 
-  return (
-    <View style={[styles.container, {paddingTop: insets.top}]}>
-      <View style={styles.header}>
-        <HomeButton onPress={goHome} />
-      </View>
-
+  /**
+   * 눕힌 상태에서는 모달 내용도 같이 돌려야 한다. 모달은 회전 상자 밖에
+   * 뜨므로(화면 전체를 덮는다) 여기서 한 번 더 감싼다. 안 감싸면 확대 보기와
+   * QR 이 혼자 세로로 떠서, 보려고 폰을 다시 세워야 한다.
+   */
+  const rotateForView = (node: React.ReactNode) =>
+    sideways ? (
       <View
-        style={styles.previewArea}
-        onLayout={event =>
-          setPreviewAreaHeight(event.nativeEvent.layout.height)
-        }>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t.result.zoomA11y}
-          disabled={!strip}
-          onPress={() => setZoomed(true)}
-          style={[
-            styles.sheet,
-            {width: sheetWidth, height: sheetWidth * STRIP_ASPECT},
-          ]}>
-          {strip ? (
-            <Image
-              source={{uri: strip}}
-              style={styles.sheetImage}
-              resizeMode="contain"
-            />
-          ) : failed ? (
-            // 실패했다고 홈으로 나가면 찍은 사진이 전부 사라진다.
-            <View style={styles.composeFailed}>
-              <Text style={styles.status}>{t.result.composeFailed}</Text>
-              <Pressable
-                accessibilityRole="button"
-                onPress={retry}
-                style={styles.settingsLink}>
-                <Text style={styles.settingsLinkText}>
-                  {t.result.composeRetry}
-                </Text>
-              </Pressable>
-            </View>
-          ) : (
-            <ActivityIndicator color={colors.textPrimary} />
-          )}
-          {/* 프레임을 바꾸면 새 합성이 끝날 때까지 이전 결과가 남아 있어서,
-              눌렀는데 안 바뀐 것처럼 보이지 않게 덮어서 알린다. */}
-          {strip && composing ? (
-            <View style={styles.sheetBusy}>
-              <ActivityIndicator color={colors.textPrimary} />
-            </View>
-          ) : null}
-        </Pressable>
+        style={[
+          styles.rotator,
+          {
+            width: height,
+            height: width,
+            left: (width - height) / 2,
+            top: (height - width) / 2,
+            transform: [{rotate: `${rotation}deg`}],
+          },
+        ]}>
+        {node}
       </View>
+    ) : (
+      node
+    );
 
-      <View style={[styles.actions, {paddingBottom: insets.bottom + 16}]}>
-        <Text style={styles.sectionLabel}>{t.result.myFrames}</Text>
-        {frames === null ? (
-          <ActivityIndicator
-            color={colors.textPrimary}
-            style={styles.frameListLoading}
-          />
-        ) : frames.length === 0 ? (
-          <Text style={styles.pending}>{t.result.noFrames}</Text>
-        ) : (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.frameList}>
-            {frames.map(item => {
-              const selected = frame?.frameId === item.frameId;
-              return (
-                <Pressable
-                  key={item.frameId}
-                  accessibilityRole="button"
-                  accessibilityState={{selected}}
-                  accessibilityLabel={t.result.applyFrameA11y(item.name)}
-                  onPress={() => chooseFrame(item)}
-                  style={styles.frameCard}>
-                  <View
-                    style={[
-                      styles.frameThumb,
-                      selected && styles.frameThumbSelected,
-                    ]}>
-                    {item.previewImageUrl ? (
-                      <Image
-                        source={{uri: item.previewImageUrl}}
-                        style={styles.frameThumbImage}
-                        resizeMode="contain"
-                      />
-                    ) : (
-                      // 썸네일을 못 그렸을 때는 빈 슬롯 배치라도 보여준다.
-                      <StripPreview
-                        layout={
-                          item.orientation === 'PORTRAIT'
-                            ? 'portrait'
-                            : 'landscape'
-                        }
-                        photos={[]}
-                        width={FRAME_CARD_INNER_WIDTH}
-                      />
-                    )}
-                  </View>
-                  <Text
-                    style={[
-                      styles.frameThumbLabel,
-                      selected && styles.frameThumbLabelSelected,
-                    ]}
-                    // 카드가 좁아 한 줄이면 이름(최대 8자)이 잘린다.
-                    numberOfLines={2}>
-                    {item.name}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </ScrollView>
-        )}
-        {frameLoadFailedId !== null ? (
-          <Text style={styles.saveError}>{t.result.framesLoadFailed}</Text>
-        ) : null}
-        {/* 인쇄·저장·QR 을 한 줄에 나란히 둔다. 세로로 쌓으면 버튼이 화면
-            아래를 다 차지해서 결과물 미리보기가 작아진다. 저장을 마치면 저장
-            칸이 공유로 바뀐다 — 저장됐다는 건 아래 안내 문구가 알려 준다. */}
-        <View style={styles.actionRow}>
-          <ActionButton
-            labelStyle={styles.buttonLabel}
-            variant="outline"
-            icon="print"
-            label={printing ? t.result.printing : t.result.print}
-            disabled={!strip || printing}
-            onPress={handlePrint}
-          />
-          {/* 가운데 칸만 채워서 가장 먼저 누를 동작(저장, 이어서 공유)을 강조한다. */}
-          {/* 한 버튼의 문구·아이콘만 바꿔야 바뀔 때 튀는 애니메이션이 걸린다. */}
-          <ActionButton
-            labelStyle={styles.buttonLabel}
-            variant="filled"
-            icon={showShare ? 'share' : 'save'}
-            label={showShare ? t.common.share : saveLabel}
-            disabled={!strip || albumSave.status === 'saving'}
-            onPress={showShare ? handleShare : albumSave.save}
-          />
-          {/* 사진(스트립)만 있어도 QR 을 만들 수 있다. 영상은 있으면 같이 올린다. */}
-          <ActionButton
-            labelStyle={styles.buttonLabel}
-            variant="outline"
-            icon="qr"
-            label={
-              qr.status === 'preparing' ? t.result.qrPreparing : t.result.qr
-            }
-            disabled={!strip || qr.status === 'preparing'}
-            onPress={qr.start}
-          />
-        </View>
-
-        {/* 무엇이 어디에 저장됐는지 말해 준다. 조용히 끝내면 됐는지 알 수 없다. */}
-        {albumSave.status === 'saved' ? (
-          <>
-            <Text style={styles.saveNote}>{t.result.savedTo(ALBUM_NAME)}</Text>
-            {fromAlbum ? null : albumSave.videoSaved ? (
-              <Text style={styles.saveNote}>{t.result.videoSaved}</Text>
-            ) : video ? (
-              // 사진을 먼저 저장하는 사이 영상 변환이 끝났거나, 영상만 실패했다.
-              <Pressable
-                accessibilityRole="button"
-                disabled={albumSave.savingVideo}
-                onPress={albumSave.saveVideo}
-                style={styles.settingsLink}>
-                <Text style={styles.settingsLinkText}>
-                  {albumSave.savingVideo
-                    ? t.result.savingVideo
-                    : t.result.saveVideo}
-                </Text>
-              </Pressable>
-            ) : (
-              <Text style={styles.saveNote}>{t.result.videoLater}</Text>
-            )}
-          </>
-        ) : null}
-
-        {albumSave.staleSave ? (
-          <Text style={styles.saveNote}>{t.result.resaveHint}</Text>
-        ) : null}
-
-        {[albumSave.photoError, albumSave.videoError].map(message =>
-          message ? (
-            <React.Fragment key={message}>
-              <Text style={styles.saveError}>{message}</Text>
-              {/* 권한이 막힌 거라면 어디서 풀어야 하는지 알려 준다.
-                  문구에 "권한"이 들었는지 보던 것을 사전 문구와 그대로 맞춘다 —
-                  일본어에는 그 글자가 없어서 안내가 통째로 안 뜬다. */}
-              {message === t.errors.noSavePermission ? (
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={() => Linking.openSettings()}
-                  style={styles.settingsLink}>
-                  <Text style={styles.settingsLinkText}>
-                    {t.result.openSettings}
-                  </Text>
-                </Pressable>
-              ) : null}
-            </React.Fragment>
-          ) : null,
-        )}
-
-        {/* 업로드가 오래 걸리면 기다리지 않고 저장·인쇄로 넘어갈 수 있게 한다. */}
-        {qr.status === 'preparing' ? (
-          <Pressable
-            accessibilityRole="button"
-            onPress={qr.cancel}
-            style={styles.settingsLink}>
-            <Text style={styles.settingsLinkText}>{t.result.qrCancel}</Text>
-          </Pressable>
-        ) : null}
-
-        {qr.status === 'failed' && qr.error ? (
-          <Text style={styles.saveError}>{qr.error}</Text>
-        ) : null}
-
-        {albumSave.status === 'idle' && !video && !fromAlbum ? (
-          <Text style={styles.saveNote}>{t.result.videoPending}</Text>
-        ) : null}
-      </View>
-
+  const modals = (
+    <>
       {/* 저장 전에 결과물을 크게 확인하고 싶은 건 자연스러운 요구다. */}
       <Modal
         visible={zoomed}
         transparent
         animationType="fade"
         onRequestClose={() => setZoomed(false)}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t.common.close}
-          onPress={() => setZoomed(false)}
-          style={styles.zoomBackdrop}>
+        {rotateForView(
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t.common.close}
+            onPress={() => setZoomed(false)}
+            style={styles.zoomBackdrop}>
           {strip ? (
             <Image
               source={{uri: strip}}
               style={styles.zoomImage}
               resizeMode="contain"
             />
-          ) : null}
-        </Pressable>
+            ) : null}
+          </Pressable>,
+        )}
       </Modal>
 
       {/* 각자 폰으로 받아가는 경로. 부스 태블릿에서는 이게 유일한 수단이다. */}
@@ -494,11 +315,12 @@ export default function LogoSelectScreen() {
         transparent
         animationType="fade"
         onRequestClose={qr.close}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t.common.close}
-          onPress={qr.close}
-          style={styles.qrBackdrop}>
+        {rotateForView(
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t.common.close}
+            onPress={qr.close}
+            style={styles.qrBackdrop}>
           <View style={styles.qrCard}>
             <Text style={styles.qrTitle}>{t.result.qrTitle}</Text>
             {qr.url ? (
@@ -516,14 +338,321 @@ export default function LogoSelectScreen() {
             <Text style={styles.qrHint}>
               {t.result.qrExpiry(DOWNLOAD_LINK_DAYS)}
             </Text>
-          </View>
-        </Pressable>
+            </View>
+          </Pressable>,
+        )}
       </Modal>
+    </>
+  );
+
+  const previewBlock = (
+    <View
+      style={styles.previewArea}
+      onLayout={event =>
+        setPreviewAreaHeight(event.nativeEvent.layout.height)
+      }>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={t.result.zoomA11y}
+        disabled={!strip}
+        onPress={() => setZoomed(true)}
+        style={[
+          styles.sheet,
+          {width: sheetWidth, height: sheetWidth * STRIP_ASPECT},
+        ]}>
+        {strip ? (
+          <Image
+            source={{uri: strip}}
+            style={styles.sheetImage}
+            resizeMode="contain"
+          />
+        ) : failed ? (
+          // 실패했다고 홈으로 나가면 찍은 사진이 전부 사라진다.
+          <View style={styles.composeFailed}>
+            <Text style={styles.status}>{t.result.composeFailed}</Text>
+            <Pressable
+              accessibilityRole="button"
+              onPress={retry}
+              style={styles.settingsLink}>
+              <Text style={styles.settingsLinkText}>
+                {t.result.composeRetry}
+              </Text>
+            </Pressable>
+          </View>
+        ) : (
+          <ActivityIndicator color={colors.textPrimary} />
+        )}
+        {/* 프레임을 바꾸면 새 합성이 끝날 때까지 이전 결과가 남아 있어서,
+            눌렀는데 안 바뀐 것처럼 보이지 않게 덮어서 알린다. */}
+        {strip && composing ? (
+          <View style={styles.sheetBusy}>
+            <ActivityIndicator color={colors.textPrimary} />
+          </View>
+        ) : null}
+      </Pressable>
+    </View>
+  );
+
+  const controlsBlock = (
+    <View style={[styles.actions, {paddingBottom: insets.bottom + 16}]}>
+      <Text style={styles.sectionLabel}>{t.result.myFrames}</Text>
+      {frames === null ? (
+        <ActivityIndicator
+          color={colors.textPrimary}
+          style={styles.frameListLoading}
+        />
+      ) : frames.length === 0 ? (
+        <Text style={styles.pending}>{t.result.noFrames}</Text>
+      ) : (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.frameList}>
+          {frames.map(item => {
+            const selected = frame?.frameId === item.frameId;
+            return (
+              <Pressable
+                key={item.frameId}
+                accessibilityRole="button"
+                accessibilityState={{selected}}
+                accessibilityLabel={t.result.applyFrameA11y(item.name)}
+                onPress={() => chooseFrame(item)}
+                style={styles.frameCard}>
+                <View
+                  style={[
+                    styles.frameThumb,
+                    selected && styles.frameThumbSelected,
+                  ]}>
+                  {item.previewImageUrl ? (
+                    <Image
+                      source={{uri: item.previewImageUrl}}
+                      style={styles.frameThumbImage}
+                      resizeMode="contain"
+                    />
+                  ) : (
+                    // 썸네일을 못 그렸을 때는 빈 슬롯 배치라도 보여준다.
+                    <StripPreview
+                      layout={
+                        item.orientation === 'PORTRAIT'
+                          ? 'portrait'
+                          : 'landscape'
+                      }
+                      photos={[]}
+                      width={FRAME_CARD_INNER_WIDTH}
+                    />
+                  )}
+                </View>
+                <Text
+                  style={[
+                    styles.frameThumbLabel,
+                    selected && styles.frameThumbLabelSelected,
+                  ]}
+                  // 카드가 좁아 한 줄이면 이름(최대 8자)이 잘린다.
+                  numberOfLines={2}>
+                  {item.name}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      )}
+      {frameLoadFailedId !== null ? (
+        <Text style={styles.saveError}>{t.result.framesLoadFailed}</Text>
+      ) : null}
+      {/* 인쇄·저장·QR 을 한 줄에 나란히 둔다. 세로로 쌓으면 버튼이 화면
+          아래를 다 차지해서 결과물 미리보기가 작아진다. 저장을 마치면 저장
+          칸이 공유로 바뀐다 — 저장됐다는 건 아래 안내 문구가 알려 준다. */}
+      <View style={styles.actionRow}>
+        <ActionButton
+          labelStyle={styles.buttonLabel}
+          variant="outline"
+          icon="print"
+          label={printing ? t.result.printing : t.result.print}
+          disabled={!strip || printing}
+          onPress={handlePrint}
+        />
+        {/* 가운데 칸만 채워서 가장 먼저 누를 동작(저장, 이어서 공유)을 강조한다. */}
+        {/* 한 버튼의 문구·아이콘만 바꿔야 바뀔 때 튀는 애니메이션이 걸린다. */}
+        <ActionButton
+          labelStyle={styles.buttonLabel}
+          variant="filled"
+          icon={showShare ? 'share' : 'save'}
+          label={showShare ? t.common.share : saveLabel}
+          disabled={!strip || albumSave.status === 'saving'}
+          onPress={showShare ? handleShare : albumSave.save}
+        />
+        {/* 사진(스트립)만 있어도 QR 을 만들 수 있다. 영상은 있으면 같이 올린다. */}
+        <ActionButton
+          labelStyle={styles.buttonLabel}
+          variant="outline"
+          icon="qr"
+          label={
+            qr.status === 'preparing' ? t.result.qrPreparing : t.result.qr
+          }
+          disabled={!strip || qr.status === 'preparing'}
+          onPress={qr.start}
+        />
+      </View>
+
+      {/* 무엇이 어디에 저장됐는지 말해 준다. 조용히 끝내면 됐는지 알 수 없다. */}
+      {albumSave.status === 'saved' ? (
+        <>
+          <Text style={styles.saveNote}>{t.result.savedTo(ALBUM_NAME)}</Text>
+          {fromAlbum ? null : albumSave.videoSaved ? (
+            <Text style={styles.saveNote}>{t.result.videoSaved}</Text>
+          ) : video ? (
+            // 사진을 먼저 저장하는 사이 영상 변환이 끝났거나, 영상만 실패했다.
+            <Pressable
+              accessibilityRole="button"
+              disabled={albumSave.savingVideo}
+              onPress={albumSave.saveVideo}
+              style={styles.settingsLink}>
+              <Text style={styles.settingsLinkText}>
+                {albumSave.savingVideo
+                  ? t.result.savingVideo
+                  : t.result.saveVideo}
+              </Text>
+            </Pressable>
+          ) : (
+            <Text style={styles.saveNote}>{t.result.videoLater}</Text>
+          )}
+        </>
+      ) : null}
+
+      {albumSave.staleSave ? (
+        <Text style={styles.saveNote}>{t.result.resaveHint}</Text>
+      ) : null}
+
+      {[albumSave.photoError, albumSave.videoError].map(message =>
+        message ? (
+          <React.Fragment key={message}>
+            <Text style={styles.saveError}>{message}</Text>
+            {/* 권한이 막힌 거라면 어디서 풀어야 하는지 알려 준다.
+                문구에 "권한"이 들었는지 보던 것을 사전 문구와 그대로 맞춘다 —
+                일본어에는 그 글자가 없어서 안내가 통째로 안 뜬다. */}
+            {message === t.errors.noSavePermission ? (
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => Linking.openSettings()}
+                style={styles.settingsLink}>
+                <Text style={styles.settingsLinkText}>
+                  {t.result.openSettings}
+                </Text>
+              </Pressable>
+            ) : null}
+          </React.Fragment>
+        ) : null,
+      )}
+
+      {/* 업로드가 오래 걸리면 기다리지 않고 저장·인쇄로 넘어갈 수 있게 한다. */}
+      {qr.status === 'preparing' ? (
+        <Pressable
+          accessibilityRole="button"
+          onPress={qr.cancel}
+          style={styles.settingsLink}>
+          <Text style={styles.settingsLinkText}>{t.result.qrCancel}</Text>
+        </Pressable>
+      ) : null}
+
+      {qr.status === 'failed' && qr.error ? (
+        <Text style={styles.saveError}>{qr.error}</Text>
+      ) : null}
+
+      {albumSave.status === 'idle' && !video && !fromAlbum ? (
+        <Text style={styles.saveNote}>{t.result.videoPending}</Text>
+      ) : null}
+    </View>
+  );
+
+  if (sideways) {
+    // 눕힌 방향에 따라 노치와 홈 인디케이터가 사용자의 좌·우 중 어디로 가는지
+    // 뒤바뀐다. 그쪽만 그만큼 더 띄운다.
+    const padLeft = rotation === 90 ? insets.top : insets.bottom;
+    const padRight = rotation === 90 ? insets.bottom : insets.top;
+
+    return (
+      <View style={styles.container}>
+        <View
+          style={[
+            styles.rotator,
+            {
+              width: height,
+              height: width,
+              left: (width - height) / 2,
+              top: (height - width) / 2,
+              transform: [{rotate: `${rotation}deg`}],
+            },
+          ]}>
+          <View
+            style={[
+              styles.landscapeBody,
+              {paddingLeft: padLeft + 16, paddingRight: padRight + 16},
+            ]}>
+            <View style={styles.landscapePreview}>{previewBlock}</View>
+
+            <View style={styles.landscapeSide}>
+              <View style={styles.landscapeHeader}>
+                <HomeButton onPress={goHome} />
+              </View>
+              {/* 프레임 목록·안내 문구가 길어지면 눕힌 화면에서는 세로 여유가
+                  더 적다. 넘치는 만큼 스크롤한다. */}
+              <ScrollView
+                style={styles.landscapeScroll}
+                contentContainerStyle={styles.landscapeScrollContent}>
+                {controlsBlock}
+              </ScrollView>
+            </View>
+          </View>
+        </View>
+
+        {modals}
+      </View>
+    );
+  }
+
+  return (
+    <View style={[styles.container, {paddingTop: insets.top}]}>
+      <View style={styles.header}>
+        <HomeButton onPress={goHome} />
+      </View>
+
+      {previewBlock}
+      {controlsBlock}
+
+      {modals}
     </View>
   );
 }
 
+
 const styles = StyleSheet.create({
+  // 화면은 세로로 고정돼 있고 기기만 눕는다. 내용을 통째로 돌려 채운다.
+  rotator: {
+    position: 'absolute',
+  },
+  landscapeBody: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    paddingVertical: 12,
+  },
+  landscapePreview: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  landscapeSide: {
+    flex: 1,
+  },
+  landscapeHeader: {
+    paddingBottom: 4,
+  },
+  landscapeScroll: {
+    flex: 1,
+  },
+  landscapeScrollContent: {
+    paddingBottom: 8,
+  },
   container: {
     flex: 1,
     backgroundColor: colors.background,

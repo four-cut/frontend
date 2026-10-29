@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {
   Image,
   Pressable,
@@ -40,6 +40,7 @@ export default function PhotoSelectScreen() {
   // 뒤로가기·스와이프·홈 버튼 모두 확인을 거쳐 홈으로 나간다.
   // 훅이라 아래 조기 반환보다 앞에 둔다.
   const {leave: goHome} = useGuardLeaveFlow(true, t.leaveFlow.bodyShots);
+  const [previewAreaHeight, setPreviewAreaHeight] = useState(0);
 
   if (!layout) {
     return null;
@@ -56,11 +57,20 @@ export default function PhotoSelectScreen() {
   const complete = pickedCount === cutCount;
   const thumbWidth =
     layout === 'portrait' ? THUMB_HEIGHT * 0.66 : THUMB_HEIGHT * 1.6;
-  // 눕히면 세로로 쓸 수 있는 길이가 화면의 짧은 변이 된다. 시트가 항상
-  // 세로라(STRIP_ASPECT) 높이에 맞춰야 잘리지 않는다.
-  const sheetWidth = sideways
-    ? Math.min(width * 0.62, (width - 40) / STRIP_ASPECT)
-    : width * SHEET_WIDTH_RATIO;
+  let sheetWidth: number;
+  if (sideways) {
+    // 눕히면 세로로 쓸 수 있는 길이가 화면의 짧은 변이 된다. 시트가 항상
+    // 세로라(STRIP_ASPECT) 높이에 맞춰야 잘리지 않는다.
+    sheetWidth = Math.min(width * 0.62, (width - 40) / STRIP_ASPECT);
+  } else {
+    // 폭으로만 잡으면 태블릿처럼 넓은 화면에서 시트가 남은 높이를 넘쳐
+    // 제목과 겹친다. 실측한 영역 높이 안에 들어오게 줄인다 (결과 화면과 같다).
+    sheetWidth = width * SHEET_WIDTH_RATIO;
+    const maxSheetHeight = previewAreaHeight * 0.96;
+    if (maxSheetHeight > 0 && sheetWidth * STRIP_ASPECT > maxSheetHeight) {
+      sheetWidth = maxSheetHeight / STRIP_ASPECT;
+    }
+  }
 
   const preview = (
     <StripPreview
@@ -171,7 +181,13 @@ export default function PhotoSelectScreen() {
 
       <Text style={styles.title}>{t.photoSelect.title}</Text>
 
-      <View style={styles.previewArea}>{preview}</View>
+      <View
+        style={styles.previewArea}
+        onLayout={event =>
+          setPreviewAreaHeight(event.nativeEvent.layout.height)
+        }>
+        {preview}
+      </View>
 
       {counter}
       {thumbs}

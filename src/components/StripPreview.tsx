@@ -90,6 +90,8 @@ export default function StripPreview({
                         },
                       ]}>
                       <Text
+                        // 원 크기에 맞춰 계산한 글자라 태블릿에서 키우면 넘친다.
+                        fixedSize
                         style={[
                           styles.badgeLabel,
                           {fontSize: badgeSize * 0.62},

@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import {Text} from './AppText';
 
-import {colors, fonts, fontSize} from '../theme';
+import {colors, CONTENT_MAX_WIDTH, fonts, fontSize} from '../theme';
 
 type Props = {
   label: string;
@@ -44,6 +44,11 @@ export default function PrimaryButton({
 
 const styles = StyleSheet.create({
   button: {
+    // 화면 폭을 채우되 태블릿에서는 가운데에 적당한 폭으로 모은다.
+    // 폰은 CONTENT_MAX_WIDTH 보다 좁아서 그대로다.
+    width: '100%',
+    maxWidth: CONTENT_MAX_WIDTH,
+    alignSelf: 'center',
     height: 60,
     borderRadius: 12,
     backgroundColor: colors.black,

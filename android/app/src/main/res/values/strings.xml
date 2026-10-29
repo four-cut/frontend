@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">fourcut</string>
+    <!-- 홈 화면 아이콘 아래 이름. 일본어는 values-ja. -->
+    <string name="app_name">찍고갈래</string>
 </resources>

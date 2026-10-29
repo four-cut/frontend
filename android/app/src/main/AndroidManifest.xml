@@ -23,13 +23,27 @@
       android:theme="@style/AppTheme"
       android:usesCleartextTraffic="${usesCleartextTraffic}"
       android:supportsRtl="true">
+      <!--
+        화면은 세로로 고정한다. 촬영 화면은 "화면은 세로 고정, 기기만 눕는다" 를
+        전제로 가로형 촬영 UI 를 직접 돌려 그린다(CaptureScreen). 화면까지 같이
+        돌면 그 계산이 어긋난다. iOS 는 Info.plist 에서 이미 세로 고정이다.
+
+        Android 16(타깃 36)부터 큰 화면(짧은 변 600dp 이상)에서는 방향 고정을
+        무시한다. 부스 태블릿에서도 세로를 지키려고 아래 property 로 예외를
+        신청한다. 이 예외는 타깃 37 부터 없어지므로, 그 전에 촬영 화면이 화면
+        회전을 견디게 바꾸거나 가로 화면을 따로 만들어야 한다.
+      -->
       <activity
         android:name=".MainActivity"
         android:label="@string/app_name"
+        android:screenOrientation="portrait"
         android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"
         android:launchMode="singleTask"
         android:windowSoftInputMode="adjustResize"
         android:exported="true">
+        <property
+          android:name="android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY"
+          android:value="true" />
         <intent-filter>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />

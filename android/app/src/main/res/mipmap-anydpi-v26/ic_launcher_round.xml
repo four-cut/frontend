@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 8 이상의 적응형 아이콘. 없으면 갤럭시처럼 아이콘 모양을 통일하는
+     기기에서 기존 아이콘이 흰 바탕 안에 작게 들어가 보인다. 전경 그림은
+     src/assets/images/logo.png 를 원형 마스크 안전 영역(48dp)에 맞춰 만들었다. -->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/ic_launcher_background" />
+    <foreground android:drawable="@mipmap/ic_launcher_foreground" />
+</adaptive-icon>

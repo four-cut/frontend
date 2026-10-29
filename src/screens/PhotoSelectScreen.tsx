@@ -10,14 +10,15 @@ import {
 import {Text} from '../components/AppText';
 import {useNavigation} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {useOrientation} from 'react-native-vision-camera';
 
 import HomeButton from '../components/HomeButton';
 import PrimaryButton from '../components/PrimaryButton';
 import StripPreview from '../components/StripPreview';
 import {useT} from '../i18n';
 import type {CaptureNavigation} from '../navigation/types';
-import {STRIP_ASPECT} from '../capture/stripLayout';
 import {useGuardLeaveFlow} from '../navigation/useGuardLeaveFlow';
+import {STRIP_ASPECT} from '../capture/stripLayout';
 import {useCaptureSession} from '../state/CaptureSessionContext';
 import {colors, fonts, fontSize} from '../theme';
 
@@ -28,7 +29,10 @@ const THUMB_HEIGHT = 96;
 export default function PhotoSelectScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<CaptureNavigation>();
-  const {width} = useWindowDimensions();
+  const {width, height} = useWindowDimensions();
+  // 가로로 찍었으면 사용자는 폰을 눕힌 채로 넘어온다. 화면은 세로로 고정돼
+  // 있으니(Info.plist) 촬영 화면과 같은 방식으로 내용을 돌려 준다.
+  const deviceOrientation = useOrientation('device');
   const {layout, cutCount, shots, selection, toggleSelection} =
     useCaptureSession();
   const t = useT();
@@ -42,19 +46,131 @@ export default function PhotoSelectScreen() {
     return null;
   }
 
+  const sideways =
+    layout === 'landscape' &&
+    (deviceOrientation === 'left' || deviceOrientation === 'right');
+  const rotation = deviceOrientation === 'left' ? 90 : -90;
+
   // 빈 자리는 undefined 로 둔다 — StripPreview 가 그 자리를 비워 그린다.
   const chosen = selection.map(index => (index == null ? undefined : shots[index]));
   const pickedCount = selection.filter(index => index != null).length;
   const complete = pickedCount === cutCount;
   const thumbWidth =
     layout === 'portrait' ? THUMB_HEIGHT * 0.66 : THUMB_HEIGHT * 1.6;
+  let sheetWidth: number;
+  if (sideways) {
+    // 눕히면 세로로 쓸 수 있는 길이가 화면의 짧은 변이 된다. 시트가 항상
+    // 세로라(STRIP_ASPECT) 높이에 맞춰야 잘리지 않는다.
+    sheetWidth = Math.min(width * 0.62, (width - 40) / STRIP_ASPECT);
+  } else {
+    // 폭으로만 잡으면 태블릿처럼 넓은 화면에서 시트가 남은 높이를 넘쳐
+    // 제목과 겹친다. 실측한 영역 높이 안에 들어오게 줄인다 (결과 화면과 같다).
+    sheetWidth = width * SHEET_WIDTH_RATIO;
+    const maxSheetHeight = previewAreaHeight * 0.96;
+    if (maxSheetHeight > 0 && sheetWidth * STRIP_ASPECT > maxSheetHeight) {
+      sheetWidth = maxSheetHeight / STRIP_ASPECT;
+    }
+  }
 
-  // 폭으로만 잡으면 태블릿처럼 넓은 화면에서 시트가 남은 높이를 넘쳐
-  // 제목과 겹친다. 실측한 영역 높이 안에 들어오게 줄인다 (결과 화면과 같다).
-  let sheetWidth = width * SHEET_WIDTH_RATIO;
-  const maxSheetHeight = previewAreaHeight * 0.96;
-  if (maxSheetHeight > 0 && sheetWidth * STRIP_ASPECT > maxSheetHeight) {
-    sheetWidth = maxSheetHeight / STRIP_ASPECT;
+  const preview = (
+    <StripPreview
+      layout={layout}
+      photos={chosen}
+      width={sheetWidth}
+      showSlotNumbers
+    />
+  );
+
+  const counter = (
+    <Text style={styles.counter}>
+      {t.photoSelect.count(pickedCount, cutCount)}
+    </Text>
+  );
+
+  const thumbs = (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.thumbs}>
+      {shots.map((uri, index) => {
+        const order = selection.indexOf(index);
+        const picked = order >= 0;
+
+        return (
+          <Pressable
+            key={uri}
+            accessibilityRole="button"
+            accessibilityLabel={t.photoSelect.shotA11y(
+              index + 1,
+              picked ? order + 1 : null,
+            )}
+            accessibilityState={{selected: picked}}
+            onPress={() => toggleSelection(index)}
+            style={[styles.thumb, {width: thumbWidth, height: THUMB_HEIGHT}]}>
+            <Image source={{uri}} style={styles.thumbImage} resizeMode="cover" />
+            {picked ? (
+              <>
+                <View pointerEvents="none" style={styles.thumbPicked} />
+                <View style={styles.badge}>
+                  <Text style={styles.badgeLabel}>{order + 1}</Text>
+                </View>
+              </>
+            ) : null}
+          </Pressable>
+        );
+      })}
+    </ScrollView>
+  );
+
+  const next = (
+    <PrimaryButton
+      label={t.common.next}
+      disabled={!complete}
+      onPress={() => navigation.navigate('LogoSelect')}
+    />
+  );
+
+  if (sideways) {
+    // 눕힌 방향에 따라 노치(화면 위)와 홈 인디케이터(화면 아래)가 사용자의
+    // 왼쪽·오른쪽 중 어디로 가는지가 뒤바뀐다. 그쪽만 그만큼 더 띄운다.
+    const padLeft = rotation === 90 ? insets.top : insets.bottom;
+    const padRight = rotation === 90 ? insets.bottom : insets.top;
+
+    return (
+      <View style={styles.container}>
+        <View
+          style={[
+            styles.rotator,
+            {
+              width: height,
+              height: width,
+              left: (width - height) / 2,
+              top: (height - width) / 2,
+              transform: [{rotate: `${rotation}deg`}],
+            },
+          ]}>
+          <View
+            style={[
+              styles.landscapeBody,
+              {paddingLeft: padLeft + 20, paddingRight: padRight + 20},
+            ]}>
+            <View style={styles.landscapePreview}>{preview}</View>
+
+            <View style={styles.landscapeSide}>
+              <View style={styles.landscapeHeader}>
+                <HomeButton onPress={goHome} />
+                <Text style={styles.landscapeTitle} numberOfLines={1}>
+                  {t.photoSelect.title}
+                </Text>
+              </View>
+              {counter}
+              {thumbs}
+              <View style={styles.landscapeActions}>{next}</View>
+            </View>
+          </View>
+        </View>
+      </View>
+    );
   }
 
   return (
@@ -70,61 +186,14 @@ export default function PhotoSelectScreen() {
         onLayout={event =>
           setPreviewAreaHeight(event.nativeEvent.layout.height)
         }>
-        <StripPreview
-          layout={layout}
-          photos={chosen}
-          width={sheetWidth}
-          showSlotNumbers
-        />
+        {preview}
       </View>
 
-      <Text style={styles.counter}>
-        {t.photoSelect.count(pickedCount, cutCount)}
-      </Text>
-
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.thumbs}>
-        {shots.map((uri, index) => {
-          const order = selection.indexOf(index);
-          const picked = order >= 0;
-
-          return (
-            <Pressable
-              key={uri}
-              accessibilityRole="button"
-              accessibilityLabel={t.photoSelect.shotA11y(
-                index + 1,
-                picked ? order + 1 : null,
-              )}
-              accessibilityState={{selected: picked}}
-              onPress={() => toggleSelection(index)}
-              style={[styles.thumb, {width: thumbWidth, height: THUMB_HEIGHT}]}>
-              <Image
-                source={{uri}}
-                style={styles.thumbImage}
-                resizeMode="cover"
-              />
-              {picked ? (
-                <>
-                  <View pointerEvents="none" style={styles.thumbPicked} />
-                  <View style={styles.badge}>
-                    <Text style={styles.badgeLabel}>{order + 1}</Text>
-                  </View>
-                </>
-              ) : null}
-            </Pressable>
-          );
-        })}
-      </ScrollView>
+      {counter}
+      {thumbs}
 
       <View style={[styles.actions, {paddingBottom: insets.bottom + 16}]}>
-        <PrimaryButton
-          label={t.common.next}
-          disabled={!complete}
-          onPress={() => navigation.navigate('LogoSelect')}
-        />
+        {next}
       </View>
     </View>
   );
@@ -201,5 +270,41 @@ const styles = StyleSheet.create({
   actions: {
     paddingHorizontal: 16,
     paddingTop: 12,
+  },
+  // 화면은 세로로 고정돼 있고 기기만 눕는다. 내용을 통째로 돌려 채운다.
+  rotator: {
+    position: 'absolute',
+  },
+  landscapeBody: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 20,
+    paddingVertical: 16,
+  },
+  landscapePreview: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  landscapeSide: {
+    flex: 1,
+    justifyContent: 'center',
+    gap: 8,
+  },
+  landscapeHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  landscapeTitle: {
+    flex: 1,
+    fontSize: fontSize.calloutTitle,
+    lineHeight: fontSize.calloutTitle * 1.2,
+    fontFamily: fonts.display,
+    color: colors.textPrimary,
+    includeFontPadding: false,
+  },
+  landscapeActions: {
+    paddingTop: 4,
   },
 });

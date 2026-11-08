@@ -14,6 +14,13 @@ export const TABLET_MIN_SIDE = 600;
 /** 태블릿에서 글자를 키우는 비율. 공용 Text(AppText)가 적용한다. */
 export const TABLET_TEXT_SCALE = 1.15;
 
+/**
+ * 탭 화면(찰칵·내 프레임·갤러리) 맨 위 줄의 높이. 상태 표시줄(safe area) 바로
+ * 아래부터 잰다. 홈의 설정 버튼 줄이 이 높이이고, 다른 탭도 같은 높이를 비워
+ * 내용이 같은 자리에서 시작하게 한다.
+ */
+export const TOP_BAR_HEIGHT = 44;
+
 /** 화면 폭을 꽉 채우는 버튼이 넘지 않을 폭. 폰은 이보다 좁아서 그대로다. */
 export const CONTENT_MAX_WIDTH = 560;
 

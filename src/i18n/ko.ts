@@ -32,7 +32,6 @@ const ko = {
   home: {
     shoot: '촬영하기',
     fromAlbum: '앨범에서 선택',
-    makeFrame: '프레임 만들기',
   },
 
   login: {
@@ -191,11 +190,13 @@ const ko = {
   },
 
   myFrames: {
-    title: '내 프레임',
+    /** 그리드 첫 칸의 + 카드 아래 이름 */
+    newFrame: '새 프레임',
+    addA11y: '새 프레임 만들기',
     zoomA11y: '크게 보기',
     deleteA11y: '이 프레임 삭제',
-    empty: '아직 만든 프레임이 없어요',
-    emptyHint: '프레임 만들기에서 나만의 프레임을 만들어 보세요',
+    /** 프레임이 하나도 없을 때 + 카드 아래 안내 */
+    emptyHint: '+ 를 눌러 첫 프레임을 만들어 보세요',
     loadFailed: '프레임을 불러오지 못했어요',
     deleteTitle: '이 프레임을 삭제할까요?',
     /** 휴지통 없이 바로 지워진다 — 지우기 전에 알아야 하는 사실이다. */
@@ -204,7 +205,6 @@ const ko = {
   },
 
   gallery: {
-    title: '내 네컷',
     signOut: '로그아웃',
     needPermission: '사진 접근을 허용해야 볼 수 있어요',
     empty: '아직 저장한 네컷이 없어요',

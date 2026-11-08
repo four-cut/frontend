@@ -35,7 +35,6 @@ const ja: Strings = {
   home: {
     shoot: '撮影する',
     fromAlbum: 'アルバムから選ぶ',
-    makeFrame: 'フレームを作る',
   },
 
   login: {
@@ -182,11 +181,11 @@ const ja: Strings = {
   },
 
   myFrames: {
-    title: 'マイフレーム',
+    newFrame: '新規フレーム',
+    addA11y: '新しいフレームを作る',
     zoomA11y: '拡大する',
     deleteA11y: 'このフレームを削除',
-    empty: '作ったフレームはまだありません',
-    emptyHint: 'フレーム作成でオリジナルのフレームを作ってみましょう',
+    emptyHint: '＋をタップして最初のフレームを作りましょう',
     loadFailed: 'フレームを読み込めませんでした',
     deleteTitle: 'このフレームを削除しますか？',
     deleteBody: (name: string) => `「${name}」を削除すると元に戻せません。`,
@@ -194,7 +193,6 @@ const ja: Strings = {
   },
 
   gallery: {
-    title: 'わたしの4カット',
     signOut: 'ログアウト',
     needPermission: '写真へのアクセスを許可すると表示されます',
     empty: '保存した4カット写真はまだありません',

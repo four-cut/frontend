@@ -20,7 +20,7 @@ import {STRIP_ASPECT} from '../capture/stripLayout';
 import {useSavedStrips, type StripItem} from '../gallery/useSavedStrips';
 import {useT} from '../i18n';
 import type {RootNavigation} from '../navigation/types';
-import {colors, fonts} from '../theme';
+import {colors, fonts, TOP_BAR_HEIGHT} from '../theme';
 
 const COLUMNS = 3;
 const GAP = 10;
@@ -124,9 +124,9 @@ export default function GalleryScreen() {
   const isEmpty = status === 'ready' && rowSections.length === 0;
 
   return (
-    <View style={[styles.container, {paddingTop: insets.top + 12}]}>
-      <View style={styles.header}>
-        <Text style={styles.title}>{t.gallery.title}</Text>
+    <View style={[styles.container, {paddingTop: insets.top}]}>
+      {/* 제목 없이 다른 탭과 같은 높이의 줄만 두고, 로그아웃은 오른쪽에 둔다. */}
+      <View style={styles.topBar}>
         {member ? (
           <Pressable
             accessibilityRole="button"
@@ -162,7 +162,12 @@ export default function GalleryScreen() {
           onEndReached={loadMore}
           onEndReachedThreshold={0.5}
           renderSectionHeader={({section}) => (
-            <Text style={styles.month}>
+            // 첫 달은 위쪽 줄 바로 아래에서 시작한다 — 다른 탭과 첫 줄 높이를 맞춘다.
+            <Text
+              style={[
+                styles.month,
+                section === rowSections[0] && styles.firstMonth,
+              ]}>
               {t.gallery.monthTitle(section.year, section.month)}
             </Text>
           )}
@@ -248,18 +253,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  header: {
+  topBar: {
+    height: TOP_BAR_HEIGHT,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     paddingHorizontal: EDGE,
-    paddingBottom: 12,
-  },
-  title: {
-    fontSize: 22,
-    fontFamily: fonts.display,
-    color: colors.textPrimary,
-    includeFontPadding: false,
   },
   signOut: {
     fontSize: 13,
@@ -292,6 +291,9 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: fonts.bold,
     color: colors.textPrimary,
+  },
+  firstMonth: {
+    marginTop: 0,
   },
   row: {
     flexDirection: 'row',

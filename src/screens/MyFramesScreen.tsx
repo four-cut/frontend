@@ -20,22 +20,28 @@ import {
   type FrameSummary,
 } from '../api/frames';
 import {STRIP_ASPECT} from '../capture/stripLayout';
-import PrimaryButton from '../components/PrimaryButton';
 import {useT} from '../i18n';
 import type {RootNavigation} from '../navigation/types';
 import {useAuthGate} from '../navigation/useAuthGate';
-import {colors, fonts} from '../theme';
+import {colors, fonts, TOP_BAR_HEIGHT} from '../theme';
 
 const COLUMNS = 3;
 const GAP = 12;
 const EDGE = 16;
 const ZOOM_DELETE_HEIGHT = 48;
 
+/** 그리드 칸. 첫 칸은 항상 새 프레임을 만드는 + 카드다. */
+type GridItem = {kind: 'add'} | {kind: 'frame'; frame: FrameSummary};
+const ADD_ITEM: GridItem = {kind: 'add'};
+
 /**
  * 내가 만든 프레임 모아 보기.
  *
  * 기기의 frame 폴더에 저장된 것만 보여 준다. 누르면 크게 보이고, 거기서
  * 지우면 그 프레임의 폴더가 이미지까지 함께 지워진다. (갤러리와 같은 방식)
+ *
+ * 첫 칸은 늘 + 카드라 프레임 만들기는 여기서 시작한다. 홈에 있던
+ * '프레임 만들기' 버튼은 이 카드로 옮겼다.
  */
 export default function MyFramesScreen() {
   const insets = useSafeAreaInsets();
@@ -103,68 +109,71 @@ export default function MyFramesScreen() {
   const cardWidth = (width - EDGE * 2 - GAP * (COLUMNS - 1)) / COLUMNS;
   const cardHeight = cardWidth * STRIP_ASPECT;
 
+  const items: GridItem[] = [
+    ADD_ITEM,
+    ...(frames ?? []).map(frame => ({kind: 'frame' as const, frame})),
+  ];
+
   return (
-    <View style={[styles.container, {paddingTop: insets.top + 12}]}>
-      <View style={styles.header}>
-        <Text style={styles.title}>{t.myFrames.title}</Text>
-      </View>
+    <View style={[styles.container, {paddingTop: insets.top}]}>
+      {/* 제목 없이 다른 탭과 같은 높이만 비운다. */}
+      <View style={styles.topBar} />
 
       {frames === null ? (
         <View style={styles.center}>
           <ActivityIndicator color={colors.textPrimary} />
         </View>
-      ) : frames.length === 0 ? (
-        <View style={styles.center}>
-          <Text style={styles.guide}>
-            {failed ? t.myFrames.loadFailed : t.myFrames.empty}
-          </Text>
-          {failed ? null : (
-            <>
-              <Text style={styles.guideSub}>{t.myFrames.emptyHint}</Text>
-              <PrimaryButton
-                label={t.home.makeFrame}
-                onPress={openFrameBuilder}
-                style={styles.emptyButton}
-              />
-            </>
-          )}
-        </View>
       ) : (
         <FlatList
-          data={frames}
-          keyExtractor={item => String(item.frameId)}
+          data={items}
+          keyExtractor={item =>
+            item.kind === 'add' ? 'add' : String(item.frame.frameId)
+          }
           numColumns={COLUMNS}
           columnWrapperStyle={styles.row}
           contentContainerStyle={[
             styles.list,
             {paddingBottom: insets.bottom + 24},
           ]}
-          renderItem={({item}) => (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={item.name}
-              accessibilityHint={t.myFrames.zoomA11y}
-              onPress={() => setZoomed(item)}
-              style={({pressed}) => [
-                styles.card,
-                {width: cardWidth},
-                pressed && styles.cardPressed,
-              ]}>
-              <View style={[styles.thumb, {height: cardHeight}]}>
-                {item.previewImageUrl ? (
-                  // 가로형은 비율이 달라서 자르지 않고 가운데에 담는다.
-                  <Image
-                    source={{uri: item.previewImageUrl}}
-                    style={styles.thumbImage}
-                    resizeMode="contain"
-                  />
-                ) : null}
-              </View>
-              <Text style={styles.name} numberOfLines={1}>
-                {item.name}
+          ListFooterComponent={
+            frames.length === 0 ? (
+              <Text style={styles.guideSub}>
+                {failed ? t.myFrames.loadFailed : t.myFrames.emptyHint}
               </Text>
-            </Pressable>
-          )}
+            ) : undefined
+          }
+          renderItem={({item: gridItem}) =>
+            gridItem.kind === 'add' ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t.myFrames.addA11y}
+                onPress={openFrameBuilder}
+                style={({pressed}) => [
+                  styles.card,
+                  {width: cardWidth},
+                  pressed && styles.cardPressed,
+                ]}>
+                <View
+                  style={[styles.thumb, styles.addThumb, {height: cardHeight}]}>
+                  <View style={styles.addCircle}>
+                    <View style={styles.plusBar} />
+                    <View style={[styles.plusBar, styles.plusBarVertical]} />
+                  </View>
+                </View>
+                <Text style={styles.name} numberOfLines={1}>
+                  {t.myFrames.newFrame}
+                </Text>
+              </Pressable>
+            ) : (
+              <FrameCard
+                frame={gridItem.frame}
+                width={cardWidth}
+                height={cardHeight}
+                hint={t.myFrames.zoomA11y}
+                onPress={() => setZoomed(gridItem.frame)}
+              />
+            )
+          }
         />
       )}
 
@@ -219,20 +228,55 @@ export default function MyFramesScreen() {
   );
 }
 
+/** 저장된 프레임 한 장. 미리보기 전체를 보여 주고 아래에 이름을 단다. */
+function FrameCard({
+  frame,
+  width: cardWidth,
+  height: cardHeight,
+  hint,
+  onPress,
+}: {
+  frame: FrameSummary;
+  width: number;
+  height: number;
+  hint: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={frame.name}
+      accessibilityHint={hint}
+      onPress={onPress}
+      style={({pressed}) => [
+        styles.card,
+        {width: cardWidth},
+        pressed && styles.cardPressed,
+      ]}>
+      <View style={[styles.thumb, {height: cardHeight}]}>
+        {frame.previewImageUrl ? (
+          // 가로형은 비율이 달라서 자르지 않고 가운데에 담는다.
+          <Image
+            source={{uri: frame.previewImageUrl}}
+            style={styles.thumbImage}
+            resizeMode="contain"
+          />
+        ) : null}
+      </View>
+      <Text style={styles.name} numberOfLines={1}>
+        {frame.name}
+      </Text>
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
   },
-  header: {
-    paddingHorizontal: EDGE,
-    paddingBottom: 16,
-  },
-  title: {
-    fontSize: 22,
-    fontFamily: fonts.bold,
-    color: colors.textPrimary,
-    includeFontPadding: false,
+  topBar: {
+    height: TOP_BAR_HEIGHT,
   },
   center: {
     flex: 1,
@@ -240,20 +284,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: EDGE,
   },
-  guide: {
-    fontSize: 15,
-    fontFamily: fonts.bold,
-    color: colors.textPrimary,
-  },
+  // 프레임이 없을 때 + 카드 아래에 붙는 안내.
   guideSub: {
-    marginTop: 6,
+    marginTop: 2,
     fontSize: 13,
     fontFamily: fonts.regular,
     color: colors.textMuted,
-    textAlign: 'center',
-  },
-  emptyButton: {
-    marginTop: 20,
   },
   list: {
     paddingHorizontal: EDGE,
@@ -279,6 +315,29 @@ const styles = StyleSheet.create({
   thumbImage: {
     width: '100%',
     height: '100%',
+  },
+  // + 카드: 흰 바탕 가운데에 회색 원과 + 를 둔다.
+  addThumb: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.surfaceMuted,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  plusBar: {
+    position: 'absolute',
+    width: 18,
+    height: 2.5,
+    borderRadius: 1.25,
+    backgroundColor: colors.textPrimary,
+  },
+  plusBarVertical: {
+    transform: [{rotate: '90deg'}],
   },
   zoomBackdrop: {
     flex: 1,

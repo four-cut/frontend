@@ -10,7 +10,7 @@ import PrimaryButton from '../components/PrimaryButton';
 import type {RootNavigation, ShootNavigation} from '../navigation/types';
 import {useT} from '../i18n';
 import {useAuthGate} from '../navigation/useAuthGate';
-import {colors, fonts, fontSize} from '../theme';
+import {colors, fonts, fontSize, TOP_BAR_HEIGHT} from '../theme';
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
@@ -68,15 +68,7 @@ export default function HomeScreen() {
           }
           style={styles.secondAction}
         />
-        <PrimaryButton
-          label={t.home.makeFrame}
-          onPress={() =>
-            gate('FrameBuilder', () =>
-              navigation.getParent<RootNavigation>()?.navigate('FrameBuilder'),
-            )
-          }
-          style={styles.secondAction}
-        />
+        {/* 프레임 만들기는 하단 '내 프레임' 탭의 + 카드로 옮겼다. */}
       </View>
 
       <LanguageDialog
@@ -92,11 +84,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  // 다른 탭과 같은 높이. 설정 버튼(40)은 아래에 붙여 예전과 같은 자리에 둔다.
   topBar: {
+    height: TOP_BAR_HEIGHT,
     flexDirection: 'row',
     justifyContent: 'flex-end',
+    alignItems: 'flex-end',
     paddingHorizontal: 16,
-    paddingTop: 4,
   },
   settings: {
     width: 40,

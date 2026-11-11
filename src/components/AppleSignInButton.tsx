@@ -3,7 +3,7 @@ import {Pressable, StyleSheet, type StyleProp, type ViewStyle} from 'react-nativ
 import {Text} from './AppText';
 
 import {useT} from '../i18n';
-import {colors, CONTENT_MAX_WIDTH, fonts} from '../theme';
+import {colors, CONTENT_MAX_WIDTH, fonts, fontSize} from '../theme';
 
 /**
  * 버튼 높이. 카카오·구글 버튼(PrimaryButton)과 같아야 한다 — 애플 지침이
@@ -13,14 +13,19 @@ import {colors, CONTENT_MAX_WIDTH, fonts} from '../theme';
 const HEIGHT = 60;
 
 /**
- * 글자 크기는 버튼 높이의 43%.
+ * 글자 크기. 카카오·구글 버튼과 같은 값을 쓴다.
  *
- * 애플이 정한 비율이다. "the title and button height of your custom button need
- * to use the same proportions that the system uses" — 시스템 버튼이 그 비율로
- * 그려지므로 커스텀도 맞춰야 한 눈에 같은 버튼으로 읽힌다. 그래서 이 글자는
- * 다른 버튼(18pt)보다 크다.
+ * 애플 지침은 글자 크기를 버튼 높이의 43%(여기서는 26pt)로 두라고 한다.
+ * 그대로 따르면 이 버튼만 글자가 커져서 나란히 놓인 세 버튼이 따로 놀았다.
+ * 높이를 줄여 비율을 맞추는 방법도 안 된다 — 애플 로그인 버튼을 다른 로그인
+ * 버튼보다 작게 둘 수 없다.
+ *
+ * 그래서 비율 대신 다른 버튼과의 통일을 택했다. 바꾸면 안 되는 것(문구,
+ * 색, 모양, 최소 크기)은 그대로 지켰으므로 버튼이 애플 것으로 읽히는 데는
+ * 문제가 없다. 심사에서 지적되면 이 값만 Math.round(HEIGHT * 0.43) 으로
+ * 되돌리면 된다.
  */
-const FONT_SIZE = Math.round(HEIGHT * 0.43);
+const FONT_SIZE = fontSize.button;
 
 /** 글자와 오른쪽 가장자리 사이 최소 여백은 버튼 폭의 8% 이상이어야 한다. */
 const SIDE_PADDING_RATIO = 0.08;

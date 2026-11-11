@@ -66,7 +66,7 @@ const PROGRESS_STROKE = 2;
  * 찍힐 때 화면을 하얗게 번쩍인 뒤 사라지기까지의 시간(ms).
  * 카메라 셔터처럼 "방금 찍혔다" 를 눈으로 알려 준다.
  */
-const FLASH_FADE_MS = 300;
+const FLASH_FADE_MS = 200;
 
 /**
  * SR-05 촬영.

@@ -85,6 +85,15 @@ const styles = StyleSheet.create({
     height: 26,
   },
   label: {
+    // 글자 칸을 탭 너비만큼 넓히고 글자는 가운데로 모은다. 글자 폭에 딱 맞춘
+    // 칸으로 두면 안드로이드 15+ 에서 마지막 글자가 다음 줄로 밀려 잘린다.
+    // RN 은 글자 진행폭(advance)으로 칸을 재는데, 그리는 TextView 는
+    // (targetSdk 35+) 글리프 잉크 경계까지 넣고 줄을 나누기 때문이다.
+    // Jua 의 '칵'은 잉크가 진행폭 밖으로 1px 가까이 삐져나와서 59px 칸에
+    // 60px 이 필요했고, "찰칵"이 "찰"만 보였다. 칸이 넉넉하면 이 차이는
+    // 문제가 되지 않는다.
+    alignSelf: 'stretch',
+    textAlign: 'center',
     fontSize: fontSize.tabLabel,
     // 줄 높이를 고정한다. 안 주면 글자 상자 높이가 서체마다 달라서, 언어를
     // 바꾸는 순간 이 줄이 몇 px 커지거나 줄고 화면이 밀린다.

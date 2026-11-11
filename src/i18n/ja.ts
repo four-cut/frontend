@@ -44,7 +44,7 @@ const ja: Strings = {
     kakao: 'カカオで始める',
     google: 'Googleで始める',
     failed: 'ログインに失敗しました',
-    appleNotReady: 'Appleログインはまだ準備中です',
+    appleIosOnly: 'AppleログインはiPhone・iPadのみご利用いただけます',
   },
 
   settings: {

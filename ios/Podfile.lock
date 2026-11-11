@@ -1834,6 +1834,8 @@ PODS:
     - React-utils (= 0.87.0)
     - ReactNativeDependencies
   - ReactNativeDependencies (0.87.0)
+  - RNAppleAuthentication (2.5.1):
+    - React-Core
   - RNGoogleSignin (16.1.4):
     - GoogleSignIn (~> 9.0)
     - hermes-engine
@@ -2048,6 +2050,7 @@ DEPENDENCIES:
   - ReactCodegen (from `build/generated/ios/ReactCodegen`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - ReactNativeDependencies (from `../node_modules/react-native/third-party-podspecs/ReactNativeDependencies.podspec`)
+  - "RNAppleAuthentication (from `../node_modules/@invertase/react-native-apple-authentication`)"
   - "RNGoogleSignin (from `../node_modules/@react-native-google-signin/google-signin`)"
   - RNKeychain (from `../node_modules/react-native-keychain`)
   - RNScreens (from `../node_modules/react-native-screens`)
@@ -2251,6 +2254,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   ReactNativeDependencies:
     :podspec: "../node_modules/react-native/third-party-podspecs/ReactNativeDependencies.podspec"
+  RNAppleAuthentication:
+    :path: "../node_modules/@invertase/react-native-apple-authentication"
   RNGoogleSignin:
     :path: "../node_modules/@react-native-google-signin/google-signin"
   RNKeychain:
@@ -2366,6 +2371,7 @@ SPEC CHECKSUMS:
   ReactCodegen: 04dddaf6911fad8454894c4ca4ecb4d2b070eb38
   ReactCommon: 5f5a302748322015f2e3334869cdd9b4d0395846
   ReactNativeDependencies: ec5530432d8191b38e278117d498aaff05ea9d6f
+  RNAppleAuthentication: a89c9804592b38ed4ab11f0aee68d05ba12ad432
   RNGoogleSignin: ac755be54b6da943c23d8e48cc0b7e7e155df2d0
   RNKeychain: 551d42b0ef53426f82551a0cc961cfa10ad33afa
   RNScreens: a2103f13fa603c405092daf70ca4eb3a6291fd6d
@@ -2375,4 +2381,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: ba3e4c8fea305b883d65e1fed7cd24316917fb01
 
-COCOAPODS: 1.16.2
+COCOAPODS: 1.15.2

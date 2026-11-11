@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 앱 화면 바탕. src/theme/colors.ts 의 background 와 같은 값을 둔다. -->
+    <color name="app_background">#F8F8F8</color>
+</resources>

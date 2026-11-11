@@ -76,7 +76,7 @@ const ICON_PATHS = {
 
 const DANGER = '#D8342B';
 
-/** 세로형·가로형 세그먼트의 바탕. 화면 바탕(surfaceMuted)보다 한 단계 진하다. */
+/** 세로형·가로형 세그먼트의 바탕. 화면 바탕(background)보다 한 단계 진하다. */
 const SEGMENT_TRACK = '#E4E6EA';
 
 function LineIcon({
@@ -1531,7 +1531,7 @@ function StickerSourceSheet({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.surfaceMuted,
+    backgroundColor: colors.background,
   },
   header: {
     minHeight: 56,

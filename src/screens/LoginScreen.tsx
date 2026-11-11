@@ -236,12 +236,12 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 6,
     borderWidth: 1.5,
-    borderColor: colors.textPrimary,
+    borderColor: colors.button,
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkboxChecked: {
-    backgroundColor: colors.textPrimary,
+    backgroundColor: colors.button,
   },
   checkmark: {
     color: colors.white,

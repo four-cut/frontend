@@ -185,7 +185,6 @@ const ja: Strings = {
     addA11y: '新しいフレームを作る',
     zoomA11y: '拡大する',
     deleteA11y: 'このフレームを削除',
-    emptyHint: '＋をタップして最初のフレームを作りましょう',
     loadFailed: 'フレームを読み込めませんでした',
     deleteTitle: 'このフレームを削除しますか？',
     deleteBody: (name: string) => `「${name}」を削除すると元に戻せません。`,

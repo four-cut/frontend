@@ -9,26 +9,28 @@
 /* Begin PBXBuildFile section */
 		026D63DAA0EC99DAE2861844 /* VideoSpeedModule.mm in Sources */ = {isa = PBXBuildFile; fileRef = EB7668C72C34DD2C56E6DC9F /* VideoSpeedModule.mm */; };
 		0C80B921A6F3F58F76C31292 /* libPods-fourcut.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DCACB8F33CDC322A6C60F78 /* libPods-fourcut.a */; };
+		11398A6D55894022B14B7B9B /* ShinRetroMaruGothic-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 40A8164388674184AB833FA4 /* ShinRetroMaruGothic-Medium.ttf */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		37BB99754633472DBF2EBAAF /* ShinRetroMaruGothic-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B4A2499192104A95A7A38989 /* ShinRetroMaruGothic-Regular.ttf */; };
+		3D64608691404E0D985D5984 /* Pretendard-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 013043A99A7A42109AF9D601 /* Pretendard-Bold.ttf */; };
+		41BAAD4C6EB44CF2A5978BCA /* ShinRetroMaruGothic-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 64A0F95F55C745348B63E663 /* ShinRetroMaruGothic-LICENSE.txt */; };
 		54D6FE25FFE805A64CB122C9 /* MediaFileModule.mm in Sources */ = {isa = PBXBuildFile; fileRef = 3EA845CF1F165437FCF7D7BF /* MediaFileModule.mm */; };
+		62AF6342E6DC4F6FBF2D0AAE /* Pretendard-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = CDCC50C5C0394C9881766D4F /* Pretendard-LICENSE.txt */; };
+		69FEEE97678A4CD08A3C15CE /* Jua-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 06F11857B95D426EACFFAC3C /* Jua-LICENSE.txt */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
+		805A755BB1E147AEA79657E7 /* ShinRetroMaruGothic-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = EEB367B9957F444AAD524924 /* ShinRetroMaruGothic-Bold.ttf */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		8DDDA43216A0E542FC30D19F /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 3CDAE8A8F910ED0C426FC66C /* InfoPlist.strings */; };
 		925CB92544F569CDCC8AE951 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
-		C6671FD615FBA0A1D9A1267B /* PrintModule.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7CED7071CBF5A4AF3C10C225 /* PrintModule.mm */; };
 		AFD170C9B42D4AF7BBFE9AB3 /* Jua-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 836D38C3E7D941C4ACCD4F98 /* Jua-Regular.ttf */; };
-		3D64608691404E0D985D5984 /* Pretendard-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 013043A99A7A42109AF9D601 /* Pretendard-Bold.ttf */; };
-		E7493E822F024E13973C0D76 /* Pretendard-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E0831DDDD6474DB087A342D0 /* Pretendard-Regular.ttf */; };
+		C6671FD615FBA0A1D9A1267B /* PrintModule.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7CED7071CBF5A4AF3C10C225 /* PrintModule.mm */; };
 		CE63DDEB231843E4A2181FDE /* Pretendard-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5389A4E41F3D4A929C20909A /* Pretendard-SemiBold.ttf */; };
-		805A755BB1E147AEA79657E7 /* ShinRetroMaruGothic-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = EEB367B9957F444AAD524924 /* ShinRetroMaruGothic-Bold.ttf */; };
-		11398A6D55894022B14B7B9B /* ShinRetroMaruGothic-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 40A8164388674184AB833FA4 /* ShinRetroMaruGothic-Medium.ttf */; };
-		37BB99754633472DBF2EBAAF /* ShinRetroMaruGothic-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B4A2499192104A95A7A38989 /* ShinRetroMaruGothic-Regular.ttf */; };
-		69FEEE97678A4CD08A3C15CE /* Jua-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 06F11857B95D426EACFFAC3C /* Jua-LICENSE.txt */; };
-		62AF6342E6DC4F6FBF2D0AAE /* Pretendard-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = CDCC50C5C0394C9881766D4F /* Pretendard-LICENSE.txt */; };
-		41BAAD4C6EB44CF2A5978BCA /* ShinRetroMaruGothic-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 64A0F95F55C745348B63E663 /* ShinRetroMaruGothic-LICENSE.txt */; };
+		E7493E822F024E13973C0D76 /* Pretendard-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E0831DDDD6474DB087A342D0 /* Pretendard-Regular.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		013043A99A7A42109AF9D601 /* Pretendard-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Pretendard-Bold.ttf"; path = "../assets/fonts/Pretendard-Bold.ttf"; sourceTree = "<group>"; };
+		06F11857B95D426EACFFAC3C /* Jua-LICENSE.txt */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Jua-LICENSE.txt"; path = "../assets/fonts/Jua-LICENSE.txt"; sourceTree = "<group>"; };
 		10BF8CB3CF549AA4BF1AB6D7 /* VideoSpeedModule.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = VideoSpeedModule.h; path = fourcut/VideoSpeedModule.h; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* fourcut.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = fourcut.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = fourcut/Images.xcassets; sourceTree = "<group>"; };
@@ -36,27 +38,26 @@
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = fourcut/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		3B4392A12AC88292D35C810B /* Pods-fourcut.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-fourcut.debug.xcconfig"; path = "Target Support Files/Pods-fourcut/Pods-fourcut.debug.xcconfig"; sourceTree = "<group>"; };
 		3EA845CF1F165437FCF7D7BF /* MediaFileModule.mm */ = {isa = PBXFileReference; includeInIndex = 1; name = MediaFileModule.mm; path = fourcut/MediaFileModule.mm; sourceTree = "<group>"; };
+		40A8164388674184AB833FA4 /* ShinRetroMaruGothic-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "ShinRetroMaruGothic-Medium.ttf"; path = "../assets/fonts/ShinRetroMaruGothic-Medium.ttf"; sourceTree = "<group>"; };
+		5389A4E41F3D4A929C20909A /* Pretendard-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Pretendard-SemiBold.ttf"; path = "../assets/fonts/Pretendard-SemiBold.ttf"; sourceTree = "<group>"; };
 		5709B34CF0A7D63546082F79 /* Pods-fourcut.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-fourcut.release.xcconfig"; path = "Target Support Files/Pods-fourcut/Pods-fourcut.release.xcconfig"; sourceTree = "<group>"; };
+		5C4FE1AD9C46F617D556DA27 /* fourcut.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; name = fourcut.entitlements; path = fourcut/fourcut.entitlements; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-fourcut.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-fourcut.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5E832081B9AB2AE59BE328D7 /* PrintModule.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = PrintModule.h; path = fourcut/PrintModule.h; sourceTree = "<group>"; };
+		64A0F95F55C745348B63E663 /* ShinRetroMaruGothic-LICENSE.txt */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "ShinRetroMaruGothic-LICENSE.txt"; path = "../assets/fonts/ShinRetroMaruGothic-LICENSE.txt"; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = fourcut/AppDelegate.swift; sourceTree = "<group>"; };
 		7BDEE4E4C85AC2CC21C7CDAA /* ja */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = ja; path = fourcut/ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		7CED7071CBF5A4AF3C10C225 /* PrintModule.mm */ = {isa = PBXFileReference; includeInIndex = 1; name = PrintModule.mm; path = fourcut/PrintModule.mm; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = fourcut/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		836D38C3E7D941C4ACCD4F98 /* Jua-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Jua-Regular.ttf"; path = "../assets/fonts/Jua-Regular.ttf"; sourceTree = "<group>"; };
 		8890745167A25D164381F1A2 /* MediaFileModule.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = MediaFileModule.h; path = fourcut/MediaFileModule.h; sourceTree = "<group>"; };
+		B4A2499192104A95A7A38989 /* ShinRetroMaruGothic-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "ShinRetroMaruGothic-Regular.ttf"; path = "../assets/fonts/ShinRetroMaruGothic-Regular.ttf"; sourceTree = "<group>"; };
 		B7FA73AEC216AB3BAD856286 /* ko */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = ko; path = fourcut/ko.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		CDCC50C5C0394C9881766D4F /* Pretendard-LICENSE.txt */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Pretendard-LICENSE.txt"; path = "../assets/fonts/Pretendard-LICENSE.txt"; sourceTree = "<group>"; };
+		E0831DDDD6474DB087A342D0 /* Pretendard-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Pretendard-Regular.ttf"; path = "../assets/fonts/Pretendard-Regular.ttf"; sourceTree = "<group>"; };
 		EB7668C72C34DD2C56E6DC9F /* VideoSpeedModule.mm */ = {isa = PBXFileReference; includeInIndex = 1; name = VideoSpeedModule.mm; path = fourcut/VideoSpeedModule.mm; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		836D38C3E7D941C4ACCD4F98 /* Jua-Regular.ttf */ = {isa = PBXFileReference; name = "Jua-Regular.ttf"; path = "../assets/fonts/Jua-Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		013043A99A7A42109AF9D601 /* Pretendard-Bold.ttf */ = {isa = PBXFileReference; name = "Pretendard-Bold.ttf"; path = "../assets/fonts/Pretendard-Bold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		E0831DDDD6474DB087A342D0 /* Pretendard-Regular.ttf */ = {isa = PBXFileReference; name = "Pretendard-Regular.ttf"; path = "../assets/fonts/Pretendard-Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		5389A4E41F3D4A929C20909A /* Pretendard-SemiBold.ttf */ = {isa = PBXFileReference; name = "Pretendard-SemiBold.ttf"; path = "../assets/fonts/Pretendard-SemiBold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		EEB367B9957F444AAD524924 /* ShinRetroMaruGothic-Bold.ttf */ = {isa = PBXFileReference; name = "ShinRetroMaruGothic-Bold.ttf"; path = "../assets/fonts/ShinRetroMaruGothic-Bold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		40A8164388674184AB833FA4 /* ShinRetroMaruGothic-Medium.ttf */ = {isa = PBXFileReference; name = "ShinRetroMaruGothic-Medium.ttf"; path = "../assets/fonts/ShinRetroMaruGothic-Medium.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		B4A2499192104A95A7A38989 /* ShinRetroMaruGothic-Regular.ttf */ = {isa = PBXFileReference; name = "ShinRetroMaruGothic-Regular.ttf"; path = "../assets/fonts/ShinRetroMaruGothic-Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		06F11857B95D426EACFFAC3C /* Jua-LICENSE.txt */ = {isa = PBXFileReference; name = "Jua-LICENSE.txt"; path = "../assets/fonts/Jua-LICENSE.txt"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		CDCC50C5C0394C9881766D4F /* Pretendard-LICENSE.txt */ = {isa = PBXFileReference; name = "Pretendard-LICENSE.txt"; path = "../assets/fonts/Pretendard-LICENSE.txt"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		64A0F95F55C745348B63E663 /* ShinRetroMaruGothic-LICENSE.txt */ = {isa = PBXFileReference; name = "ShinRetroMaruGothic-LICENSE.txt"; path = "../assets/fonts/ShinRetroMaruGothic-LICENSE.txt"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		EEB367B9957F444AAD524924 /* ShinRetroMaruGothic-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "ShinRetroMaruGothic-Bold.ttf"; path = "../assets/fonts/ShinRetroMaruGothic-Bold.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -86,6 +87,7 @@
 				10BF8CB3CF549AA4BF1AB6D7 /* VideoSpeedModule.h */,
 				EB7668C72C34DD2C56E6DC9F /* VideoSpeedModule.mm */,
 				3CDAE8A8F910ED0C426FC66C /* InfoPlist.strings */,
+				5C4FE1AD9C46F617D556DA27 /* fourcut.entitlements */,
 			);
 			name = fourcut;
 			sourceTree = "<group>";

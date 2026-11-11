@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  Sign in with Apple.
+
+	  심사 지침 4.8 이 카카오·구글 같은 소셜 로그인으로 주 계정을 만드는 앱에
+	  이메일을 숨길 수 있는 로그인 수단을 함께 요구한다. 사실상 이것뿐이라
+	  없으면 App Store 심사를 통과하지 못한다.
+
+	  Default 는 이 앱 자체에서 로그인한다는 뜻이다. 웹과 계정을 공유하려면
+	  Services ID 를 만들어 다른 값을 쓰지만, 지금은 앱 안에서만 쓴다.
+	-->
+	<key>com.apple.developer.applesignin</key>
+	<array>
+		<string>Default</string>
+	</array>
+</dict>
+</plist>

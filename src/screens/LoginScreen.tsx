@@ -1,5 +1,6 @@
 import React, {useCallback, useState} from 'react';
-import {Image, Linking, Pressable, StyleSheet, View} from 'react-native';
+import {Image, Linking, Platform, Pressable, StyleSheet, View} from 'react-native';
+import {AppleButton} from '@invertase/react-native-apple-authentication';
 import {Text} from '../components/AppText';
 import {
   useNavigation,
@@ -10,6 +11,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {images} from '../assets';
 import {useSocialSignIn} from '../auth';
+import type {Provider} from '../auth/types';
 import PrimaryButton from '../components/PrimaryButton';
 import {PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL} from '../config/legal';
 import {LOCALES, LOCALE_LABEL, setLocale, useLocale, useT} from '../i18n';
@@ -18,7 +20,7 @@ import type {
   RootNavigation,
   RootStackParamList,
 } from '../navigation/types';
-import {colors, fonts, fontSize} from '../theme';
+import {colors, CONTENT_MAX_WIDTH, fonts, fontSize} from '../theme';
 
 /**
  * 로그인 화면.
@@ -74,7 +76,7 @@ export default function LoginScreen() {
   );
 
   const signIn = useCallback(
-    async (provider: 'kakao' | 'google') => {
+    async (provider: Provider) => {
       const result = await start(provider);
       // 취소하면 null 이 온다 — 화면을 그대로 두고 다시 고를 수 있게 한다.
       if (result) {
@@ -160,6 +162,25 @@ export default function LoginScreen() {
           onPress={() => signIn('google')}
           style={styles.secondAction}
         />
+        {/* 심사 지침 4.8 — 카카오·구글과 같은 비중으로 함께 둬야 한다.
+            애플이 정한 모양이라 우리 버튼 대신 AppleButton 을 쓰고, 크기와
+            모서리만 다른 두 버튼에 맞춘다. 글자는 기기 언어로 애플이 넣는다.
+            안드로이드에서는 쓸 수 없어 보여 주지 않는다(providers/apple.ts). */}
+        {Platform.OS === 'ios' ? (
+          <View
+            // AppleButton 에는 disabled 가 없다. 동의 전에는 눌리지 않게 막고
+            // 다른 버튼의 disabled 와 같은 흐림을 준다.
+            pointerEvents={agreed ? 'auto' : 'none'}
+            style={[styles.secondAction, !agreed && styles.appleDisabled]}>
+            <AppleButton
+              buttonStyle={AppleButton.Style.BLACK}
+              buttonType={AppleButton.Type.CONTINUE}
+              cornerRadius={12}
+              style={styles.appleButton}
+              onPress={() => signIn('apple')}
+            />
+          </View>
+        ) : null}
         {error ? <Text style={styles.error}>{error}</Text> : null}
       </View>
     </View>
@@ -224,6 +245,16 @@ const styles = StyleSheet.create({
   },
   secondAction: {
     marginTop: 10,
+  },
+  // 카카오·구글 버튼(PrimaryButton)과 같은 크기로 맞춘다.
+  appleButton: {
+    width: '100%',
+    maxWidth: CONTENT_MAX_WIDTH,
+    alignSelf: 'center',
+    height: 60,
+  },
+  appleDisabled: {
+    opacity: 0.3,
   },
   consentRow: {
     flexDirection: 'row',

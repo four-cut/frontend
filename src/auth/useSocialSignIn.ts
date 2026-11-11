@@ -2,6 +2,11 @@ import {useCallback, useState} from 'react';
 
 import {useAuth} from './AuthContext';
 import {
+  appleSignOut,
+  appleUnlink,
+  getAppleLoginRequest,
+} from './providers/apple';
+import {
   getGoogleLoginRequest,
   googleSignOut,
   googleUnlink,
@@ -61,6 +66,8 @@ export function useSocialSignIn() {
         await kakaoSignOut();
       } else if (member?.provider === 'GOOGLE') {
         await googleSignOut();
+      } else if (member?.provider === 'APPLE') {
+        await appleSignOut();
       }
     } catch {
       // 무시. 아래에서 우리 세션은 확실히 지운다.
@@ -77,6 +84,8 @@ export async function unlinkProvider(provider: Provider): Promise<void> {
     await kakaoUnlink();
   } else if (provider === 'google') {
     await googleUnlink();
+  } else if (provider === 'apple') {
+    await appleUnlink();
   }
 }
 
@@ -87,7 +96,6 @@ function requestFor(provider: Provider) {
     case 'google':
       return getGoogleLoginRequest();
     case 'apple':
-      // Apple Developer Program 이 없어 보류 중이다. types.ts 참고.
-      return Promise.reject(new Error(getStrings().login.appleNotReady));
+      return getAppleLoginRequest();
   }
 }

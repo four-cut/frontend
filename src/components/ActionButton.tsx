@@ -15,7 +15,7 @@ import SvgIcon from './SvgIcon';
 type Props = {
   label: string;
   icon?: IconName;
-  /** filled 는 검정 바탕(주요 동작), outline 은 흰 바탕 + 검은 테두리. */
+  /** filled 는 버튼색 바탕(주요 동작), outline 은 흰 바탕 + 버튼색 테두리. */
   variant?: 'filled' | 'outline';
   onPress?: () => void;
   disabled?: boolean;
@@ -45,7 +45,7 @@ export default function ActionButton({
   labelStyle,
 }: Props) {
   const filled = variant === 'filled';
-  const foreground = filled ? colors.white : colors.black;
+  const foreground = filled ? colors.white : colors.button;
 
   const scale = useRef(new Animated.Value(1)).current;
   const contentOpacity = useRef(new Animated.Value(1)).current;
@@ -115,12 +115,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   filled: {
-    backgroundColor: colors.black,
+    backgroundColor: colors.button,
   },
   outline: {
     backgroundColor: colors.white,
     borderWidth: 1.5,
-    borderColor: colors.black,
+    borderColor: colors.button,
   },
   content: {
     flexDirection: 'row',

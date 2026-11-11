@@ -185,8 +185,8 @@ const styles = StyleSheet.create({
     borderColor: colors.divider,
   },
   localeChipActive: {
-    borderColor: colors.textPrimary,
-    backgroundColor: colors.textPrimary,
+    borderColor: colors.button,
+    backgroundColor: colors.button,
   },
   localeChipText: {
     fontSize: 13,
@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
     includeFontPadding: false,
   },
   localeChipTextActive: {
-    color: colors.background,
+    color: colors.white,
   },
   hero: {
     flex: 1,
@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.textPrimary,
   },
   checkmark: {
-    color: colors.background,
+    color: colors.white,
     fontSize: 14,
     lineHeight: 18,
   },

@@ -1738,7 +1738,7 @@ const styles = StyleSheet.create({
     height: 44,
     paddingHorizontal: 18,
     borderRadius: 22,
-    backgroundColor: colors.black,
+    backgroundColor: colors.button,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1792,7 +1792,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceMuted,
   },
   weightChipActive: {
-    backgroundColor: colors.black,
+    backgroundColor: colors.button,
   },
   weightChipText: {
     fontSize: 18,
@@ -2055,7 +2055,7 @@ const styles = StyleSheet.create({
     height: 40,
     paddingHorizontal: 16,
     borderRadius: 8,
-    backgroundColor: colors.black,
+    backgroundColor: colors.button,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -2076,7 +2076,7 @@ const styles = StyleSheet.create({
   bgImageButton: {
     height: 44,
     borderRadius: 10,
-    backgroundColor: colors.black,
+    backgroundColor: colors.button,
     alignItems: 'center',
     justifyContent: 'center',
   },

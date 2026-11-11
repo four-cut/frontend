@@ -163,12 +163,12 @@ const styles = StyleSheet.create({
   dialog: {
     width: '100%',
     maxWidth: 320,
-    backgroundColor: colors.background,
+    backgroundColor: colors.white,
     borderRadius: 20,
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 8,
-    // 흰 배경 위에 흰 창이라 그림자가 없으면 떠 보이지 않는다.
+    // 밝은 바탕 위에 흰 창이라 그림자가 없으면 떠 보이지 않는다.
     shadowColor: '#000',
     shadowOpacity: 0.18,
     shadowRadius: 24,

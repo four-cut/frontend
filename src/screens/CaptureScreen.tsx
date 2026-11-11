@@ -538,7 +538,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  // 가로형은 레터박스(위아래 여백)가 생기므로 흰 배경 대신 검게 채운다.
+  // 가로형은 레터박스(위아래 여백)가 생기므로 밝은 바탕 대신 검게 채운다.
   containerLetterboxed: {
     backgroundColor: colors.black,
   },
@@ -596,7 +596,7 @@ const styles = StyleSheet.create({
     borderRadius: 36,
     backgroundColor: colors.white,
     borderWidth: 4,
-    borderColor: colors.black,
+    borderColor: colors.button,
   },
   pressed: {
     opacity: 0.85,
@@ -640,7 +640,7 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 16,
-    backgroundColor: colors.black,
+    backgroundColor: colors.button,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -666,7 +666,7 @@ const styles = StyleSheet.create({
     height: 52,
     paddingHorizontal: 28,
     borderRadius: 12,
-    backgroundColor: colors.black,
+    backgroundColor: colors.button,
     alignItems: 'center',
     justifyContent: 'center',
   },

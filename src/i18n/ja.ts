@@ -43,6 +43,7 @@ const ja: Strings = {
     connecting: '接続中…',
     kakao: 'カカオで始める',
     google: 'Googleで始める',
+    apple: 'Appleで続ける',
     failed: 'ログインに失敗しました',
     appleIosOnly: 'AppleログインはiPhone・iPadのみご利用いただけます',
   },

@@ -136,10 +136,11 @@ export default function MyFramesScreen() {
             {paddingBottom: insets.bottom + 24},
           ]}
           ListFooterComponent={
-            frames.length === 0 ? (
-              <Text style={styles.guideSub}>
-                {failed ? t.myFrames.loadFailed : t.myFrames.emptyHint}
-              </Text>
+            // 비어 있을 때 + 카드가 이미 다음에 할 일을 보여 주므로 안내
+            // 문구는 두지 않는다. 불러오기 실패는 다르다 — 프레임이 없는
+            // 것과 못 가져온 것을 구별해 줘야 한다.
+            frames.length === 0 && failed ? (
+              <Text style={styles.guideSub}>{t.myFrames.loadFailed}</Text>
             ) : undefined
           }
           renderItem={({item: gridItem}) =>

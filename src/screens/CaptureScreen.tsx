@@ -20,6 +20,8 @@ import {
 } from 'react-native-vision-camera';
 
 import {images} from '../assets';
+import BackButton from '../components/BackButton';
+import StrokedText from '../components/StrokedText';
 import {useT} from '../i18n';
 import {SLOT_ASPECT} from '../capture/stripLayout';
 import {speedUpSessionVideo} from '../capture/videoSpeed';
@@ -48,6 +50,15 @@ const LS_TOP_GAP = 44;
  * 여기에 그 가장자리의 inset 이 더해진다. 세로형 푸터가 쓰는 값과 맞췄다.
  */
 const LS_SIDE_GAP = 16;
+
+/**
+ * 미리보기 위에 얹는 글자의 외곽선 두께.
+ *
+ * 글자 크기에 비례해 눈에 비슷하게 보이도록 잡았다 — 카운트다운이 72pt,
+ * 진행 횟수가 30pt 라(theme/typography.ts) 두께도 그 비율에 맞춘다.
+ */
+const COUNTDOWN_STROKE = 3;
+const PROGRESS_STROKE = 2;
 
 /**
  * SR-05 촬영.
@@ -327,33 +338,41 @@ export default function CaptureScreen() {
   // 촬영 전면/후면을 먼저 고르게 한다 — 촬영 중엔 전환 버튼이 없다.
   if (!position) {
     return (
-      <View style={styles.fallback}>
-        <Text style={styles.pickTitle}>{t.capture.pickTitle}</Text>
-        <View style={styles.pickRow}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t.capture.frontA11y}
-            disabled={!canChooseFront}
-            onPress={() => setPosition('front')}
-            style={({pressed}) => [
-              styles.pickButton,
-              !canChooseFront && styles.disabled,
-              pressed && styles.pressed,
-            ]}>
-            <Text style={styles.pickButtonLabel}>{t.capture.front}</Text>
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t.capture.backA11y}
-            disabled={!canChooseBack}
-            onPress={() => setPosition('back')}
-            style={({pressed}) => [
-              styles.pickButton,
-              !canChooseBack && styles.disabled,
-              pressed && styles.pressed,
-            ]}>
-            <Text style={styles.pickButtonLabel}>{t.capture.back}</Text>
-          </Pressable>
+      <View style={styles.picker}>
+        {/* 아직 한 장도 안 찍어 잃을 것이 없다. 확인 없이 직전 화면으로
+            돌아간다 — 세로면 레이아웃 선택, 가로면 회전 안내다. */}
+        <View style={[styles.pickerHeader, {paddingTop: insets.top}]}>
+          <BackButton onPress={() => navigation.goBack()} />
+        </View>
+
+        <View style={styles.pickerBody}>
+          <Text style={styles.pickTitle}>{t.capture.pickTitle}</Text>
+          <View style={styles.pickRow}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t.capture.frontA11y}
+              disabled={!canChooseFront}
+              onPress={() => setPosition('front')}
+              style={({pressed}) => [
+                styles.pickButton,
+                !canChooseFront && styles.disabled,
+                pressed && styles.pressed,
+              ]}>
+              <Text style={styles.pickButtonLabel}>{t.capture.front}</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t.capture.backA11y}
+              disabled={!canChooseBack}
+              onPress={() => setPosition('back')}
+              style={({pressed}) => [
+                styles.pickButton,
+                !canChooseBack && styles.disabled,
+                pressed && styles.pressed,
+              ]}>
+              <Text style={styles.pickButtonLabel}>{t.capture.back}</Text>
+            </Pressable>
+          </View>
         </View>
       </View>
     );
@@ -424,16 +443,18 @@ export default function CaptureScreen() {
         !needsRotate && (
           <View pointerEvents="box-none" style={StyleSheet.absoluteFill}>
             <View pointerEvents="none" style={userTop}>
-              <Text
-                style={[styles.countdown, {transform: [{rotate: upright}]}]}>
+              <StrokedText
+                style={styles.countdown}
+                width={COUNTDOWN_STROKE}
+                containerStyle={{transform: [{rotate: upright}]}}>
                 {remaining}
-              </Text>
+              </StrokedText>
             </View>
             <View style={userRight}>
               <View style={[styles.footer, {transform: [{rotate: upright}]}]}>
-                <Text style={styles.progress}>
+                <StrokedText style={styles.progress} width={PROGRESS_STROKE}>
                   {Math.min(taken + 1, shotCount)}/{shotCount}
-                </Text>
+                </StrokedText>
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel={t.capture.shootNow}
@@ -457,12 +478,14 @@ export default function CaptureScreen() {
               paddingBottom: insets.bottom + 16,
             },
           ]}>
-          <Text style={styles.countdown}>{remaining}</Text>
+          <StrokedText style={styles.countdown} width={COUNTDOWN_STROKE}>
+            {remaining}
+          </StrokedText>
 
           <View style={styles.footer}>
-            <Text style={styles.progress}>
+            <StrokedText style={styles.progress} width={PROGRESS_STROKE}>
               {Math.min(taken + 1, shotCount)}/{shotCount}
-            </Text>
+            </StrokedText>
 
             <Pressable
               accessibilityRole="button"
@@ -546,11 +569,14 @@ const styles = StyleSheet.create({
     right: 0,
     alignItems: 'center',
   },
+  // 카운트다운과 진행 횟수는 카메라 미리보기 위에 떠 있다. 본문용
+  // textPrimary(거의 검정)로 두면 어두운 장면에서 통째로 묻혀 안 보인다.
+  // 흰 글자에 검은 외곽선을 둘러 어느 장면에서나 읽히게 한다(StrokedText).
   countdown: {
     fontSize: fontSize.countdown,
     lineHeight: fontSize.countdown * 1.2,
     fontFamily: fonts.display,
-    color: colors.textPrimary,
+    color: colors.white,
     includeFontPadding: false,
   },
   footer: {
@@ -560,7 +586,7 @@ const styles = StyleSheet.create({
   progress: {
     fontSize: fontSize.progress,
     fontFamily: fonts.display,
-    color: colors.textPrimary,
+    color: colors.white,
     includeFontPadding: false,
   },
   // 셔터 버튼 — 카메라 앱의 전형적인 동그란 흰 버튼.
@@ -577,6 +603,21 @@ const styles = StyleSheet.create({
   },
   disabled: {
     opacity: 0.35,
+  },
+  // 전면/후면 선택 화면. 머리말에 뒤로 가기가 있어 fallback 과 달리
+  // 가운데 정렬을 본문에만 건다.
+  picker: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  pickerHeader: {
+    paddingHorizontal: 16,
+  },
+  pickerBody: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 24,
   },
   fallback: {
     flex: 1,

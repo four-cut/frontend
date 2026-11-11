@@ -68,9 +68,10 @@ export default function BottomTabBar({state, navigation}: BottomTabBarProps) {
 }
 
 const styles = StyleSheet.create({
+  // 탭바는 회색 화면 바탕(background)과 구분되도록 흰색으로 둔다.
   container: {
     flexDirection: 'row',
-    backgroundColor: colors.background,
+    backgroundColor: colors.white,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.divider,
     paddingTop: 10,

@@ -196,8 +196,8 @@ const styles = StyleSheet.create({
     borderColor: colors.divider,
   },
   localeChipActive: {
-    borderColor: colors.textPrimary,
-    backgroundColor: colors.textPrimary,
+    borderColor: colors.button,
+    backgroundColor: colors.button,
   },
   localeChipText: {
     fontSize: 13,
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
     includeFontPadding: false,
   },
   localeChipTextActive: {
-    color: colors.background,
+    color: colors.white,
   },
   hero: {
     flex: 1,
@@ -247,15 +247,15 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 6,
     borderWidth: 1.5,
-    borderColor: colors.textPrimary,
+    borderColor: colors.button,
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkboxChecked: {
-    backgroundColor: colors.textPrimary,
+    backgroundColor: colors.button,
   },
   checkmark: {
-    color: colors.background,
+    color: colors.white,
     fontSize: 14,
     lineHeight: 18,
   },

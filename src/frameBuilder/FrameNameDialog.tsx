@@ -141,10 +141,10 @@ const styles = StyleSheet.create({
   dialog: {
     width: '100%',
     maxWidth: 340,
-    backgroundColor: colors.background,
+    backgroundColor: colors.white,
     borderRadius: 20,
     padding: 20,
-    // 흰 배경 위에 흰 창이라 그림자가 없으면 떠 보이지 않는다.
+    // 밝은 바탕 위에 흰 창이라 그림자가 없으면 떠 보이지 않는다.
     shadowColor: '#000',
     shadowOpacity: 0.18,
     shadowRadius: 24,
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
     height: 44,
     paddingHorizontal: 24,
     borderRadius: 22,
-    backgroundColor: colors.black,
+    backgroundColor: colors.button,
     justifyContent: 'center',
   },
   saveDisabled: {

@@ -1,5 +1,7 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {
+  Animated,
+  Easing,
   Image,
   Pressable,
   StyleSheet,
@@ -59,6 +61,12 @@ const LS_SIDE_GAP = 16;
  */
 const COUNTDOWN_STROKE = 3;
 const PROGRESS_STROKE = 2;
+
+/**
+ * 찍힐 때 화면을 하얗게 번쩍인 뒤 사라지기까지의 시간(ms).
+ * 카메라 셔터처럼 "방금 찍혔다" 를 눈으로 알려 준다.
+ */
+const FLASH_FADE_MS = 200;
 
 /**
  * SR-05 촬영.
@@ -208,6 +216,18 @@ export default function CaptureScreen() {
   // 카운트다운과 바로촬영이 겹쳐 두 번 찍히는 걸 막는다.
   const capturing = useRef(false);
 
+  // 셔터 플래시. 화면 전체를 덮은 흰 막의 투명도다.
+  const flash = useRef(new Animated.Value(0)).current;
+  const fireFlash = useCallback(() => {
+    flash.setValue(1);
+    Animated.timing(flash, {
+      toValue: 0,
+      duration: FLASH_FADE_MS,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: true,
+    }).start();
+  }, [flash]);
+
   useEffect(() => {
     if (!hasPermission) {
       requestPermission();
@@ -220,7 +240,13 @@ export default function CaptureScreen() {
     }
     capturing.current = true;
     try {
-      const file = await photoOutput.capturePhotoToFile({}, {});
+      // 플래시는 누른 순간이 아니라 센서가 다 찍은 뒤에 띄운다. 전면
+      // 카메라는 화면 빛이 얼굴을 비추므로, 노출 중에 화면이 하얘지면 그
+      // 컷만 밝게 찍힌다.
+      const file = await photoOutput.capturePhotoToFile(
+        {},
+        {onDidCapturePhoto: fireFlash},
+      );
       addShot(`file://${file.filePath}`);
       setTaken(count => count + 1);
     } finally {
@@ -228,7 +254,7 @@ export default function CaptureScreen() {
       setRemaining(TIMER_SECONDS);
       capturing.current = false;
     }
-  }, [addShot, photoOutput]);
+  }, [addShot, fireFlash, photoOutput]);
 
   useEffect(() => {
     // 기기를 아직 안 돌렸으면(needsRotate) 카운트다운을 시작하지 않는다.
@@ -509,6 +535,12 @@ export default function CaptureScreen() {
           <Text style={styles.rotateTitle}>{t.rotate.title}</Text>
         </View>
       )}
+
+      {/* 셔터 플래시. 맨 위에 덮되 터치는 그대로 통과시켜 바로촬영을 막지 않는다. */}
+      <Animated.View
+        pointerEvents="none"
+        style={[styles.flash, {opacity: flash}]}
+      />
     </View>
   );
 }
@@ -538,7 +570,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  // 가로형은 레터박스(위아래 여백)가 생기므로 흰 배경 대신 검게 채운다.
+  // 가로형은 레터박스(위아래 여백)가 생기므로 밝은 바탕 대신 검게 채운다.
   containerLetterboxed: {
     backgroundColor: colors.black,
   },
@@ -596,7 +628,12 @@ const styles = StyleSheet.create({
     borderRadius: 36,
     backgroundColor: colors.white,
     borderWidth: 4,
-    borderColor: colors.black,
+    borderColor: colors.button,
+  },
+  // 찍힌 순간 화면 전체를 덮었다 사라지는 흰 막.
+  flash: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: colors.white,
   },
   pressed: {
     opacity: 0.85,
@@ -640,7 +677,7 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 16,
-    backgroundColor: colors.black,
+    backgroundColor: colors.button,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -666,7 +703,7 @@ const styles = StyleSheet.create({
     height: 52,
     paddingHorizontal: 28,
     borderRadius: 12,
-    backgroundColor: colors.black,
+    backgroundColor: colors.button,
     alignItems: 'center',
     justifyContent: 'center',
   },

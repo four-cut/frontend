@@ -75,7 +75,7 @@ export default function LayoutCard({
 const styles = StyleSheet.create({
   card: {
     flex: 1,
-    backgroundColor: colors.black,
+    backgroundColor: colors.button,
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',

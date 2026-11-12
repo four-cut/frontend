@@ -92,7 +92,9 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     height: HEIGHT,
     borderRadius: 12,
-    backgroundColor: colors.black,
+    // 카카오·구글 버튼과 같은 색. 애플은 바탕이 "black or white" 로 읽히기만
+    // 하면 된다고 하므로 순검정보다 살짝 누그러뜨린 이 값도 된다.
+    backgroundColor: colors.button,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

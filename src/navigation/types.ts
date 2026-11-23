@@ -36,7 +36,12 @@ export type CaptureStackParamList = {
  * 로그인이 필요한 동작. 로그인을 마치면 여기로 이어서 보낸다.
  * 네비게이션 파라미터로 실려야 해서 문자열 유니온으로 둔다.
  */
-export type AuthGateTarget = 'Guide' | 'FrameBuilder' | 'Gallery' | 'AlbumFlow';
+export type AuthGateTarget =
+  | 'Guide'
+  | 'FrameBuilder'
+  | 'Gallery'
+  | 'MyFrames'
+  | 'AlbumFlow';
 
 export type RootStackParamList = {
   MainTabs: NavigatorScreenParams<MainTabParamList> | undefined;

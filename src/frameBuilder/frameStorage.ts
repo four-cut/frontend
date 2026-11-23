@@ -196,6 +196,19 @@ export async function deleteFrame(frameId: number): Promise<void> {
   );
 }
 
+/**
+ * 저장된 프레임을 전부 지운다. 회원 탈퇴할 때 부른다.
+ *
+ * 프레임은 기기에만 있어 서버 계정을 지워도 남는다. 남겨 두면 같은 기기에서
+ * 다른 계정으로 로그인한 사람에게 탈퇴한 사람의 프레임이 보인다.
+ */
+export async function deleteAllFrames(): Promise<void> {
+  if (!MediaFile) {
+    return;
+  }
+  await MediaFile.deleteDirectory(await rootDir());
+}
+
 export async function loadFrame(frameId: number): Promise<StoredFrame | null> {
   if (!MediaFile) {
     return null;

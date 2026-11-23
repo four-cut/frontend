@@ -38,7 +38,7 @@ export default function BottomTabBar({state, navigation}: BottomTabBarProps) {
           const go = () => navigation.navigate(route.name);
           // 로그인이 필요한 탭이면 로그인 화면을 먼저 띄운다.
           if (tab.requiresAuth) {
-            gate('Gallery', go);
+            gate(tab.name, go);
           } else {
             go();
           }

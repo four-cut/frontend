@@ -17,11 +17,12 @@ export const TABS = [
     requiresAuth: false,
   },
   {
-    // 기기에 저장된 프레임만 보여 주므로 로그인 없이 볼 수 있다.
+    // 프레임은 기기에만 저장되지만 로그인한 사람이 만든 것이다. 로그인 없이
+    // 열리면 로그아웃·탈퇴한 뒤에도 그 사람이 만든 프레임이 그대로 보인다.
     name: 'MyFrames' as const,
     labelKey: 'myFrames' as keyof Strings['tab'],
     icon: images.tabFrame,
-    requiresAuth: false,
+    requiresAuth: true,
   },
   {
     name: 'Gallery' as const,

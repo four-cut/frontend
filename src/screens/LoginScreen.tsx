@@ -62,6 +62,9 @@ export default function LoginScreen() {
         case 'Gallery':
           navigation.replace('MainTabs', {screen: 'Gallery'});
           return;
+        case 'MyFrames':
+          navigation.replace('MainTabs', {screen: 'MyFrames'});
+          return;
         case 'AlbumFlow':
           navigation.replace('CaptureFlow', {
             screen: 'LayoutSelect',

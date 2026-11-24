@@ -1,0 +1,50 @@
+# main 으로 가는 PR 과 main 에 들어온 커밋을 타입 검사·테스트·린트로 확인한다.
+#
+# 이 워크플로가 생기기 전에는 PR 에 자동 검사가 없어서, main 의 tsc 를 깨뜨린
+# PR 이 합쳐져도 아무도 알아채지 못했다. 로컬에서 돌리던 세 명령
+# (npx tsc --noEmit, npx jest, npx eslint .)을 PR 마다 똑같이 돌린다.
+# 안드로이드·iOS 빌드는 하지 않는다.
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# 같은 PR 에 새로 푸시하면 앞선 실행은 취소한다. main 은 커밋마다 따로 돈다.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24 # package.json engines(>= 22.11.0)를 만족하는 LTS
+          cache: npm
+
+      - name: Install dependencies
+        id: install
+        run: npm ci
+
+      # 앞의 검사가 실패해도 나머지는 마저 돌려서, 무엇이 깨졌는지 한 번에 보이게 한다.
+      - name: Type check (tsc)
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npx tsc --noEmit
+
+      - name: Test (jest)
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npx jest
+
+      - name: Lint (eslint)
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npx eslint .

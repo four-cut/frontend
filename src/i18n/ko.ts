@@ -55,6 +55,7 @@ const ko = {
     language: '언어',
     /** 설정 · 계정 */
     account: '계정',
+    signIn: '로그인',
     signOut: '로그아웃',
     deleteAccount: '회원 탈퇴',
     deleteTitle: '정말 탈퇴하시겠어요?',

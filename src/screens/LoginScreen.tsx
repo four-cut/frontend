@@ -1,26 +1,33 @@
-import React, {useCallback, useState} from 'react';
-import {Image, Linking, Platform, Pressable, StyleSheet, View} from 'react-native';
-import {Text} from '../components/AppText';
+import React, { useCallback, useState } from 'react';
+import {
+  Image,
+  Linking,
+  Platform,
+  Pressable,
+  StyleSheet,
+  View,
+} from 'react-native';
+import { Text } from '../components/AppText';
 import {
   useNavigation,
   useRoute,
   type RouteProp,
 } from '@react-navigation/native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import {images} from '../assets';
-import {useSocialSignIn} from '../auth';
-import type {Provider} from '../auth/types';
+import { images } from '../assets';
+import { useSocialSignIn } from '../auth';
+import type { Provider } from '../auth/types';
 import AppleSignInButton from '../components/AppleSignInButton';
 import PrimaryButton from '../components/PrimaryButton';
-import {PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL} from '../config/legal';
-import {LOCALES, LOCALE_LABEL, setLocale, useLocale, useT} from '../i18n';
+import { PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL } from '../config/legal';
+import { LOCALES, LOCALE_LABEL, setLocale, useLocale, useT } from '../i18n';
 import type {
   AuthGateTarget,
   RootNavigation,
   RootStackParamList,
 } from '../navigation/types';
-import {colors, fonts, fontSize} from '../theme';
+import { colors, fonts, fontSize } from '../theme';
 
 /**
  * 로그인 화면.
@@ -32,7 +39,7 @@ export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<RootNavigation>();
   const route = useRoute<RouteProp<RootStackParamList, 'Login'>>();
-  const {start, pending, error} = useSocialSignIn();
+  const { start, pending, error } = useSocialSignIn();
   const t = useT();
   const locale = useLocale();
 
@@ -42,9 +49,9 @@ export default function LoginScreen() {
   // 지켜지지 않으므로, 로그인 전에 나이와 약관 동의를 확인받는다.
   const [agreed, setAgreed] = useState(false);
   const legalLinks = [
-    {label: t.settings.terms, url: TERMS_OF_SERVICE_URL},
-    {label: t.settings.privacy, url: PRIVACY_POLICY_URL},
-  ].filter((item): item is {label: string; url: string} => item.url !== null);
+    { label: t.settings.terms, url: TERMS_OF_SERVICE_URL },
+    { label: t.settings.privacy, url: PRIVACY_POLICY_URL },
+  ].filter((item): item is { label: string; url: string } => item.url !== null);
 
   /** 로그인을 마치고 원래 가려던 곳으로 보낸다. */
   const goNext = useCallback(
@@ -53,22 +60,22 @@ export default function LoginScreen() {
         case 'Guide':
           navigation.replace('MainTabs', {
             screen: 'Shoot',
-            params: {screen: 'Guide'},
+            params: { screen: 'Guide' },
           });
           return;
         case 'FrameBuilder':
           navigation.replace('FrameBuilder');
           return;
         case 'Gallery':
-          navigation.replace('MainTabs', {screen: 'Gallery'});
+          navigation.replace('MainTabs', { screen: 'Gallery' });
           return;
         case 'MyFrames':
-          navigation.replace('MainTabs', {screen: 'MyFrames'});
+          navigation.replace('MainTabs', { screen: 'MyFrames' });
           return;
         case 'AlbumFlow':
           navigation.replace('CaptureFlow', {
             screen: 'LayoutSelect',
-            params: {source: 'album'},
+            params: { source: 'album' },
           });
           return;
         default:
@@ -93,32 +100,52 @@ export default function LoginScreen() {
     <View
       style={[
         styles.container,
-        {paddingTop: insets.top + 24, paddingBottom: insets.bottom + 16},
-      ]}>
+        { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 16 },
+      ]}
+    >
       {/* 일본어 기기라면 자동으로 일본어로 떠 있지만, 로그인 전에도 바꿀 수
           있어야 한다 — 로그인하고 나서야 설정에 닿을 수 있으면 늦다. */}
-      <View style={styles.localeRow}>
-        {LOCALES.map(option => {
-          const selected = option === locale;
-          return (
-            <Pressable
-              key={option}
-              accessibilityRole="radio"
-              accessibilityState={{selected}}
-              accessibilityLabel={LOCALE_LABEL[option]}
-              onPress={() => setLocale(option)}
-              hitSlop={6}
-              style={[styles.localeChip, selected && styles.localeChipActive]}>
-              <Text
-                style={[
-                  styles.localeChipText,
-                  selected && styles.localeChipTextActive,
-                ]}>
-                {LOCALE_LABEL[option]}
-              </Text>
-            </Pressable>
-          );
-        })}
+      <View style={styles.topRow}>
+        <View style={styles.localeRow}>
+          {LOCALES.map(option => {
+            const selected = option === locale;
+            return (
+              <Pressable
+                key={option}
+                accessibilityRole="radio"
+                accessibilityState={{ selected }}
+                accessibilityLabel={LOCALE_LABEL[option]}
+                onPress={() => setLocale(option)}
+                hitSlop={6}
+                style={[styles.localeChip, selected && styles.localeChipActive]}
+              >
+                <Text
+                  style={[
+                    styles.localeChipText,
+                    selected && styles.localeChipTextActive,
+                  ]}
+                >
+                  {LOCALE_LABEL[option]}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+        {/* 모달이라 아래로 쓸어내려도 닫히지만, 그걸 모르는 사람도 있다.
+            iOS 는 로그인이 선택이라 닫고 그냥 쓰면 된다. */}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t.common.close}
+          onPress={() => navigation.goBack()}
+          hitSlop={10}
+          style={({ pressed }) => [
+            styles.close,
+            pressed && styles.closePressed,
+          ]}
+        >
+          <View style={[styles.closeStroke, styles.closeStrokeA]} />
+          <View style={[styles.closeStroke, styles.closeStrokeB]} />
+        </Pressable>
       </View>
 
       <View style={styles.hero}>
@@ -131,11 +158,12 @@ export default function LoginScreen() {
       <View style={styles.actions}>
         <Pressable
           accessibilityRole="checkbox"
-          accessibilityState={{checked: agreed}}
+          accessibilityState={{ checked: agreed }}
           accessibilityLabel={t.login.consent}
           onPress={() => setAgreed(value => !value)}
           hitSlop={6}
-          style={styles.consentRow}>
+          style={styles.consentRow}
+        >
           <View style={[styles.checkbox, agreed && styles.checkboxChecked]}>
             {agreed ? <Text style={styles.checkmark}>✓</Text> : null}
           </View>
@@ -148,7 +176,8 @@ export default function LoginScreen() {
                 key={item.url}
                 accessibilityRole="link"
                 onPress={() => Linking.openURL(item.url)}
-                hitSlop={6}>
+                hitSlop={6}
+              >
                 <Text style={styles.legalLink}>{item.label}</Text>
               </Pressable>
             ))}
@@ -185,11 +214,39 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  topRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 16,
+  },
   localeRow: {
     flexDirection: 'row',
-    alignSelf: 'flex-end',
     gap: 6,
-    paddingHorizontal: 16,
+  },
+  // 아이콘 이미지가 없어 선 두 개를 엇갈려 X 를 그린다.
+  close: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  closePressed: {
+    opacity: 0.5,
+  },
+  closeStroke: {
+    position: 'absolute',
+    width: 20,
+    height: 2,
+    borderRadius: 1,
+    backgroundColor: colors.textPrimary,
+  },
+  closeStrokeA: {
+    transform: [{ rotate: '45deg' }],
+  },
+  closeStrokeB: {
+    transform: [{ rotate: '-45deg' }],
   },
   localeChip: {
     paddingHorizontal: 12,

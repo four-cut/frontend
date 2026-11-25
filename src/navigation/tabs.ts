@@ -19,6 +19,7 @@ export const TABS = [
   {
     // 프레임은 기기에만 저장되지만 로그인한 사람이 만든 것이다. 로그인 없이
     // 열리면 로그아웃·탈퇴한 뒤에도 그 사람이 만든 프레임이 그대로 보인다.
+    // iOS 는 로그인을 요구하지 않아 게이트가 그냥 통과시킨다. (loginPolicy)
     name: 'MyFrames' as const,
     labelKey: 'myFrames' as keyof Strings['tab'],
     icon: images.tabFrame,

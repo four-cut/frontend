@@ -16,6 +16,7 @@ import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {useAuth, useSocialSignIn} from '../auth';
+import {LOGIN_REQUIRED} from '../auth/loginPolicy';
 import {STRIP_ASPECT} from '../capture/stripLayout';
 import {useSavedStrips, type StripItem} from '../gallery/useSavedStrips';
 import {useT} from '../i18n';
@@ -65,6 +66,10 @@ export default function GalleryScreen() {
    */
   const handleSignOut = useCallback(async () => {
     await signOutEverywhere();
+    // 로그인 없이 쓰는 플랫폼에서는 갤러리에 그대로 있어도 된다.
+    if (!LOGIN_REQUIRED) {
+      return;
+    }
     navigation.navigate('MainTabs', {screen: 'Shoot'});
     navigation.navigate('Login', {next: 'Gallery'});
   }, [signOutEverywhere, navigation]);

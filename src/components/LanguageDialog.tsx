@@ -1,8 +1,11 @@
 import React from 'react';
 import {Linking, Modal, Pressable, StyleSheet, View} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
 
 import {useAuth, useSocialSignIn} from '../auth';
 import {useDeleteAccount} from '../auth/useDeleteAccount';
+import {LOGIN_REQUIRED} from '../auth/loginPolicy';
+import type {RootNavigation} from '../navigation/types';
 import {PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL} from '../config/legal';
 import {LOCALES, LOCALE_LABEL, setLocale, useLocale, useT} from '../i18n';
 import {colors, fonts, fontSize} from '../theme';
@@ -18,7 +21,8 @@ type Props = {
  *
  * 처음에는 언어만 있었다. 로그아웃은 갤러리 화면 구석에 있고 회원 탈퇴는
  * 아예 없었는데, 계정 관련 동작은 사람들이 설정에서 찾는다. 탈퇴는 스토어
- * 심사 필수 항목이기도 하다. 계정 칸은 로그인했을 때만, 정보 칸은 주소가
+ * 심사 필수 항목이기도 하다. 계정 칸은 로그인했을 때만(iOS 는 로그아웃
+ * 상태면 로그인 버튼을 대신 둔다), 정보 칸은 주소가
  * 정해졌을 때만(config/legal.ts) 띄운다.
  *
  * 항목이 둘뿐이라 시트를 아래에서 끌어올릴 만한 양이 아니다. 화면 가운데
@@ -33,11 +37,19 @@ export default function LanguageDialog({visible, onClose}: Props) {
   const {status} = useAuth();
   const {signOutEverywhere} = useSocialSignIn();
   const {confirm: confirmDelete, deleting} = useDeleteAccount();
+  const navigation = useNavigation<RootNavigation>();
   const signedIn = status === 'authenticated';
+  // 기능 앞에서 로그인을 묻지 않는 플랫폼(iOS)은 여기가 유일한 입구다.
+  const offerSignIn = !LOGIN_REQUIRED && status === 'anonymous';
   const legal = [
     {label: t.settings.privacy, url: PRIVACY_POLICY_URL},
     {label: t.settings.terms, url: TERMS_OF_SERVICE_URL},
   ].filter((item): item is {label: string; url: string} => !!item.url);
+
+  const handleSignIn = () => {
+    onClose();
+    navigation.navigate('Login');
+  };
 
   const handleSignOut = async () => {
     onClose();
@@ -112,6 +124,20 @@ export default function LanguageDialog({visible, onClose}: Props) {
                 <Text style={[styles.rowAction, styles.rowDanger]}>
                   {t.settings.deleteAccount}
                 </Text>
+              </Pressable>
+            </>
+          ) : null}
+
+          {offerSignIn ? (
+            <>
+              <Text style={[styles.sectionLabel, styles.section]}>
+                {t.settings.account}
+              </Text>
+              <Pressable
+                accessibilityRole="button"
+                onPress={handleSignIn}
+                style={({pressed}) => [styles.row, pressed && styles.pressed]}>
+                <Text style={styles.rowAction}>{t.settings.signIn}</Text>
               </Pressable>
             </>
           ) : null}

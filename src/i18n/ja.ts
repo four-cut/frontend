@@ -54,6 +54,7 @@ const ja: Strings = {
     language: '言語',
     /** 設定・アカウント */
     account: 'アカウント',
+    signIn: 'ログイン',
     signOut: 'ログアウト',
     deleteAccount: '退会する',
     deleteTitle: '本当に退会しますか？',

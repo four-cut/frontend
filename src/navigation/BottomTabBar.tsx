@@ -37,7 +37,9 @@ export default function BottomTabBar({state, navigation}: BottomTabBarProps) {
           }
           const go = () => navigation.navigate(route.name);
           // 로그인이 필요한 탭이면 로그인 화면을 먼저 띄운다.
-          if (tab.requiresAuth) {
+          // 촬영 탭은 로그인이 필요 없다. 이름으로도 걸러야 gate 가 받는
+          // 목적지 타입(AuthGateTarget)으로 좁혀진다.
+          if (tab.requiresAuth && tab.name !== 'Shoot') {
             gate(tab.name, go);
           } else {
             go();
